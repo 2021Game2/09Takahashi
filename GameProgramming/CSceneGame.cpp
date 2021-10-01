@@ -14,6 +14,8 @@
 
 CMatrix Matrix;
 
+int S;	//確認用、後で削除
+
 CSceneGame::~CSceneGame() {
 
 }
@@ -51,10 +53,8 @@ void CSceneGame::Init() {
 
 void CSceneGame::Update() {
 
-	//キャラクタークラスの更新
-	mPlayer.Update();
-	//敵の更新
-	mEnemy.Update();
+	//更新
+	CTaskManager::Get()->Update();
 
 	//衝突処理
 	CCollisionManager::Get()->Collision();
@@ -90,11 +90,8 @@ void CSceneGame::Update() {
 	//行列設定
 	glMultMatrixf(Matrix.mF);
 
-	//モデル描画
-//	CRes::sModelX.Render();
-	mPlayer.Render();
-	//敵描画
-	mEnemy.Render();
+	//描画
+	CTaskManager::Get()->Render();
 
 	//コライダの描画
 	CCollisionManager::Get()->Render();
@@ -102,7 +99,12 @@ void CSceneGame::Update() {
 	//2D描画開始
 	CUtil::Start2D(0, 800, 0, 600);
 
-	mFont.DrawString("3D PROGRAMMING", 20, 20, 10, 12);
+	//mFont.DrawString("3D PROGRAMMING", 20, 20, 10, 12);
+
+	//確認用、後で削除
+	char buf[64];
+	sprintf(buf, "STAMINA:%d", S);
+	mFont.DrawString(buf, 50, 50, 10, 12);
 
 	//2Dの描画終了
 	CUtil::End2D();

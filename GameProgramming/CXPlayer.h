@@ -6,6 +6,9 @@
 
 class CXPlayer : public CXCharacter
 {
+private:
+	bool mDash;		//ダッシュ状態の時にtrueを返す
+	int mStamina;	//スタミナ
 public:
 	//コライダの宣言
 	CCollider mColSphereBody;	//体
@@ -20,6 +23,7 @@ public:
 	void Init(CModelX* model);
 
 	void Update();
+
 };
 
 #endif
