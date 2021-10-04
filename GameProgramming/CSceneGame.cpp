@@ -11,6 +11,8 @@
 #include "CMaterial.h"
 //
 #include "CCollisionManager.h"
+//
+#include "CInput.h"
 
 CMatrix Matrix;
 
@@ -62,16 +64,16 @@ void CSceneGame::Update() {
 	//カメラのパラメータを作成する
 	CVector e, c, u;//視点、注視点、上方向
 	//視点を求める
-	e = CVector(1.0f, 2.0f, 10.0f);
+	e = mPlayer.mPosition+CVector(0.0f, 2.0f, -10.0f)*mPlayer.mMatrixRotate;
 	//注視点を求める
-	c = CVector();
+	c = mPlayer.mPosition;
 	//上方向を求める
 	u = CVector(0.0f, 1.0f, 0.0f);
 
 	//カメラクラスの設定
 	Camera.Set(e, c, u);
 	Camera.Render();
-
+	
 	//X軸＋回転
 	if (CKey::Push('K')) {
 		Matrix = Matrix * CMatrix().RotateX(1);
@@ -110,5 +112,8 @@ void CSceneGame::Update() {
 	CUtil::End2D();
 
 	return;
+
+	//マウスカーソルを起動時の座標に移動
+	//CInput::SetMousePos(mPlayer.mMouseX, mPlayer.mMouseY);
 }
 

@@ -1,5 +1,6 @@
 #include "CXPlayer.h"
 #include "CKey.h"
+#include "CInput.h"
 
 #define STAMINA_MAX 60	//スタミナ最大値
 
@@ -11,10 +12,13 @@ CXPlayer::CXPlayer()
 	, mColSphereSword(this, nullptr, CVector(-10.0f, 10.0f, 50.0f), 0.3f)
 	,mDash(false)
 	,mStamina(STAMINA_MAX)
+	,mMouseX(0)
+	,mMouseY(0)
 {
 	//タグにプレイヤーを設定します
 	mTag = EPLAYER;
 	mColSphereSword.mTag = CCollider::ESWORD;
+	CInput::GetMousePos(&mMouseX, &mMouseY);
 }
 
 void CXPlayer::Init(CModelX* model)
@@ -31,6 +35,20 @@ void CXPlayer::Init(CModelX* model)
 
 void CXPlayer::Update()
 {	
+
+	//マウスカーソルの座標を取得
+	int mx, my;
+	CInput::GetMousePos(&mx, &my);
+	if (mx < mMouseX) {
+		mRotation.mY += (mMouseX - mx) / 4;
+	}
+	if (mMouseX < mx) {
+		mRotation.mY += (mMouseX - mx) / 4;
+	}
+	mMouseX = mx;
+	
+
+
 	if (mAnimationIndex == 3)
 	{
 		if (mAnimationFrame >= mAnimationFrameSize)
@@ -49,11 +67,18 @@ void CXPlayer::Update()
 	{
 		if (CKey::Push('A'))
 		{
-			mRotation.mY += 2.0f;
+			//mRotation.mY += 2.0f;
+			mPosition += CVector(0.1f, 0.0f, 0.0f) * mMatrixRotate;
 		}
 		if (CKey::Push('D'))
 		{
-			mRotation.mY -= 2.0f;
+			//mRotation.mY -= 2.0f;
+			mPosition += CVector(-0.1f, 0.0f, 0.0f) * mMatrixRotate;
+		}
+		if (CKey::Push('S'))
+		{
+			//mRotation.mY -= 2.0f;
+			mPosition += CVector(0.0f, 0.0f, -0.1f) * mMatrixRotate;
 		}
 		if (CKey::Push(' '))
 		{

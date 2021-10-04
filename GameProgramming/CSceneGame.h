@@ -16,6 +16,7 @@ private:
 	CXPlayer mPlayer;
 	//敵のインスタンス
 	CXEnemy mEnemy;
+
 public:
 	~CSceneGame();
 	//初期化処理のオーバーライド
