@@ -11,12 +11,10 @@
 #include "CMaterial.h"
 //
 #include "CCollisionManager.h"
-//
-#include "CInput.h"
 
-CMatrix Matrix;
+//CMatrix Matrix;
 
-int S;	//確認用、後で削除
+int S;	//スタミナ確認用、後で削除
 
 CSceneGame::~CSceneGame() {
 
@@ -50,6 +48,8 @@ void CSceneGame::Init() {
 	mEnemy.mPosition = CVector(7.0f, 0.0f, 0.0f);
 	mEnemy.ChangeAnimation(2, true, 200);
 
+	//カメラ初期化
+	Camera.Init();
 }
 
 
@@ -61,38 +61,11 @@ void CSceneGame::Update() {
 	//衝突処理
 	CCollisionManager::Get()->Collision();
 
-	//カメラのパラメータを作成する
-	CVector e, c, u;//視点、注視点、上方向
-	//視点を求める
-	e = mPlayer.mPosition+CVector(0.0f, 2.0f, -10.0f)*mPlayer.mMatrixRotate;
-	//注視点を求める
-	c = mPlayer.mPosition;
-	//上方向を求める
-	u = CVector(0.0f, 1.0f, 0.0f);
+	Camera.Update();
 
-	//カメラクラスの設定
-	Camera.Set(e, c, u);
 	Camera.Render();
-	
-	//X軸＋回転
-	if (CKey::Push('K')) {
-		Matrix = Matrix * CMatrix().RotateX(1);
-	}
-	if (CKey::Push('I')) {
-		Matrix = Matrix * CMatrix().RotateX(-1);
-	}
-	//Y軸＋回転
-	if (CKey::Push('L')) {
-		Matrix = Matrix * CMatrix().RotateY(1);
-	}
-	if (CKey::Push('J')) {
-		Matrix = Matrix * CMatrix().RotateY(-1);
-	}
 
-	//行列設定
-	glMultMatrixf(Matrix.mF);
-
-	//描画
+	//タスク描画
 	CTaskManager::Get()->Render();
 
 	//コライダの描画
@@ -100,8 +73,6 @@ void CSceneGame::Update() {
 
 	//2D描画開始
 	CUtil::Start2D(0, 800, 0, 600);
-
-	//mFont.DrawString("3D PROGRAMMING", 20, 20, 10, 12);
 
 	//確認用、後で削除
 	char buf[64];
@@ -112,8 +83,6 @@ void CSceneGame::Update() {
 	CUtil::End2D();
 
 	return;
-
-	//マウスカーソルを起動時の座標に移動
-	//CInput::SetMousePos(mPlayer.mMouseX, mPlayer.mMouseY);
 }
+	
 

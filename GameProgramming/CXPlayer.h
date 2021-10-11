@@ -7,8 +7,12 @@
 class CXPlayer : public CXCharacter
 {
 private:
-	bool mDash;		//ダッシュ状態の時にtrueを返す
 	int mStamina;	//スタミナ
+	bool mDash;		//ダッシュ状態の時にtrueを返す
+	bool mAvoid;	//回避状態の時にtrueを返す
+	int mAvoidTime;	//回避時間
+	float mAvoidSpeed;	//回避中の移動速度
+
 
 public:
 	//コライダの宣言
@@ -24,11 +28,6 @@ public:
 	void Init(CModelX* model);
 
 	void Update();
-
-	//起動時のマウスカーソルの座標を覚える
-	int mMouseX;
-	int mMouseY;
-
 };
 
 #endif

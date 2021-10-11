@@ -10,6 +10,8 @@ CInput
 class CInput {
 	//ウィンドウポインタ
 	static GLFWwindow* mpWindow;
+	static int sm_wheel;
+
 public:
 	/*
 	初期化
@@ -46,6 +48,14 @@ public:
 	ウィンドウの左上が原点(0,0)
 	*/
 	static void GetMousePosW(int* px, int* py);
+
+	static void MouseScrollCB(GLFWwindow* window, double x, double y);
+
+	//マウスホイールの移動量を返す
+	static int GetWheelValue();
+
+	//コールバック系の数値をﾘｾｯﾄ
+	static void InputReset();
 };
 
 #endif

@@ -2,7 +2,8 @@
 #include <windows.h>
 
 //ウィンドウポインタ
-GLFWwindow* CInput::mpWindow = 0;
+GLFWwindow* CInput::mpWindow = nullptr;
+int CInput::sm_wheel = 0;
 
 /*
 初期化
@@ -10,6 +11,7 @@ Init(ウィンドウポインタ)
 */
 void CInput::Init(GLFWwindow* w) {
 	mpWindow = w;
+	glfwSetScrollCallback(mpWindow, CInput::MouseScrollCB);
 }
 
 /*
@@ -62,8 +64,21 @@ void CInput::GetMousePosW(int* px, int* py)
 {
 	double xpos, ypos;
 	glfwGetCursorPos(mpWindow, &xpos, &ypos);
-	*px = xpos;
-	*py = ypos;
+	*px = (int)xpos;
+	*py = (int)ypos;
 	return;
+}
+
+//スクロールコールバック
+void CInput::MouseScrollCB(GLFWwindow* window, double x, double y) {
+	sm_wheel = (int)y;
+}
+int CInput::GetWheelValue()
+{
+	return sm_wheel;
+}
+void CInput::InputReset()
+{
+	sm_wheel = 0;
 }
 
