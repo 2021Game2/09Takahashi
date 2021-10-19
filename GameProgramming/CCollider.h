@@ -13,6 +13,7 @@ public:
 	enum ETag
 	{
 		EBODY,		//本体
+		EHEAD,		//頭
 		ESEARCH,	//サーチ用
 		ESWORD,	//剣
 	};

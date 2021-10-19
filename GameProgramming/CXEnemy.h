@@ -6,9 +6,13 @@
 
 class CXEnemy : public CXCharacter
 {
+private:
 	CCollider mColSphereSword0;	//Œ•
 	CCollider mColSphereSword1;	//Œ•
 	CCollider mColSphereSword2;	//Œ•
+
+	int mHp;	//‘Ì—Í
+
 public:
 	//ƒRƒ‰ƒCƒ_‚ÌéŒ¾
 	CCollider mColSphereBody;	//‘Ì
