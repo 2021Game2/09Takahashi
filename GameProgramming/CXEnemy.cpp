@@ -1,4 +1,5 @@
 #include "CXEnemy.h"
+#include "CXPlayer.h"
 
 #define HP 100	//体力
 #define DAMAGE_BODY 10	//ダメージ(体)
@@ -17,11 +18,15 @@ CXEnemy::CXEnemy()
 	,mInvincibleTime(0)
 	,mInvincibleFlag(false)
 {
+	mTag = EENEMY;
+
 	mColSphereBody.mTag = CCollider::EBODY;
 	mColSphereHead.mTag = CCollider::EHEAD;
 	mColSphereSword0.mTag = CCollider::ESWORD;
 	mColSphereSword1.mTag = CCollider::ESWORD;
 	mColSphereSword2.mTag = CCollider::ESWORD;
+
+	mState = EATTACK_1;
 }
 
 void CXEnemy::Init(CModelX* model)
@@ -47,6 +52,16 @@ void CXEnemy::Init(CModelX* model)
 
 void CXEnemy::Update()
 {
+	switch (mState) {
+	case EATTACK_1:
+		ChangeAnimation(7, true, 80);
+		break;
+	case EDEATH:
+		//30フレームかけてダウンし、繰り返さない
+		ChangeAnimation(11, false, 30);
+		break;
+	}
+	
 	if (mInvincibleTime > 0) {
 		mInvincibleTime--;
 	}
@@ -55,8 +70,7 @@ void CXEnemy::Update()
 	}
 
 	if (mHp <= 0) {
-		//30フレームかけてダウンし、繰り返さない
-		ChangeAnimation(11, false, 30);
+		mState = EDEATH;
 	}
 
 	if (mHp < 0) {
@@ -81,19 +95,40 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 					{
 						if (CCollider::Collision(m, o))
 						{
-							switch (m->mTag) {
-							case CCollider::EBODY:
-								mHp -= DAMAGE_BODY;
-								mInvincibleTime = INVINCIBLE_TIME;
-								mInvincibleFlag = true;
-								break;
-							case CCollider::EHEAD:
-								mHp -= DAMAGE_HEAD;
-								mInvincibleTime = INVINCIBLE_TIME;
-								mInvincibleFlag = true;
-								break;
-							default:
-								break;
+							//キャスト変換
+							//プレイヤーの攻撃1を受けた時
+							if (((CXPlayer*)(o->mpParent))->mState == CXPlayer::EATTACK_1) {
+								switch (m->mTag) {
+								case CCollider::EBODY:
+									mHp -= DAMAGE_BODY;
+									mInvincibleTime = INVINCIBLE_TIME;
+									mInvincibleFlag = true;
+									break;
+								case CCollider::EHEAD:
+									mHp -= DAMAGE_HEAD;
+									mInvincibleTime = INVINCIBLE_TIME;
+									mInvincibleFlag = true;
+									break;
+								default:
+									break;
+								}
+							}
+							//プレイヤーの攻撃2を受けた時
+							else if (((CXPlayer*)(o->mpParent))->mState == CXPlayer::EATTACK_2) {
+								switch (m->mTag) {
+								case CCollider::EBODY:
+									mHp -= DAMAGE_BODY;
+									mInvincibleTime = INVINCIBLE_TIME;
+									mInvincibleFlag = true;
+									break;
+								case CCollider::EHEAD:
+									mHp -= DAMAGE_HEAD;
+									mInvincibleTime = INVINCIBLE_TIME;
+									mInvincibleFlag = true;
+									break;
+								default:
+									break;
+								}
 							}
 						}
 					}

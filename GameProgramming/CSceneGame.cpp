@@ -16,6 +16,7 @@
 
 int S;	//スタミナ確認用、後で削除
 int EHp;	//敵の体力確認用、後で削除
+int PHp;	//プレイヤーの体力確認用、後で削除
 
 CSceneGame::~CSceneGame() {
 
@@ -84,6 +85,10 @@ void CSceneGame::Update() {
 	//敵の体力
 	sprintf(buf, "EHP:%d", EHp);
 	mFont.DrawString(buf, 50, 100, 10, 12);
+
+	//プレイヤーの体力
+	sprintf(buf, "PHP:%d", PHp);
+	mFont.DrawString(buf, 50, 150, 10, 12);
 
 	//2Dの描画終了
 	CUtil::End2D();

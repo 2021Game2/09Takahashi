@@ -32,6 +32,14 @@ public:
 	void Collision(CCollider* m, CCollider* o);
 
 	void Update();
+
+	//“G‚Ìó‘Ô
+	enum EEnemyState
+	{
+		EATTACK_1,	//UŒ‚1
+		EDEATH,		//€–S
+	};
+	EEnemyState mState;
 };
 
 #endif

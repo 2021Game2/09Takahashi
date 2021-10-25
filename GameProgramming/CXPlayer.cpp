@@ -5,8 +5,10 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "CInput.h"
+#include "CXEnemy.h"
 
 #define GRAVITY 0.9f	//重力
+#define HP_MAX 100	//体力最大値
 #define STAMINA_MAX 100	//スタミナ最大値
 #define AVOID_STAMINA 40	//回避時のスタミナの減少量
 #define AVOID_TIME 30	//回避時間
@@ -15,20 +17,25 @@
 #define SPEED_DASH_LOW 0.05f	//ダッシュ速度(スタミナ切れ)
 #define SPEED_DEFAULT 0.15f	//デフォルトスピード
 #define INVINCIBLETIME_AVOID 30	//回避時の無敵時間
+#define INVINCIBLETIME_DAMAGE 60	//攻撃を受けた後の無敵時間
+#define DAMAGE 20	//ダメージ
+#define ATTACK2_FIRSTSPEED 0.6f	//攻撃2を使用したときの初速
 
 extern int S;	//確認用、後で削除
+extern int PHp;	//確認用、後で削除
 
 CXPlayer::CXPlayer()
 	: mColSphereBody(this, nullptr, CVector(), 0.5f)
 	, mColSphereHead(this, nullptr, CVector(0.0f, 5.0f, -3.0f), 0.5f)
 	, mColSphereSword(this, nullptr, CVector(-10.0f, 10.0f, 50.0f), 0.3f)
+	, mHp(HP_MAX)
 	, mStamina(STAMINA_MAX)
 	, mAvoid(false)
 	, mAvoidTime(0)
 	, mAvoidSpeed(0.0f)
 	, mSpeed(SPEED_DEFAULT)
-	, mAvoidMove(0.0f, 0.0f, 0.0f)
-	, mInvincible(false)
+	, mMoveKeep(0.0f, 0.0f, 0.0f)
+	, mInvincibleFlag(false)
 	, mInvincibleTime(0)
 	, mMove(0.0f, 0.0f, 0.0f)
 	, mMove2(0.0f, 0.0f, 0.0f)
@@ -36,6 +43,9 @@ CXPlayer::CXPlayer()
 	, mFrontVec(0.0f, 0.0f, 0.0f)
 	, mTurnspeed(0.0f)
 	, mAttackFlag_1(false)
+	, mAttackFlag_2(false)
+	, mAttack2Speed(0.0f)
+	, mAttackFlag_3(false)
 {
 	//タグにプレイヤーを設定します
 	mTag = EPLAYER;
@@ -43,7 +53,7 @@ CXPlayer::CXPlayer()
 	mColSphereHead.mTag = CCollider::EHEAD;
 	mColSphereSword.mTag = CCollider::ESWORD;
 
-	mState = EIDLE;
+	mState = EIDLE;	//待機状態
 }
 
 void CXPlayer::Init(CModelX* model)
@@ -81,10 +91,24 @@ void CXPlayer::Update()
 		}
 		break;
 
+	case EATTACK_2:	//攻撃2状態
+		Attack_2();	//攻撃2の処理を呼ぶ
+		if (mAttackFlag_2 == false) {
+			mState = EIDLE;
+		}
+		break;
+
+	case EATTACK_3:	//攻撃3状態の時
+		Attack_3();	//攻撃3の処理を呼ぶ
+		if (mAttackFlag_3 == false) {
+			mState = EIDLE;
+		}
+		break;
+
 	case EMOVE:	//移動状態
 		//左クリックを押すと攻撃1へ移行
 		if (CInput::GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
-			mState = EATTACK_1;
+			mState = EATTACK_2;
 		}
 		//SHIFTキーを押すとダッシュへ移行
 		else if (CKey::Push(VK_SHIFT)) {
@@ -107,7 +131,7 @@ void CXPlayer::Update()
 	case EDASH:	//ダッシュ状態
 		//左クリックを押すと攻撃1へ移行
 		if (CInput::GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
-			mState = EATTACK_1;
+			mState = EATTACK_2;
 		}
 		//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
 		else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
@@ -144,6 +168,10 @@ void CXPlayer::Update()
 			}	
 		}
 		break;
+
+	case EDEATH:	//死亡状態
+		Death();	//死亡処理を呼ぶ
+		break;
 	}
 
 	//ダッシュ、回避をしていない状態の時スタミナを回復させる
@@ -154,11 +182,10 @@ void CXPlayer::Update()
 	//無敵時間のカウントダウン
 	if (mInvincibleTime > 0) {
 		mInvincibleTime--;
-		mInvincible = true;	//無敵状態
 	}
 	//無敵時間切れ
 	else {
-		mInvincible = false;	//無敵状態終了
+		mInvincibleFlag = false;	//無敵状態終了
 	}
 
 	//座標移動
@@ -168,9 +195,16 @@ void CXPlayer::Update()
 	mMove2 = mMove2 * GRAVITY;
 
 	//リセット
-	mMove = CVector(0, 0, 0);
+	mMove = CVector(0.0f, 0.0f, 0.0f);
+
+	//体力が0になると死亡
+	if (mHp <= 0) {
+		mState = EDEATH;	//死亡状態へ移行
+		mHp = 0;
+	}
 
 	S = mStamina;	//確認用、後で削除
+	PHp = mHp;		//確認用、後で削除
 
 	//注視点
 	Camera.SetTarget(mPosition);
@@ -180,14 +214,43 @@ void CXPlayer::Update()
 
 void CXPlayer::Collision(CCollider* m, CCollider* o)
 {
+	if (mInvincibleFlag==false) {
+		if (m->mType == CCollider::ESPHERE) {
+			if (o->mType == CCollider::ESPHERE) {
+				if (o->mpParent->mTag == EENEMY) {
+					if (o->mTag == CCollider::ESWORD) {
+						if (CCollider::Collision(m, o)) {
+							//キャスト変換
+							if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EATTACK_1) {
+								switch (m->mTag) {
+								case CCollider::EHEAD:
+									mHp -= DAMAGE;
+									mInvincibleTime = INVINCIBLETIME_DAMAGE;
+									mInvincibleFlag = true;
+									break;
 
+								case CCollider::EBODY:
+									mHp -= DAMAGE;
+									mInvincibleTime = INVINCIBLETIME_DAMAGE;
+									mInvincibleFlag = true;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
+//待機処理
 void CXPlayer::Idle()
 {
 	ChangeAnimation(0, true, 60);	//待機モーション
 }
 
+//移動処理
 void CXPlayer::Move()
 {
 	ChangeAnimation(1, true, 60);
@@ -226,7 +289,7 @@ void CXPlayer::Move()
 	//移動量正規化　これをしないと斜め移動が早くなってしまうので注意
 	//ジャンプ時などはY軸を正規化しないよう注意
 	mMove.Normalize();
-	mAvoidMove = mMove;	//Move保存(回避用)
+	mMoveKeep = mMove;	//Move保存
 	if (mMove.Length() != 0.0f) {
 		//平行移動量
 		mMove2 = mMove * mSpeed;
@@ -251,6 +314,7 @@ void CXPlayer::Move()
 	}
 }
 
+//ダッシュ処理
 void CXPlayer::Dash()
 {
 	//スタミナが残っているとき
@@ -266,6 +330,7 @@ void CXPlayer::Dash()
 	Move();	//移動処理を呼ぶ
 }
 
+//攻撃1処理
 void CXPlayer::Attack_1()
 {
 	if (mAttackFlag_1 == false) {
@@ -289,6 +354,57 @@ void CXPlayer::Attack_1()
 	}
 }
 
+void CXPlayer::Attack_2()
+{
+	if (mAttackFlag_2 == false) {
+		ChangeAnimation(7, true, 30);
+		mAttackFlag_2 = true;
+		mAttack2Speed = ATTACK2_FIRSTSPEED;
+	}
+
+	if (mAnimationIndex == 7)
+	{
+		if (mAnimationFrame >= mAnimationFrameSize)
+		{
+			ChangeAnimation(8, false, 30);
+		}
+	}
+	else if (mAnimationIndex == 8)
+	{
+		if (mAnimationFrame >= mAnimationFrameSize)
+		{
+			mAttackFlag_2 = false;
+		}
+	}
+
+	mMove2 = mMoveKeep * mAttack2Speed;
+	mAttack2Speed = mAttack2Speed * GRAVITY;
+}
+
+void CXPlayer::Attack_3()
+{
+	if (mAttackFlag_3 == false) {
+		ChangeAnimation(5, true, 20);
+		mAttackFlag_3 = true;
+	}
+
+	if (mAnimationIndex == 5)
+	{
+		if (mAnimationFrame >= mAnimationFrameSize)
+		{
+			ChangeAnimation(6, false, 30);
+		}
+	}
+	else if (mAnimationIndex == 6)
+	{
+		if (mAnimationFrame >= mAnimationFrameSize)
+		{
+			mAttackFlag_3 = false;
+		}
+	}
+}
+
+//回避処理
 void CXPlayer::Avoid()
 {
 	if (mAvoid == false) {
@@ -296,10 +412,11 @@ void CXPlayer::Avoid()
 		mStamina -= AVOID_STAMINA;		//スタミナ減少	
 		mAvoidTime = AVOID_TIME;		//回避時間
 		mAvoidSpeed = AVOID_FIRSTSPEED;	//初速
+		mInvincibleFlag = true;
 		mInvincibleTime = INVINCIBLETIME_AVOID;	//無敵時間
 	}
 
-	mMove2 = mAvoidMove * mAvoidSpeed;
+	mMove2 = mMoveKeep * mAvoidSpeed;
 	//回避時間カウントダウン
 	mAvoidTime--;
 	mAvoidSpeed = mAvoidSpeed * GRAVITY;	//スピードを下げていく
@@ -308,3 +425,10 @@ void CXPlayer::Avoid()
 		mAvoid = false;	//回避終了
 	}
 }
+
+void CXPlayer::Death()
+{
+	ChangeAnimation(11, false, 60);	//倒れるアニメーション
+}
+
+
