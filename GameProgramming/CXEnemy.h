@@ -13,6 +13,8 @@ private:
 
 	int mHp;	//体力
 
+	bool mInvincibleFlag;
+	int mInvincibleTime;
 public:
 	//コライダの宣言
 	CCollider mColSphereBody;	//体
@@ -29,6 +31,7 @@ public:
 	//m:自分のコライダ o:相手のコライダ
 	void Collision(CCollider* m, CCollider* o);
 
+	void Update();
 };
 
 #endif

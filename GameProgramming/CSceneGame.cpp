@@ -15,6 +15,7 @@
 //CMatrix Matrix;
 
 int S;	//スタミナ確認用、後で削除
+int EHp;	//敵の体力確認用、後で削除
 
 CSceneGame::~CSceneGame() {
 
@@ -76,8 +77,13 @@ void CSceneGame::Update() {
 
 	//確認用、後で削除
 	char buf[64];
+	//スタミナ
 	sprintf(buf, "STAMINA:%d", S);
 	mFont.DrawString(buf, 50, 50, 10, 12);
+
+	//敵の体力
+	sprintf(buf, "EHP:%d", EHp);
+	mFont.DrawString(buf, 50, 100, 10, 12);
 
 	//2Dの描画終了
 	CUtil::End2D();
