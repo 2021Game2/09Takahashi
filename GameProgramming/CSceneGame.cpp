@@ -34,11 +34,11 @@ void CSceneGame::Init() {
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//4:ダミー
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//5:ダミー
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//6:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 440, 520, "attack1");//7:Attack1
-	CRes::sKnight.SeparateAnimationSet(0, 520, 615, "attack2");//8:Attack2
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//9:ダミー
+	CRes::sKnight.SeparateAnimationSet(0, 440, 520, "attack1_1");//7:Attack1
+	CRes::sKnight.SeparateAnimationSet(0, 520, 615, "attack2");//9:Attack2
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//10:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 1160, 1260, "death1");//11:ダウン
+	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//11:ダミー
+	CRes::sKnight.SeparateAnimationSet(0, 1160, 1260, "death1");//12:ダウン
 
 	//キャラクターにモデルを設定
 	mPlayer.Init(&CRes::sModelX);
@@ -48,7 +48,7 @@ void CSceneGame::Init() {
 	mEnemy.mAnimationFrameSize = 1024;
 	//敵の配置
 	mEnemy.mPosition = CVector(7.0f, 0.0f, 0.0f);
-	mEnemy.ChangeAnimation(2, true, 200);
+	//mEnemy.ChangeAnimation(2, true, 200);
 
 	//カメラ初期化
 	Camera.Init();

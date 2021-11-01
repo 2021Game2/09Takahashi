@@ -13,8 +13,12 @@ private:
 
 	int mHp;	//‘Ì—Í
 
-	bool mInvincibleFlag;
-	int mInvincibleTime;
+	bool mAttackFlag_1;	//UŒ‚1ó‘Ô‚Ìtrue‚ğ•Ô‚·
+
+	void Idle();	//‘Ò‹@ˆ—
+	void Move();	//ˆÚ“®ˆ—
+	void Attack_1();	//UŒ‚1ˆ—
+	void Death();	//€–Sˆ—
 public:
 	//ƒRƒ‰ƒCƒ_‚ÌéŒ¾
 	CCollider mColSphereBody;	//‘Ì
@@ -36,6 +40,8 @@ public:
 	//“G‚Ìó‘Ô
 	enum EEnemyState
 	{
+		EIDLE,		//‘Ò‹@
+		EMOVE,		//ˆÚ“®
 		EATTACK_1,	//UŒ‚1
 		EDEATH,		//€–S
 	};

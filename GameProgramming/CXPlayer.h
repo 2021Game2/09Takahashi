@@ -25,6 +25,8 @@ private:
 	float mAttack2Speed;	//UŒ‚2‚Ì‚ÌƒXƒs[ƒh
 	bool mAttackFlag_3;	//UŒ‚3ó‘Ô‚Ìtrue‚ğ•Ô‚·
 
+	int mGraceTime;	//”h¶UŒ‚‚Ìó•tŠÔ
+
 	CVector mMove;	
 	CVector mMove2;
 	CVector mSideVec;
@@ -68,10 +70,12 @@ public:
 		EAVOID,		//‰ñ”ğ
 		EATTACK_1,	//UŒ‚1
 		EATTACK_2,	//UŒ‚2
-		EATTACK_3,	//UŒ‚3
+		EATTACK_3,	//UŒ‚3(UŒ‚1‚©‚ç”h¶)
 		EDEATH,		//€–S
 	};
 	EPlayerState mState;
+
+	bool mHit;	//UŒ‚‚Étrue‚ğ•Ô‚·@“G‚ÉUŒ‚‚ª“–‚½‚éorUŒ‚I—¹‚Éfalse‚ğ•Ô‚·
 };
 
 #endif

@@ -12,14 +12,15 @@
 #define STAMINA_MAX 100	//スタミナ最大値
 #define AVOID_STAMINA 40	//回避時のスタミナの減少量
 #define AVOID_TIME 30	//回避時間
-#define AVOID_FIRSTSPEED 0.5f	//回避初速
-#define SPEED_DASH_HIGH 0.2f	//ダッシュ速度
-#define SPEED_DASH_LOW 0.05f	//ダッシュ速度(スタミナ切れ)
-#define SPEED_DEFAULT 0.15f	//デフォルトスピード
-#define INVINCIBLETIME_AVOID 30	//回避時の無敵時間
-#define INVINCIBLETIME_DAMAGE 60	//攻撃を受けた後の無敵時間
+#define AVOID_FIRSTSPEED 0.5f	//回避時の初速
+#define SPEED_DEFAULT 0.15f	//スピード(通常時)
+#define SPEED_DASH_HIGH 0.2f	//スピード(ダッシュ時)
+#define SPEED_DASH_LOW 0.05f	//スピード(ダッシュ時、スタミナ切れ)
+#define INVINCIBLETIME_AVOID 30	//無敵時間(回避時)
+#define INVINCIBLETIME_DAMAGE 60	//無敵時間(ダメージ発生時)
 #define DAMAGE 20	//ダメージ
-#define ATTACK2_FIRSTSPEED 0.6f	//攻撃2を使用したときの初速
+#define ATTACK2_FIRSTSPEED 0.6f	//攻撃2使用時の初速
+#define GRACETIME 10	//派生攻撃の受付時間
 
 extern int S;	//確認用、後で削除
 extern int PHp;	//確認用、後で削除
@@ -46,6 +47,8 @@ CXPlayer::CXPlayer()
 	, mAttackFlag_2(false)
 	, mAttack2Speed(0.0f)
 	, mAttackFlag_3(false)
+	,mGraceTime(0)
+	,mHit(false)
 {
 	//タグにプレイヤーを設定します
 	mTag = EPLAYER;
@@ -74,8 +77,8 @@ void CXPlayer::Update()
 	switch (mState) {
 	case EIDLE:	//待機状態
 		Idle();	//待機処理を呼ぶ
-		//左クリックを押すと攻撃1へ移行
-		if (CInput::GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+		//左クリックで攻撃1へ移行
+		if (CKey::Once(VK_LBUTTON)) {
 			mState = EATTACK_1;
 		}
 		//WASDキーを押すと移動へ移行
@@ -86,6 +89,10 @@ void CXPlayer::Update()
 
 	case EATTACK_1:	//攻撃1状態
 		Attack_1();	//攻撃1の処理を呼ぶ
+		//受付時間内に左クリックで攻撃3へ移行
+		if (mGraceTime > 0 && CKey::Once(VK_LBUTTON)) {
+			mState = EATTACK_3;
+		}
 		if (mAttackFlag_1 == false) {
 			mState = EIDLE;
 		}
@@ -106,8 +113,8 @@ void CXPlayer::Update()
 		break;
 
 	case EMOVE:	//移動状態
-		//左クリックを押すと攻撃1へ移行
-		if (CInput::GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+		//左クリックで攻撃1へ移行
+		if (CKey::Once(VK_LBUTTON)) {
 			mState = EATTACK_2;
 		}
 		//SHIFTキーを押すとダッシュへ移行
@@ -129,8 +136,8 @@ void CXPlayer::Update()
 		break;
 
 	case EDASH:	//ダッシュ状態
-		//左クリックを押すと攻撃1へ移行
-		if (CInput::GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+		//左クリックで攻撃1へ移行
+		if (CKey::Once(VK_LBUTTON)) {
 			mState = EATTACK_2;
 		}
 		//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
@@ -203,8 +210,15 @@ void CXPlayer::Update()
 		mHp = 0;
 	}
 
-	S = mStamina;	//確認用、後で削除
-	PHp = mHp;		//確認用、後で削除
+	//後で削除する
+	//////////////////////////////
+	if (mHp<=0&&CKey::Once(VK_RETURN)) {
+		mHp = HP_MAX;
+		mState = EIDLE;
+	}
+	S = mStamina;
+	PHp = mHp;
+	//////////////////////////////
 
 	//注視点
 	Camera.SetTarget(mPosition);
@@ -214,11 +228,12 @@ void CXPlayer::Update()
 
 void CXPlayer::Collision(CCollider* m, CCollider* o)
 {
-	if (mInvincibleFlag==false) {
-		if (m->mType == CCollider::ESPHERE) {
-			if (o->mType == CCollider::ESPHERE) {
-				if (o->mpParent->mTag == EENEMY) {
-					if (o->mTag == CCollider::ESWORD) {
+	if (m->mType == CCollider::ESPHERE) {
+		if (o->mType == CCollider::ESPHERE) {
+			if (o->mpParent->mTag == EENEMY) {
+				//敵の攻撃を受けた時
+				if (o->mTag == CCollider::ESWORD) {
+					if (mInvincibleFlag == false) {
 						if (CCollider::Collision(m, o)) {
 							//キャスト変換
 							if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EATTACK_1) {
@@ -235,6 +250,16 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 									mInvincibleFlag = true;
 									break;
 								}
+							}
+						}
+					}
+				}
+				//敵に攻撃が当たった時、mHitをfalseにする
+				if (m->mTag == CCollider::ESWORD) {
+					if (o->mTag == CCollider::EHEAD || o->mTag == CCollider::EBODY) {
+						if (mHit == true) {
+							if (CCollider::Collision(m, o)) {
+								mHit = false;
 							}
 						}
 					}
@@ -336,6 +361,12 @@ void CXPlayer::Attack_1()
 	if (mAttackFlag_1 == false) {
 		ChangeAnimation(3, true, 30);
 		mAttackFlag_1 = true;
+		mHit = true;
+		mGraceTime = 0;
+	}
+
+	if (mGraceTime > 0) {
+		mGraceTime--;	//受付時間を減少
 	}
 
 	if (mAnimationIndex == 3)
@@ -343,6 +374,7 @@ void CXPlayer::Attack_1()
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			ChangeAnimation(4, false, 30);
+			mGraceTime = GRACETIME;	//受付時間を入れる
 		}
 	}
 	else if (mAnimationIndex == 4)
@@ -350,16 +382,19 @@ void CXPlayer::Attack_1()
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			mAttackFlag_1 = false;
+			mHit = false;
 		}
 	}
 }
 
+//攻撃2処理
 void CXPlayer::Attack_2()
 {
 	if (mAttackFlag_2 == false) {
 		ChangeAnimation(7, true, 30);
 		mAttackFlag_2 = true;
 		mAttack2Speed = ATTACK2_FIRSTSPEED;
+		mHit = true;
 	}
 
 	if (mAnimationIndex == 7)
@@ -374,6 +409,7 @@ void CXPlayer::Attack_2()
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			mAttackFlag_2 = false;
+			mHit = false;
 		}
 	}
 
@@ -381,11 +417,13 @@ void CXPlayer::Attack_2()
 	mAttack2Speed = mAttack2Speed * GRAVITY;
 }
 
+//攻撃3処理
 void CXPlayer::Attack_3()
 {
 	if (mAttackFlag_3 == false) {
 		ChangeAnimation(5, true, 20);
 		mAttackFlag_3 = true;
+		mHit = true;
 	}
 
 	if (mAnimationIndex == 5)
@@ -400,6 +438,8 @@ void CXPlayer::Attack_3()
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			mAttackFlag_3 = false;
+			mAttackFlag_1 = false;
+			mHit = false;
 		}
 	}
 }
@@ -412,7 +452,7 @@ void CXPlayer::Avoid()
 		mStamina -= AVOID_STAMINA;		//スタミナ減少	
 		mAvoidTime = AVOID_TIME;		//回避時間
 		mAvoidSpeed = AVOID_FIRSTSPEED;	//初速
-		mInvincibleFlag = true;
+		mInvincibleFlag = true;			//無敵状態
 		mInvincibleTime = INVINCIBLETIME_AVOID;	//無敵時間
 	}
 
@@ -426,6 +466,7 @@ void CXPlayer::Avoid()
 	}
 }
 
+//死亡処理
 void CXPlayer::Death()
 {
 	ChangeAnimation(11, false, 60);	//倒れるアニメーション
