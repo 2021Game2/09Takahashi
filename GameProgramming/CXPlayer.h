@@ -7,6 +7,13 @@
 class CXPlayer : public CXCharacter
 {
 private:
+	//コライダの宣言
+	CCollider mColSphereBody;	//体
+	CCollider mColSphereHead;	//頭
+	CCollider mColSphereSword;	//剣
+
+	static CXPlayer* mInstance;
+
 	int mHp;		//体力
 	int mStamina;	//スタミナ
 	float mSpeed;	//スピード
@@ -43,11 +50,6 @@ private:
 	void Death();		//死亡処理
 
 public:
-	//コライダの宣言
-	CCollider mColSphereBody;	//体
-	CCollider mColSphereHead;	//頭
-	CCollider mColSphereSword;	//剣
-
 	CXPlayer();
 
 	/*
@@ -76,6 +78,8 @@ public:
 	EPlayerState mState;
 
 	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
+
+	static CXPlayer* GetInstance();
 };
 
 #endif

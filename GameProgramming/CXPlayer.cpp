@@ -22,6 +22,8 @@
 #define ATTACK2_FIRSTSPEED 0.6f	//攻撃2使用時の初速
 #define GRACETIME 10	//派生攻撃の受付時間
 
+CXPlayer* CXPlayer::mInstance;
+
 extern int S;	//確認用、後で削除
 extern int PHp;	//確認用、後で削除
 
@@ -57,6 +59,8 @@ CXPlayer::CXPlayer()
 	mColSphereSword.mTag = CCollider::ESWORD;
 
 	mState = EIDLE;	//待機状態
+
+	mInstance = this;
 }
 
 void CXPlayer::Init(CModelX* model)
@@ -269,6 +273,11 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 	}
 }
 
+CXPlayer* CXPlayer::GetInstance()
+{
+	return mInstance;
+}
+
 //待機処理
 void CXPlayer::Idle()
 {
@@ -313,7 +322,7 @@ void CXPlayer::Move()
 
 	//移動量正規化　これをしないと斜め移動が早くなってしまうので注意
 	//ジャンプ時などはY軸を正規化しないよう注意
-	mMove.Normalize();
+	mMove = mMove.Normalize();
 	mMoveKeep = mMove;	//Move保存
 	if (mMove.Length() != 0.0f) {
 		//平行移動量

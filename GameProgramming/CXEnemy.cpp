@@ -6,10 +6,12 @@
 #define DAMAGE_HEAD 20	//ダメージ(頭)
 #define MARGIN 0.01f
 #define ATTACK_DISTANCE 3.0f	//下回ると攻撃が可能になる距離
-#define COUNT 90
-#define FRONTVEC CVector(0.0f, 0.0f, -1.0f) 
 #define SPEED_MOVE 0.05f	//通常移動のスピード
 #define SPEED_CHASE 0.1f	//追跡中の移動速度
+#define CHASE_DIS_MAX 20.0f	//追跡できる最大距離
+
+#define FRONTVEC CVector(0.0f, 0.0f, -1.0f)
+#define SIDEVEC CVector(1.0f, 0.0f, 0.0f)
 
 extern int EHp;	//敵の体力確認用、後で削除
 
@@ -19,11 +21,10 @@ CXEnemy::CXEnemy()
 	, mColSphereSword0(this, nullptr, CVector(0.7f, 3.5f, -0.2f), 0.5f)
 	, mColSphereSword1(this, nullptr, CVector(0.5f, 2.5f, -0.2f), 0.5f)
 	, mColSphereSword2(this, nullptr, CVector(0.3f, 1.5f, -0.2f), 0.5f)
-	, mColSearch(this, &mMatrix, CVector(0.0f, 0.0f, 0.0f), 15.0f)
 	, mHp(HP_MAX)
 	, mPlayerPosition(0.0f, 0.0f, 0.0f)
 	,mPoint(0.0f, 0.0f, 0.0f)
-	,mCount(COUNT)
+	,mAttackFlag_1(false)
 {
 	mTag = EENEMY;
 
@@ -32,8 +33,6 @@ CXEnemy::CXEnemy()
 	mColSphereSword0.mTag = CCollider::ESWORD;
 	mColSphereSword1.mTag = CCollider::ESWORD;
 	mColSphereSword2.mTag = CCollider::ESWORD;
-
-	mColSearch.mTag = CCollider::ESEARCH;
 
 	mState = EIDLE;	//待機
 
@@ -88,8 +87,6 @@ void CXEnemy::Update()
 		break;
 	}
 
-	mCount--;
-
 	if (mHp <= 0) {
 		mState = EDEATH;
 	}
@@ -130,14 +127,6 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 						}
 					}
 				}
-				if (m->mTag == CCollider::ESEARCH) {
-					if (o->mTag == CCollider::EHEAD || o->mTag == CCollider::EBODY) {
-						if (CCollider::Collision(m, o)) {
-							mPlayerPosition = o->mpParent->mPosition;
-							//mState = ECHASE;
-						}
-					}
-				}
 			}
 		}
 	}
@@ -147,22 +136,25 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 void CXEnemy::Idle()
 {
 	//待機アニメーション
-	ChangeAnimation(2, true, 200);	
+	ChangeAnimation(2, true, 200);
+	
+	//左向き(X軸)のベクトルを求める
+	CVector SideVec = SIDEVEC * mMatrixRotate;
+	CVector PPoint = CXPlayer::GetInstance()->mPosition - mPosition;
+	float DegreeX = PPoint.Dot(SideVec); //左ベクトルとの内積を求める
+	float length = PPoint.Length();
 
-	if (mCount == 0) {
-		int random = rand() % 2;
-		switch (random) {
-		case 0:
-			//
-			break;
+	if (length < 15.0f) {
+		mState = ECHASE;
+	}
 
-		case 1:
-			//移動状態へ移行する
-			mState = EMOVE;
-			mPoint = mPosition * CMatrix().RotateY(rand() % 360);
-			break;
-		}
-		mCount = COUNT;
+	int random = rand() % 180;
+	if (random == 0) {
+		//移動状態へ移行する
+		mState = EMOVE;
+		mPoint = mPosition;
+		mPoint.mX += -15.0f + (float)(rand() % 30);
+		mPoint.mZ += -15.0f + (float)(rand() % 30);
 	}
 }
 
@@ -172,38 +164,39 @@ void CXEnemy::Move()
 	//移動アニメーション
 	ChangeAnimation(1, true, 70);
 
+
 	//左向き(X軸)のベクトルを求める
-	CVector vx = CVector(1.0f, 0.0f, 0.0f) * mMatrixRotate;
+	CVector SideVec = SIDEVEC * mMatrixRotate;
 
 	//目的地点までのベクトルを求める
-	CVector vp = mPoint - mPosition;
-	float dx = vp.Dot(vx); //左ベクトルとの内積を求める
-	//左右方向へ回転
-	if (dx > MARGIN)
-	{
-		mRotation.mY += 2.0f; //左へ回転
+	CVector Point = mPoint - mPosition;
+
+	float DegreeX = Point.Dot(SideVec); //左ベクトルとの内積を求める
+
+	float length = 0.0f;
+
+	CVector PPoint = CXPlayer::GetInstance()->mPosition - mPosition;
+
+	length = PPoint.Length();
+	if (length < 15.0f) {
+		mState = ECHASE;
 	}
-	else if (dx < -MARGIN)
+
+	//左右方向へ回転
+	if (DegreeX > MARGIN)
 	{
-		mRotation.mY -= 2.0f; //右へ回転
+		mRotation.mY -= 2.0f; 
+	}
+	else if (DegreeX < -MARGIN)
+	{
+		mRotation.mY += 2.0f; 
 	}
 	//移動する
 	mPosition += (FRONTVEC * SPEED_MOVE) * mMatrixRotate;
 
-	if (mCount == 0) {
-		int random = rand() % 2;
-		switch (random) {
-		case 0:
-			//目標地点更新
-			mPoint = mPosition * CMatrix().RotateY(rand() % 360);
-			break;
-
-		case 1:
-			//待機状態へ移行する
-			mState = EIDLE;
-			break;
-		}
-		mCount = COUNT;
+	length = Point.Length();
+	if (length < 1.0f) {
+		mState = EIDLE;
 	}
 }
 
@@ -213,12 +206,14 @@ void CXEnemy::Chase()
 	//移動アニメーション
 	ChangeAnimation(1, true, 70);
 
-	CVector SideVec = CVector(1.0f, 0.0f, 0.0f) * mMatrixRotate;
-	SideVec.Normalize();
+	//左向き(X軸)のベクトルを求める
+	CVector SideVec = SIDEVEC * mMatrixRotate;
 
-	CVector PlayerPoint = mPlayerPosition - mPosition;
+	CVector Point = CXPlayer::GetInstance()->mPosition - mPosition;
 
-	float DegreeX = PlayerPoint.Dot(SideVec);
+	float length = Point.Length();
+
+	float DegreeX = Point.Dot(SideVec);
 	if (DegreeX > MARGIN)
 	{
 		mRotation.mY -= 2.0f;
@@ -228,11 +223,12 @@ void CXEnemy::Chase()
 		mRotation.mY += 2.0f;
 	}
 
-	float length = PlayerPoint.Length();
-	if (length > ATTACK_DISTANCE) {
-		mPosition += (FRONTVEC * SPEED_CHASE) * mMatrixRotate;
+	mPosition += (FRONTVEC * SPEED_CHASE) * mMatrixRotate;
+
+	if (length >= CHASE_DIS_MAX) {
+		mState = EIDLE;
 	}
-	else{
+	else if (length <= ATTACK_DISTANCE) {
 		if (-1.5f < DegreeX && DegreeX < 1.5f)
 		{
 			mState = EATTACK_1;
@@ -256,10 +252,9 @@ void CXEnemy::Attack_1()
 		}
 	}
 
-	CVector SideVec = CVector(1.0f, 0.0f, 0.0f) * mMatrixRotate;
-	SideVec.Normalize();
+	CVector SideVec = SIDEVEC * mMatrixRotate;
 
-	CVector Point = mPlayerPosition - mPosition;
+	CVector Point = CXPlayer::GetInstance()->mPosition - mPosition;
 
 	float DegreeX = Point.Dot(SideVec);
 

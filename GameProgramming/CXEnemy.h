@@ -11,8 +11,6 @@ private:
 	CCollider mColSphereSword1;	//剣
 	CCollider mColSphereSword2;	//剣
 
-	CCollider mColSearch;
-
 	int mHp;	//体力
 
 	bool mAttackFlag_1;	//攻撃1状態の時trueを返す
@@ -20,8 +18,6 @@ private:
 	CVector mPlayerPosition;	//プレイヤーのポジション
 
 	CVector mPoint;	//移動時の目標地点
-
-	int mCount;
 
 	void Idle();	//待機処理
 	void Move();	//移動処理
