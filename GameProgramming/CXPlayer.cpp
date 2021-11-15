@@ -121,17 +121,19 @@ void CXPlayer::Update()
 		if (CKey::Once(VK_LBUTTON)) {
 			mState = EATTACK_2;
 		}
-		//SHIFTキーを押すとダッシュへ移行
-		else if (CKey::Push(VK_SHIFT)) {
-			mState = EDASH;
-		}
 		//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
 		else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
 			mState = EAVOID;
 		}
 		//WASDキーを押すと移動
 		else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
-			Move();	//移動処理を呼ぶ
+			//SHIFTキーを押しているとダッシュへ移行
+			if (CKey::Push(VK_SHIFT)) {
+				mState = EDASH;
+			}
+			else {
+				Move();	//移動処理を呼ぶ
+			}
 		}
 		//待機状態へ移行
 		else {
@@ -148,13 +150,15 @@ void CXPlayer::Update()
 		else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
 			mState = EAVOID;
 		}
-		//SHIFTキーを押すとダッシュ
-		else if (CKey::Push(VK_SHIFT)) {
-			Dash();	//ダッシュ処理を呼ぶ
-		}
-		//WASDキーを押すと移動へ移行
+		//WASDキーを押すと移動
 		else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
-			mState = EMOVE;
+			//SHIFTキーを押しているとダッシュ
+			if (CKey::Push(VK_SHIFT)) {
+				Dash();	//ダッシュ処理を呼ぶ
+			}
+			else{
+				mState = EMOVE;
+			}
 		}
 		//待機状態へ移行
 		else {
@@ -165,13 +169,15 @@ void CXPlayer::Update()
 	case EAVOID:	//回避状態
 		Avoid();	//回避処理を呼ぶ
 		if (mAvoid == false) {
-			//回避終了時WASDキー＆SHIFTキーが押されているとダッシュへ移行
-			if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')&&CKey::Push(VK_SHIFT)) {
-				mState = EDASH;
-			}
-			//回避終了時WASDキーが押されていると移動へ移行
-			else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
-				mState = EMOVE;
+			//回避終了時WASDキーが押されていると移動
+			if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
+				//SHIFTキーを押しているとダッシュへ移行
+				if (CKey::Push(VK_SHIFT)) {
+					mState = EDASH;
+				}
+				else {
+					mState = EMOVE;
+				}
 			}
 			//待機状態へ移行
 			else {
@@ -382,6 +388,7 @@ void CXPlayer::Attack_1()
 	{
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
+			mHit = false;
 			ChangeAnimation(4, false, 30);
 			mGraceTime = GRACETIME;	//受付時間を入れる
 		}
@@ -391,7 +398,6 @@ void CXPlayer::Attack_1()
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			mAttackFlag_1 = false;
-			mHit = false;
 		}
 	}
 }

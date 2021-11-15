@@ -39,6 +39,7 @@ void CSceneGame::Init() {
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//9:ダミー
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//10:ダミー
 	CRes::sKnight.SeparateAnimationSet(0, 1160, 1260, "death1");//11:ダウン
+	CRes::sKnight.SeparateAnimationSet(0, 90, 160, "knockback");//12:ノックバック
 
 	//キャラクターにモデルを設定
 	mPlayer.Init(&CRes::sModelX);

@@ -36,6 +36,10 @@ private:
 
 	CVector mMove;	
 	CVector mMove2;
+
+	CVector mMoveSide;
+	CVector mMoveFront;
+
 	CVector mSideVec;
 	CVector mFrontVec;
 	float mTurnspeed;

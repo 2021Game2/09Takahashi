@@ -15,15 +15,17 @@ private:
 
 	bool mAttackFlag_1;	//攻撃1状態の時trueを返す
 
-	CVector mPlayerPosition;	//プレイヤーのポジション
-
 	CVector mPoint;	//移動時の目標地点
 
-	void Idle();	//待機処理
-	void Move();	//移動処理
-	void Chase();
+	CVector mPlayerPoint;
+	float mPlayerDis;	//プレイヤーまでの距離
+
+	void Idle();		//待機処理
+	void AutoMove();	//移動処理
+	void Chase();		//追跡処理
 	void Attack_1();	//攻撃1処理
-	void Death();	//死亡処理
+	void Damaged();		//被弾処理
+	void Death();		//死亡処理
 public:
 	//コライダの宣言
 	CCollider mColSphereBody;	//体
@@ -46,9 +48,10 @@ public:
 	enum EEnemyState
 	{
 		EIDLE,		//待機
-		EMOVE,		//移動
+		EAUTOMOVE,	//移動
 		ECHASE,		//追跡
 		EATTACK_1,	//攻撃1
+		EDAMAGED,	//被弾
 		EDEATH,		//死亡
 	};
 	EEnemyState mState;
