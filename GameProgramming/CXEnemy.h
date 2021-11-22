@@ -20,6 +20,13 @@ private:
 	CVector mPlayerPoint;
 	float mPlayerDis;	//プレイヤーまでの距離
 
+	CVector mMove;
+	CVector mRot;
+	float mSpeed;
+	float mDot;
+
+	static  CXEnemy* mInstance;
+
 	void Idle();		//待機処理
 	void AutoMove();	//移動処理
 	void Chase();		//追跡処理
@@ -55,6 +62,11 @@ public:
 		EDEATH,		//死亡
 	};
 	EEnemyState mState;
+
+	static CXEnemy* GetInstance();
+
+	void SetPos(CVector hpos);	//ポジションを設定
+	CVector GetPos();	//ポジションを取得
 };
 
 #endif

@@ -211,6 +211,24 @@ void CXPlayer::Update()
 	//ˆÚ“®—Ê‚ðŒ¸‚ç‚·
 	mMove2 = mMove2 * GRAVITY;
 
+	//•’Ê‚É3ŽŸŒ³ƒxƒNƒgƒ‹ŒvŽZ‚ÅŽZo‚µ‚½‚Ù‚¤‚ª³Šm‚¾‚ªŒvŽZ—Ê‚ðŒœ”O‚·‚éê‡‚Í‹[Ž—ŒvŽZ‚ÅŒy—Ê‰»
+	//‹[Ž—ƒxƒNƒgƒ‹ŒvŽZ
+	Check tCheck = CUtil::GetCheck2D(mMove.mX, mMove.mZ, 0, 0, mRotation.mY * (M_PI / 180.0f));
+
+	//‰ñ“]‘¬“x@degree‚É’¼‚·
+	mTurnspeed = (180.0f / M_PI) * 0.5f;
+
+	//‹}‚ÈU‚è•Ô‚è‚ð—}§
+	if (tCheck.turn > 1.5f) tCheck.turn = 1.5f;
+
+	//ˆÚ“®•ûŒü‚ÖƒLƒƒƒ‰‚ðŒü‚©‚¹‚é
+	if (tCheck.cross > 0.0f) {
+		mRotation.mY += tCheck.turn * mTurnspeed;
+	}
+	if (tCheck.cross < 0.0f) {
+		mRotation.mY -= tCheck.turn * mTurnspeed;
+	}
+
 	//ƒŠƒZƒbƒg
 	mMove = CVector(0.0f, 0.0f, 0.0f);
 
@@ -274,6 +292,15 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 						}
 					}
 				}
+				//ƒvƒŒƒCƒ„[‚Ìƒ{ƒfƒB‚Æ“G‚Ìƒ{ƒfƒB‚ª“–‚½‚Á‚Ä‚¢‚é‚Æ‚«
+				if (m->mTag == CCollider::EBODY && o->mTag == CCollider::EBODY) {
+					//‚·‚è”²‚¯‚ð–h‚®
+					CVector adjust;
+					if (CCollider::CollisionAdjust(m, o, &adjust)) {
+						CXEnemy* Enemy = (CXEnemy*)o->mpParent;
+						Enemy->SetPos(Enemy->GetPos() + adjust);
+					}
+				}
 			}
 		}
 	}
@@ -334,24 +361,6 @@ void CXPlayer::Move()
 		//•½sˆÚ“®—Ê
 		mMove2 = mMove * mSpeed;
 	}
-
-	//•’Ê‚É3ŽŸŒ³ƒxƒNƒgƒ‹ŒvŽZ‚ÅŽZo‚µ‚½‚Ù‚¤‚ª³Šm‚¾‚ªŒvŽZ—Ê‚ðŒœ”O‚·‚éê‡‚Í‹[Ž—ŒvŽZ‚ÅŒy—Ê‰»
-	//‹[Ž—ƒxƒNƒgƒ‹ŒvŽZ
-	Check tCheck = CUtil::GetCheck2D(mMove.mX, mMove.mZ, 0, 0, mRotation.mY * (M_PI / 180.0f));
-
-	//‰ñ“]‘¬“x@degree‚É’¼‚·
-	mTurnspeed = (180.0f / M_PI) * 0.5f;
-
-	//‹}‚ÈU‚è•Ô‚è‚ð—}§
-	if (tCheck.turn > 1.5f) tCheck.turn = 1.5f;
-
-	//ˆÚ“®•ûŒü‚ÖƒLƒƒƒ‰‚ðŒü‚©‚¹‚é
-	if (tCheck.cross > 0.0f) {
-		mRotation.mY += tCheck.turn * mTurnspeed;
-	}
-	if (tCheck.cross < 0.0f) {
-		mRotation.mY -= tCheck.turn * mTurnspeed;
-	}
 }
 
 //ƒ_ƒbƒVƒ…ˆ—
@@ -400,6 +409,11 @@ void CXPlayer::Attack_1()
 			mAttackFlag_1 = false;
 		}
 	}
+
+	//ˆÚ“®—Ê³‹K‰»@‚±‚ê‚ð‚µ‚È‚¢‚ÆŽÎ‚ßˆÚ“®‚ª‘‚­‚È‚Á‚Ä‚µ‚Ü‚¤‚Ì‚Å’ˆÓ
+	//ƒWƒƒƒ“ƒvŽž‚È‚Ç‚ÍYŽ²‚ð³‹K‰»‚µ‚È‚¢‚æ‚¤’ˆÓ
+	mMove = CXEnemy::GetInstance()->mPosition - mPosition;
+	mMove = mMove.Normalize();
 }
 
 //UŒ‚2ˆ—
@@ -428,7 +442,12 @@ void CXPlayer::Attack_2()
 		}
 	}
 
-	mMove2 = mMoveKeep * mAttack2Speed;
+	//ˆÚ“®—Ê³‹K‰»@‚±‚ê‚ð‚µ‚È‚¢‚ÆŽÎ‚ßˆÚ“®‚ª‘‚­‚È‚Á‚Ä‚µ‚Ü‚¤‚Ì‚Å’ˆÓ
+	//ƒWƒƒƒ“ƒvŽž‚È‚Ç‚ÍYŽ²‚ð³‹K‰»‚µ‚È‚¢‚æ‚¤’ˆÓ
+	mMove = CXEnemy::GetInstance()->mPosition - mPosition;
+	mMove = mMove.Normalize();
+
+	mMove2 = mMove * mAttack2Speed;
 	mAttack2Speed = mAttack2Speed * GRAVITY;
 }
 

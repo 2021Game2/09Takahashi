@@ -1,9 +1,12 @@
 #include "CXEnemy.h"
 #include "CXPlayer.h"
+#include "CUtil.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 #define HP_MAX 1000	//体力
-#define DAMAGE_BODY 100	//ダメージ(体)
-#define DAMAGE_HEAD 200	//ダメージ(頭)
+#define DAMAGE_BODY 10	//ダメージ(体)
+#define DAMAGE_HEAD 20	//ダメージ(頭)
 #define MARGIN 0.01f
 #define ATTACK_DIS 3.0f			//攻撃可能になる距離
 #define SPEED_MOVE 0.05f		//通常移動のスピード
@@ -13,6 +16,8 @@
 
 #define FRONTVEC CVector(0.0f, 0.0f, -1.0f)
 #define SIDEVEC CVector(1.0f, 0.0f, 0.0f)
+
+CXEnemy* CXEnemy::mInstance;
 
 extern int EHp;	//敵の体力確認用、後で削除
 
@@ -27,6 +32,10 @@ CXEnemy::CXEnemy()
 	,mAttackFlag_1(false)
 	,mPlayerPoint(0.0f,0.0f,0.0f)
 	,mPlayerDis(0.0f)
+	,mMove(0.0f,0.0f,0.0f)
+	,mRot(0.0f,0.0f,0.0f)
+	,mSpeed(0.0f)
+	,mDot(0.0f)
 {
 	mTag = EENEMY;
 
@@ -39,6 +48,8 @@ CXEnemy::CXEnemy()
 	mState = EIDLE;	//待機
 
 	mPoint = mPosition * mMatrixRotate;
+
+	mInstance = this;
 }
 
 void CXEnemy::Init(CModelX* model)
@@ -97,6 +108,34 @@ void CXEnemy::Update()
 		break;
 	}
 
+	Check tCheck = CUtil::GetCheck2D(mMove.mX, mMove.mZ, 0, 0, mRot.mY);
+	float turnspeed = 0.5f;
+
+	mDot = tCheck.dot;
+
+	//急な振り返りを抑制
+	if (tCheck.turn > 1.5f) tCheck.turn = 1.5f;
+
+	//移動方向へキャラを向かせる
+	if (tCheck.cross > 0.0f) {
+		mRot.mY += tCheck.turn * turnspeed;
+	}
+	if (tCheck.cross < 0.0f) {
+		mRot.mY -= tCheck.turn * turnspeed;
+	}
+
+	//移動
+	if (mState == EAUTOMOVE || mState == ECHASE) {
+		mPosition += mMove * mSpeed;
+	}
+
+	//表示が180度反転してるので調整
+	CVector adjust_rot = mRot;
+	adjust_rot.mY += M_PI;
+	mRotation = (adjust_rot) * (180.0f / M_PI);
+
+	mMove = CVector(0.0f, 0.0f, 0.0f);
+
 	if (mHp <= 0) {
 		mState = EDEATH;
 	}
@@ -106,6 +145,11 @@ void CXEnemy::Update()
 	EHp = mHp;
 
 	CXCharacter::Update();
+}
+
+CXEnemy* CXEnemy::GetInstance()
+{
+	return mInstance;
 }
 
 void CXEnemy::Collision(CCollider* m, CCollider* o)
@@ -173,34 +217,22 @@ void CXEnemy::AutoMove()
 	//移動アニメーション
 	ChangeAnimation(1, true, 70);
 
+	mSpeed = SPEED_MOVE;
+	//目的地点までのベクトルを求める
+	CVector Point = mPoint - mPosition;
+	mMove = Point.Normalize();
+
 	//プレイヤーが一定距離まで近づくと追跡状態へ移行
 	if (mPlayerDis <= SEARCH_DIS) {
 		mState = ECHASE;
 	}
 
-	//左向き(X軸)のベクトルを求める
-	CVector SideVec = SIDEVEC * mMatrixRotate;
-	//目的地点までのベクトルを求める
-	CVector Point = mPoint - mPosition;
-	float DegreeX = Point.Dot(SideVec); //左ベクトルとの内積を求める
 	float length = 0.0f;
-
 	length = Point.Length();
 	if (length <= 1.0f) {
 		mState = EIDLE;
 	}
 
-	//左右方向へ回転
-	if (DegreeX > MARGIN)
-	{
-		mRotation.mY -= 2.0f; 
-	}
-	else if (DegreeX < -MARGIN)
-	{
-		mRotation.mY += 2.0f; 
-	}
-	//移動する
-	mPosition += (FRONTVEC * SPEED_MOVE) * mMatrixRotate;
 }
 
 //追跡処理
@@ -209,9 +241,8 @@ void CXEnemy::Chase()
 	//移動アニメーション
 	ChangeAnimation(1, true, 70);
 
-	//左向き(X軸)のベクトルを求める
-	CVector SideVec = SIDEVEC * mMatrixRotate;
-	float DegreeX = mPlayerPoint.Dot(SideVec);
+	mSpeed = SPEED_CHASE;
+	mMove = mPlayerPoint.Normalize();
 
 	//プレイヤーとの距離が追跡可能な距離を超えると待機状態へ移行
 	if (mPlayerDis >= CHASE_DIS_MAX) {
@@ -220,28 +251,19 @@ void CXEnemy::Chase()
 	//プレイヤーとの距離が攻撃可能な距離の場合
 	else if (mPlayerDis <= ATTACK_DIS) {
 		//プレイヤーが正面にいるとき
-		if (-1.5f < DegreeX && DegreeX < 1.5f)
+		if (-2.0f < mDot && mDot < 2.0f)
 		{
 			//攻撃状態へ移行
 			mState = EATTACK_1;
 		}
 	}
-
-	if (DegreeX > MARGIN)
-	{
-		mRotation.mY -= 2.0f;
-	}
-	else if (DegreeX < -MARGIN)
-	{
-		mRotation.mY += 2.0f;
-	}
-
-	mPosition += (FRONTVEC * SPEED_CHASE) * mMatrixRotate;
 }
 
 //攻撃1処理
 void CXEnemy::Attack_1()
 {
+	mMove = mPlayerPoint.Normalize();
+
 	if (mAttackFlag_1 == false) {
 		mAttackFlag_1 = true;
 		ChangeAnimation(7, false, 80);
@@ -253,19 +275,6 @@ void CXEnemy::Attack_1()
 		{
 			mAttackFlag_1 = false;
 		}
-	}
-
-	CVector SideVec = SIDEVEC * mMatrixRotate;
-
-	float DegreeX = mPlayerPoint.Dot(SideVec);
-
-	if (DegreeX > MARGIN)
-	{
-		mRotation.mY -= 1.0f;
-	}
-	else if (DegreeX < -MARGIN)
-	{
-		mRotation.mY += 1.0f;
 	}
 }
 
@@ -292,4 +301,14 @@ void CXEnemy::Death()
 {
 	//死亡アニメーション
 	ChangeAnimation(11, false, 60);
+}
+
+void CXEnemy::SetPos(CVector hpos)
+{
+	mPosition = hpos;
+}
+
+CVector CXEnemy::GetPos()
+{
+	return mPosition;
 }

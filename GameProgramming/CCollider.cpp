@@ -152,6 +152,27 @@ bool CCollider::CollisionTriangleSphere(CCollider *t, CCollider *s, CVector *a)
 	return CollisionTriangleLine(t, &line, a);
 }
 
+bool CCollider::CollisionAdjust(CCollider* m, CCollider* o, CVector* adjust)
+{
+	CVector mpos = m->mPosition * *m->mpMatrix;
+	CVector opos = o->mPosition * *o->mpMatrix;
+
+	//Y軸をカットする
+	mpos.mY = 0.0f;
+	opos.mY = 0.0f;
+
+	mpos = opos - mpos;
+	float length = mpos.Length();
+	float radius = m->mRadius + o->mRadius;
+	//衝突しているとき
+	if (radius > length) {
+		*adjust = mpos * (radius - length);
+		return true;
+	}
+	//衝突していないとき
+	return false;
+}
+
 //優先度の変更
 void CCollider::ChangePriority()
 {

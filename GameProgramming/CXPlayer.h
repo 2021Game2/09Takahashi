@@ -52,7 +52,6 @@ private:
 	void Attack_3();	//UŒ‚3ˆ—
 	void Avoid();		//‰ñ”ğˆ—
 	void Death();		//€–Sˆ—
-
 public:
 	CXPlayer();
 
