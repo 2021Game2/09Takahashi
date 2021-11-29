@@ -7,15 +7,11 @@
 #define HP_MAX 1000	//体力
 #define DAMAGE_BODY 10	//ダメージ(体)
 #define DAMAGE_HEAD 20	//ダメージ(頭)
-#define MARGIN 0.01f
 #define ATTACK_DIS 3.0f			//攻撃可能になる距離
 #define SPEED_MOVE 0.05f		//通常移動のスピード
 #define SPEED_CHASE 0.1f		//追跡中の移動速度
 #define CHASE_DIS_MAX 20.0f		//追跡可能な最大距離
 #define SEARCH_DIS 15.0f		//追跡を開始する距離
-
-#define FRONTVEC CVector(0.0f, 0.0f, -1.0f)
-#define SIDEVEC CVector(1.0f, 0.0f, 0.0f)
 
 CXEnemy* CXEnemy::mInstance;
 
