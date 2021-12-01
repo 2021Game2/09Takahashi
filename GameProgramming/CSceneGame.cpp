@@ -17,6 +17,7 @@
 int S;	//スタミナ確認用、後で削除
 int EHp;	//敵の体力確認用、後で削除
 int PHp;	//プレイヤーの体力確認用、後で削除
+int Item;	//選択中のアイテム確認用、後で削除
 
 CSceneGame::~CSceneGame() {
 
@@ -40,6 +41,7 @@ void CSceneGame::Init() {
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//10:ダミー
 	CRes::sKnight.SeparateAnimationSet(0, 1160, 1260, "death1");//11:ダウン
 	CRes::sKnight.SeparateAnimationSet(0, 90, 160, "knockback");//12:ノックバック
+	CRes::sKnight.SeparateAnimationSet(0, 1120, 1160, "stun");//13:スタン
 
 	//キャラクターにモデルを設定
 	mPlayer.Init(&CRes::sModelX);
@@ -68,6 +70,8 @@ void CSceneGame::Update() {
 
 	Camera.Render();
 
+	//タスクリスト削除
+	CTaskManager::Get()->Delete();
 	//タスク描画
 	CTaskManager::Get()->Render();
 
@@ -90,6 +94,16 @@ void CSceneGame::Update() {
 	//プレイヤーの体力
 	sprintf(buf, "PHP:%d", PHp);
 	mFont.DrawString(buf, 50, 150, 10, 12);
+
+	switch (Item) {
+	case 0:
+		sprintf(buf, "SELECTITEM:EMPTY");
+		break;
+	case 1:
+		sprintf(buf, "SELECTITEM:TRAP");
+		break;
+	}
+	mFont.DrawString(buf, 50, 200, 10, 12);
 
 	//2Dの描画終了
 	CUtil::End2D();

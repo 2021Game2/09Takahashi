@@ -18,21 +18,21 @@ private:
 	int mStamina;	//スタミナ
 	float mSpeed;	//スピード
 
-	CVector mMoveKeep;	//Moveを保存する
+	CVector mMoveKeep;		//Moveを保存する
 
-	bool mAvoid;	//回避状態の時にtrueを返す
-	int mAvoidTime;	//回避時間
-	float mAvoidSpeed;	//回避中のスピード
+	bool mAvoid;			//回避状態の時にtrueを返す
+	int mAvoidTime;			//回避時間
+	float mAvoidSpeed;		//回避中のスピード
 
 	int mInvincibleTime;	//無敵時間
 	bool mInvincibleFlag;	//無敵状態の時trueを返す
 
-	bool mAttackFlag_1;	//攻撃1状態の時trueを返す
-	bool mAttackFlag_2;	//攻撃2状態の時trueを返す
+	bool mAttackFlag_1;		//攻撃1状態の時trueを返す
+	bool mAttackFlag_2;		//攻撃2状態の時trueを返す
 	float mAttack2Speed;	//攻撃2の時のスピード
-	bool mAttackFlag_3;	//攻撃3状態の時trueを返す
+	bool mAttackFlag_3;		//攻撃3状態の時trueを返す
 
-	int mGraceTime;	//派生攻撃の受付時間
+	int mGraceTime;			//派生攻撃の受付時間
 
 	CVector mMove;	
 	CVector mMove2;
@@ -44,6 +44,8 @@ private:
 	CVector mFrontVec;
 	float mTurnspeed;
 
+	int mItemSelect;	//選択中のアイテム
+
 	void Idle();		//待機処理
 	void Move();		//移動処理
 	void Dash();		//ダッシュ処理
@@ -52,6 +54,7 @@ private:
 	void Attack_3();	//攻撃3処理
 	void Avoid();		//回避処理
 	void Death();		//死亡処理
+	void ItemUse();		//アイテム使用処理
 public:
 	CXPlayer();
 
@@ -77,6 +80,7 @@ public:
 		EATTACK_2,	//攻撃2
 		EATTACK_3,	//攻撃3(攻撃1から派生)
 		EDEATH,		//死亡
+		EITEMUSE,	//アイテム使用
 	};
 	EPlayerState mState;
 

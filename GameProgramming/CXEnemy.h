@@ -11,18 +11,20 @@ private:
 	CCollider mColSphereSword1;	//剣
 	CCollider mColSphereSword2;	//剣
 
-	int mHp;	//体力
+	int mHp;		//体力
 
-	bool mAttackFlag_1;	//攻撃1状態の時trueを返す
+	int mStunTime;	//罠にかかった時のスタンする時間
 
-	CVector mPoint;	//移動時の目標地点
+	bool mAttackFlag_1;		//攻撃1状態の時trueを返す
 
-	CVector mPlayerPoint;
-	float mPlayerDis;	//プレイヤーまでの距離
+	CVector mPoint;			//移動時の目標地点
+	CVector mPlayerPoint;	//追跡時の目標地点
+	float mPlayerDis;		//プレイヤーまでの距離
 
-	CVector mMove;
+	CVector mMoveDir;		//移動する方向
+	float mSpeed;			//移動する速度
+
 	CVector mRot;
-	float mSpeed;
 	float mDot;
 
 	static  CXEnemy* mInstance;
@@ -31,8 +33,9 @@ private:
 	void AutoMove();	//移動処理
 	void Chase();		//追跡処理
 	void Attack_1();	//攻撃1処理
-	void Damaged();		//被弾処理
+	void KnockBack();	//ノックバック処理
 	void Death();		//死亡処理
+	void Stun();
 public:
 	//コライダの宣言
 	CCollider mColSphereBody;	//体
@@ -58,15 +61,16 @@ public:
 		EAUTOMOVE,	//移動
 		ECHASE,		//追跡
 		EATTACK_1,	//攻撃1
-		EDAMAGED,	//被弾
+		EKNOCKBACK,	//ノックバック
 		EDEATH,		//死亡
+		ESTUN,		//スタン
 	};
-	EEnemyState mState;
+	EEnemyState mState;	//状態
 
 	static CXEnemy* GetInstance();
 
-	void SetPos(CVector hpos);	//ポジションを設定
-	CVector GetPos();	//ポジションを取得
+	void SetPos(CVector hpos);	//位置を設定
+	CVector GetPos();	//位置を取得
 };
 
 #endif

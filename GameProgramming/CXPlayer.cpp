@@ -6,6 +6,7 @@
 #include <math.h>
 #include "CInput.h"
 #include "CXEnemy.h"
+#include "CTrap.h"
 
 #define GRAVITY 0.9f	//重力
 #define HP_MAX 100	//体力最大値
@@ -26,6 +27,7 @@ CXPlayer* CXPlayer::mInstance;
 
 extern int S;	//確認用、後で削除
 extern int PHp;	//確認用、後で削除
+extern int Item;	//確認用、後で削除
 
 CXPlayer::CXPlayer()
 	: mColSphereBody(this, nullptr, CVector(), 0.5f)
@@ -51,6 +53,7 @@ CXPlayer::CXPlayer()
 	, mAttackFlag_3(false)
 	,mGraceTime(0)
 	,mHit(false)
+	,mItemSelect(0)
 {
 	//タグにプレイヤーを設定します
 	mTag = EPLAYER;
@@ -78,6 +81,14 @@ void CXPlayer::Init(CModelX* model)
 
 void CXPlayer::Update()
 {
+	int wheel = CInput::GetWheelValue();
+	if (wheel != 0) {
+		mItemSelect++;
+		if (mItemSelect > 1) {
+			mItemSelect = 0;
+		}
+	}
+
 	switch (mState) {
 	case EIDLE:	//待機状態
 		Idle();	//待機処理を呼ぶ
@@ -88,6 +99,10 @@ void CXPlayer::Update()
 		//WASDキーを押すと移動へ移行
 		else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
 			mState = EMOVE;
+		}
+		//Eキーを押すとアイテム使用
+		else if (CKey::Once('E')) {
+			mState = EITEMUSE;
 		}
 		break;
 
@@ -125,6 +140,10 @@ void CXPlayer::Update()
 		else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
 			mState = EAVOID;
 		}
+		//Eキーを押すとアイテム使用
+		else if (CKey::Once('E')) {
+			mState = EITEMUSE;
+		}
 		//WASDキーを押すと移動
 		else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
 			//SHIFTキーを押しているとダッシュへ移行
@@ -149,6 +168,10 @@ void CXPlayer::Update()
 		//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
 		else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
 			mState = EAVOID;
+		}
+		//Eキーを押すとアイテム使用
+		else if (CKey::Once('E')) {
+			mState = EITEMUSE;
 		}
 		//WASDキーを押すと移動
 		else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
@@ -188,6 +211,10 @@ void CXPlayer::Update()
 
 	case EDEATH:	//死亡状態
 		Death();	//死亡処理を呼ぶ
+		break;
+
+	case EITEMUSE:	//アイテム使用中
+		ItemUse();	//アイテム使用処理を呼ぶ
 		break;
 	}
 
@@ -246,6 +273,7 @@ void CXPlayer::Update()
 	}
 	S = mStamina;
 	PHp = mHp;
+	Item = mItemSelect;
 	//////////////////////////////
 
 	//注視点
@@ -292,13 +320,21 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 						}
 					}
 				}
+				//すり抜け防止
 				//プレイヤーのボディと敵のボディが当たっているとき
 				if (m->mTag == CCollider::EBODY && o->mTag == CCollider::EBODY) {
-					//すり抜けを防ぐ
 					CVector adjust;
 					if (CCollider::CollisionAdjust(m, o, &adjust)) {
-						CXEnemy* Enemy = (CXEnemy*)o->mpParent;
-						Enemy->SetPos(Enemy->GetPos() + adjust);
+						//敵がスタン状態ではないとき&&プレイヤーが攻撃2状態ではないとき
+						if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN && mState != EATTACK_2) {
+							//敵のポジションを調整
+							CXEnemy* Enemy = (CXEnemy*)o->mpParent;
+							Enemy->SetPos(Enemy->GetPos() + adjust);
+						}
+						else{
+							//プレイヤーのポジションを調整
+							mPosition -= adjust;
+						}
 					}
 				}
 			}
@@ -383,7 +419,7 @@ void CXPlayer::Dash()
 void CXPlayer::Attack_1()
 {
 	if (mAttackFlag_1 == false) {
-		ChangeAnimation(3, true, 30);
+		ChangeAnimation(3, true, 20);
 		mAttackFlag_1 = true;
 		mHit = true;
 		mGraceTime = 0;
@@ -455,7 +491,7 @@ void CXPlayer::Attack_2()
 void CXPlayer::Attack_3()
 {
 	if (mAttackFlag_3 == false) {
-		ChangeAnimation(5, true, 20);
+		ChangeAnimation(5, true, 15);
 		mAttackFlag_3 = true;
 		mHit = true;
 	}
@@ -482,11 +518,11 @@ void CXPlayer::Attack_3()
 void CXPlayer::Avoid()
 {
 	if (mAvoid == false) {
-		mAvoid = true;					//回避中
-		mStamina -= AVOID_STAMINA;		//スタミナ減少	
-		mAvoidTime = AVOID_TIME;		//回避時間
-		mAvoidSpeed = AVOID_FIRSTSPEED;	//初速
-		mInvincibleFlag = true;			//無敵状態
+		mAvoid = true;							//回避中
+		mStamina -= AVOID_STAMINA;				//スタミナ減少	
+		mAvoidTime = AVOID_TIME;				//回避時間
+		mAvoidSpeed = AVOID_FIRSTSPEED;			//初速
+		mInvincibleFlag = true;					//無敵状態
 		mInvincibleTime = INVINCIBLETIME_AVOID;	//無敵時間
 	}
 
@@ -504,6 +540,25 @@ void CXPlayer::Avoid()
 void CXPlayer::Death()
 {
 	ChangeAnimation(11, false, 60);	//倒れるアニメーション
+}
+
+//アイテム使用処理
+void CXPlayer::ItemUse()
+{
+	switch (mItemSelect) {
+	case 0:
+		//空
+		break;
+
+	case 1:
+		//罠生成
+		CTrap * trap = new CTrap;
+		trap->SetPos(mPosition);
+		trap->Update();
+		break;
+	}
+	//待機状態へ移行
+	mState = EIDLE;
 }
 
 

@@ -56,10 +56,12 @@ void CCamera::Update() {
 		if (moveY != 0) mAngleY += (moveY * 0.01f);
 	}
 
+	/*
 	int wheel = CInput::GetWheelValue();
 	if (wheel != 0) {
 		mDist -= (float)(wheel) * 0.5f;
 	}
+	*/
 
 
 	//Xé≤Å{âÒì]
