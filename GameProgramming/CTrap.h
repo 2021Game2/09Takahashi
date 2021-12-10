@@ -18,4 +18,5 @@ public:
 	static CTrap* GetInstance();
 
 	void SetPos(CVector hpos);	//ˆÊ’u‚ğİ’è
+	void SetRot(CVector hrot);	//‰ñ“]‚ğİ’è
 };

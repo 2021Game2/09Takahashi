@@ -1,5 +1,6 @@
 #include "CTrap.h"
 #include "CXPlayer.h"
+#include "CXEnemy.h"
 #include "CRes.h"
 
 CTrap* CTrap::mInstance;
@@ -38,7 +39,10 @@ void CTrap::Collision(CCollider* m, CCollider* o)
 				{
 					if (CCollider::Collision(m, o))
 					{
-						mEnabled = false;	//“G‚É“–‚½‚é‚ÆÁ‚¦‚é
+						if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN && ((CXEnemy*)(o->mpParent))->mState != CXEnemy::EDEATH)
+						{
+							mEnabled = false;	//“G‚É“–‚½‚é‚ÆÁ‚¦‚é
+						}
 					}
 				}
 			}
@@ -55,5 +59,11 @@ CTrap* CTrap::GetInstance()
 void CTrap::SetPos(CVector hpos)
 {
 	mPosition = hpos;
+}
+
+//‰ñ“]‚ğİ’è@
+void CTrap::SetRot(CVector hrot)
+{
+	mRotation = hrot;
 }
 

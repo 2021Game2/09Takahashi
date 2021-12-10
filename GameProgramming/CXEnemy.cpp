@@ -4,15 +4,16 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#define HP_MAX 100			//体力(最大)
+#define HP_MAX 500			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
-#define ATTACK_DIS 3.0f		//攻撃可能になる距離
+#define ATTACK_DIS 4.0f		//攻撃可能になる距離
 #define SPEED_MOVE 0.05f	//通常移動のスピード
 #define SPEED_CHASE 0.1f	//追跡中の移動速度
+#define SPEED_ATTACK_2 0.2f //攻撃2状態の移動速度
 #define CHASE_DIS_MAX 20.0f	//追跡可能な最大距離
 #define SEARCH_DIS 15.0f	//追跡を開始する距離
-#define STUN_TIME 600		//罠にかかった時のスタンする時間
+#define STUN_TIME 300		//罠にかかった時のスタン時間
 
 CXEnemy* CXEnemy::mInstance;
 
@@ -21,12 +22,11 @@ extern int EHp;	//敵の体力確認用、後で削除
 CXEnemy::CXEnemy()
 	: mColSphereBody(this, nullptr, CVector(0.5f, -1.0f, 0.0f), 1.2f)
 	, mColSphereHead(this, nullptr, CVector(0.0f, 1.f, 0.0f), 1.2f)
-	, mColSphereSword0(this, nullptr, CVector(0.7f, 3.5f, -0.2f), 0.5f)
-	, mColSphereSword1(this, nullptr, CVector(0.5f, 2.5f, -0.2f), 0.5f)
-	, mColSphereSword2(this, nullptr, CVector(0.3f, 1.5f, -0.2f), 0.5f)
+	, mColSphereSword0(this, nullptr, CVector(0.7f, 3.5f, -0.2f), 0.6f)
+	, mColSphereSword1(this, nullptr, CVector(0.5f, 2.5f, -0.2f), 0.6f)
+	, mColSphereSword2(this, nullptr, CVector(0.3f, 1.5f, -0.2f), 0.6f)
 	, mHp(HP_MAX)
 	, mPoint(0.0f, 0.0f, 0.0f)
-	, mAttackFlag_1(false)
 	, mPlayerPoint(0.0f, 0.0f, 0.0f)
 	, mPlayerDis(0.0f)
 	, mMoveDir(0.0f, 0.0f, 0.0f)
@@ -89,12 +89,12 @@ void CXEnemy::Update()
 		Chase(); //追跡処理を呼ぶ
 		break;
 
-	case EATTACK_1:	//攻撃状態
+	case EATTACK_1:	//攻撃1状態
 		Attack_1();	//攻撃1処理を呼ぶ
-		//攻撃終了時、待機状態へ移行
-		if (mAttackFlag_1 == false) {
-			mState = EIDLE;
-		}
+		break;
+
+	case EATTACK_2: //攻撃2状態
+		Attack_2(); //攻撃2処理を呼ぶ
 		break;
 
 	case EKNOCKBACK: //ノックバック状態
@@ -106,7 +106,11 @@ void CXEnemy::Update()
 		break;
 
 	case ESTUN:	//スタン状態
-		Stun();	//スタン状態
+		Stun();	//スタン処理を呼ぶ
+		break;
+
+	case EAVOID: //回避状態
+		Avoid(); //回避処理を呼ぶ
 		break;
 	}
 
@@ -126,11 +130,8 @@ void CXEnemy::Update()
 		mRot.mY -= tCheck.turn * turnspeed;
 	}
 
-	//移動、追跡状態のとき
-	if (mState == EAUTOMOVE || mState == ECHASE) {
-		//移動する
-		mPosition += mMoveDir * mSpeed;
-	}
+	//移動する
+	mPosition += mMoveDir * mSpeed;
 
 	//表示が180度反転してるので調整
 	CVector adjust_rot = mRot;
@@ -139,6 +140,8 @@ void CXEnemy::Update()
 
 	//移動方向リセット
 	mMoveDir = CVector(0.0f, 0.0f, 0.0f);
+	//移動スピードリセット
+	mSpeed = 0.0f;
 
 	//体力が0になると死亡状態へ移行
 	if (mHp <= 0) {
@@ -183,19 +186,21 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 						//プレイヤーの攻撃を受けたとき
 						if (((CXPlayer*)(o->mpParent))->mHit == true)
 						{
+							//攻撃を受けた箇所
 							switch (m->mTag) {
 							case CCollider::EBODY:	//体
-								mHp -= DAMAGE_BODY;	//体力減少	
-								mAttackFlag_1 = false;
+								mHp -= DAMAGE_BODY;	//ダメージ(体)	
 								break;
+
 							case CCollider::EHEAD:	//頭
-								mHp -= DAMAGE_HEAD;	//体力減少
-								mAttackFlag_1 = false;
+								mHp -= DAMAGE_HEAD;	//ダメージ(頭)
 								break;
+
 							default:
+								return; //上記以外はリターン
 								break;
 							}
-							//スタン状態ではない時ノックバックする
+							//スタン状態ではない時ノックバック状態へ移行
 							if (mState != ESTUN) {
 								mState = EKNOCKBACK;
 							}
@@ -217,7 +222,6 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 						if (mState != ESTUN){
 							mState = ESTUN;
 							mStunTime = STUN_TIME;
-							mAttackFlag_1 = false;
 						}
 					}
 				}
@@ -237,6 +241,7 @@ void CXEnemy::Idle()
 		mState = ECHASE;
 	}
 
+	//待機状態中ランダムで移動状態へ移行
 	int random = rand() % 180;
 	if (random == 0) {
 		//目標地点を設定
@@ -273,7 +278,6 @@ void CXEnemy::AutoMove()
 	if (length <= 1.0f) {
 		mState = EIDLE;
 	}
-
 }
 
 //追跡処理
@@ -292,14 +296,28 @@ void CXEnemy::Chase()
 	if (mPlayerDis >= CHASE_DIS_MAX) {
 		mState = EIDLE;
 	}
-	//プレイヤーとの距離が攻撃可能な距離の場合
-	else if (mPlayerDis <= ATTACK_DIS) {
-		//プレイヤーが正面にいるとき
-		if (-2.0f < mDot && mDot < 2.0f)
-		{
-			//攻撃状態へ移行
+
+	int random = 0; 
+	//プレイヤーが攻撃をしたとき、ランダムで回避状態へ移行
+	if (CXPlayer::GetInstance()->mAttackFlag_Once == true) {
+		random = rand() % 2;
+		if (random == 0) {
+			mState = EAVOID;
+		}
+	}
+
+	//プレイヤーとの距離が攻撃可能な距離のときランダムで攻撃1状態へ移行
+	if (mPlayerDis <= ATTACK_DIS) {
+		random = rand() % 90;
+		if (random == 0){
 			mState = EATTACK_1;
 		}
+	}
+
+	//追跡状態中にランダムで攻撃2状態へ移行
+	random = rand() % 350;
+	if (random == 0) {
+		mState = EATTACK_2;
 	}
 }
 
@@ -309,16 +327,41 @@ void CXEnemy::Attack_1()
 	//mMoveDirにプレイヤー方向のベクトルを入れる
 	mMoveDir = mPlayerPoint.Normalize();
 
-	if (mAttackFlag_1 == false) {
-		mAttackFlag_1 = true;
-		ChangeAnimation(7, false, 80);
-	}
+	ChangeAnimation(7, false, 70);
 
 	if (mAnimationIndex == 7)
 	{
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
-			mAttackFlag_1 = false;
+			mState = EIDLE;
+		}
+	}
+}
+
+//攻撃2処理
+void CXEnemy::Attack_2()
+{
+	//攻撃2アニメーション中ではないとき、攻撃可能な距離までダッシュで近づく
+	if (mAnimationIndex != 8) {
+		//mMoveDirにプレイヤー方向のベクトルを入れる
+		mMoveDir = mPlayerPoint.Normalize();
+		//ダッシュアニメーション
+		ChangeAnimation(14, true, 50);
+		//移動スピードを変更
+		mSpeed = SPEED_ATTACK_2;
+	}
+
+	//攻撃可能な距離まで近づくと攻撃
+	if (mPlayerDis <= ATTACK_DIS) {
+		//攻撃2アニメーション
+		ChangeAnimation(8, false, 95);
+	}
+
+	if (mAnimationIndex == 8)
+	{
+		if (mAnimationFrame >= mAnimationFrameSize)
+		{
+			mState = EIDLE;	//待機状態へ移行
 		}
 	}
 }
@@ -336,12 +379,11 @@ void CXEnemy::KnockBack()
 	//ノックバックさせる
 	mPosition -= KnockBackVec * KnockBackAmount;
 
-	//アニメーション終了時、待機状態へ移行
 	if (mAnimationIndex == 12)
 	{
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
-			mState = EIDLE;
+			mState = EIDLE;	//待機状態へ移行
 		}
 	}
 }
@@ -366,13 +408,36 @@ void CXEnemy::Stun()
 	}
 }
 
-//位置を設定
+//回避処理
+void CXEnemy::Avoid()
+{
+	//プレイヤーのいる方向を見ながら後ろへ回避
+	mMoveDir = mPlayerPoint.Normalize();
+	mSpeed = -0.2f;
+
+	ChangeAnimation(15, false, 40);
+	if (mAnimationIndex == 15) {
+		if (mAnimationFrame >= mAnimationFrameSize)
+		{
+			int random = rand() % 4;
+			//回避後ランダムで攻撃2状態へ移行する
+			if (random == 0) {
+				mState = EATTACK_2;
+			}
+			else {
+				mState = EIDLE; //待機状態へ移行
+			}
+		}
+	}
+}
+
+//位置を設定する
 void CXEnemy::SetPos(CVector hpos)
 {
 	mPosition = hpos;
 }
 
-//位置を取得
+//位置を取得する
 CVector CXEnemy::GetPos()
 {
 	return mPosition;

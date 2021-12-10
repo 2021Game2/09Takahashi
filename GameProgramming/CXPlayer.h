@@ -44,7 +44,16 @@ private:
 	CVector mFrontVec;
 	float mTurnspeed;
 
-	int mItemSelect;	//選択中のアイテム
+	enum EItem {
+		HEAD = 0,
+		EEMPTY,		//空
+		ETRAP,		//罠
+		EPORTION,	//回復
+		TAIL,
+	};
+	int mItemHead = HEAD;	//最前列
+	int mItemTail = TAIL;	//最後尾
+	int mItemSelect;		//選択中のアイテム
 
 	void Idle();		//待機処理
 	void Move();		//移動処理
@@ -55,6 +64,7 @@ private:
 	void Avoid();		//回避処理
 	void Death();		//死亡処理
 	void ItemUse();		//アイテム使用処理
+	void ItemSelect();	//アイテム選択処理
 public:
 	CXPlayer();
 
@@ -85,7 +95,7 @@ public:
 	EPlayerState mState;
 
 	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
-
+	bool mAttackFlag_Once; //攻撃した瞬間だけtrueを返す
 	static CXPlayer* GetInstance();
 };
 

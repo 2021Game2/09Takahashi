@@ -8,20 +8,21 @@
 #include "CXEnemy.h"
 #include "CTrap.h"
 
-#define GRAVITY 0.9f	//重力
-#define HP_MAX 100	//体力最大値
-#define STAMINA_MAX 100	//スタミナ最大値
-#define AVOID_STAMINA 40	//回避時のスタミナの減少量
-#define AVOID_TIME 30	//回避時間
+#define GRAVITY 0.9f			//重力
+#define HP_MAX 100				//体力最大値
+#define STAMINA_MAX 100			//スタミナ最大値
+#define AVOID_STAMINA 40		//回避時のスタミナの減少量
+#define AVOID_TIME 30			//回避時間
 #define AVOID_FIRSTSPEED 0.5f	//回避時の初速
-#define SPEED_DEFAULT 0.15f	//スピード(通常時)
+#define SPEED_DEFAULT 0.15f		//スピード(通常時)
 #define SPEED_DASH_HIGH 0.2f	//スピード(ダッシュ時)
 #define SPEED_DASH_LOW 0.05f	//スピード(ダッシュ時、スタミナ切れ)
 #define INVINCIBLETIME_AVOID 30	//無敵時間(回避時)
-#define INVINCIBLETIME_DAMAGE 60	//無敵時間(ダメージ発生時)
-#define DAMAGE 20	//ダメージ
+#define INVINCIBLETIME_DAMAGE 60//無敵時間(ダメージ発生時)
+#define DAMAGE 20				//ダメージ
 #define ATTACK2_FIRSTSPEED 0.6f	//攻撃2使用時の初速
-#define GRACETIME 10	//派生攻撃の受付時間
+#define GRACETIME 10			//派生攻撃の受付時間
+#define HEAL_AMOUNT HP_MAX		//回復量
 
 CXPlayer* CXPlayer::mInstance;
 
@@ -53,7 +54,8 @@ CXPlayer::CXPlayer()
 	, mAttackFlag_3(false)
 	,mGraceTime(0)
 	,mHit(false)
-	,mItemSelect(0)
+	,mItemSelect(EEMPTY)
+	,mAttackFlag_Once(false)
 {
 	//タグにプレイヤーを設定します
 	mTag = EPLAYER;
@@ -81,13 +83,9 @@ void CXPlayer::Init(CModelX* model)
 
 void CXPlayer::Update()
 {
-	int wheel = CInput::GetWheelValue();
-	if (wheel != 0) {
-		mItemSelect++;
-		if (mItemSelect > 1) {
-			mItemSelect = 0;
-		}
-	}
+	mAttackFlag_Once = false;
+
+	ItemSelect();
 
 	switch (mState) {
 	case EIDLE:	//待機状態
@@ -218,6 +216,8 @@ void CXPlayer::Update()
 		break;
 	}
 
+	
+
 	//ダッシュ、回避をしていない状態の時スタミナを回復させる
 	if (mState != EDASH && mState != EAVOID && mStamina < STAMINA_MAX) {
 		mStamina++;
@@ -265,6 +265,8 @@ void CXPlayer::Update()
 		mHp = 0;
 	}
 
+	if (mHp > HP_MAX)mHp = HP_MAX;
+
 	//後で削除する
 	//////////////////////////////
 	if (mHp<=0&&CKey::Once(VK_RETURN)) {
@@ -292,7 +294,7 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 					if (mInvincibleFlag == false) {
 						if (CCollider::Collision(m, o)) {
 							//キャスト変換
-							if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EATTACK_1) {
+							if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EATTACK_1 || ((CXEnemy*)(o->mpParent))->mState == CXEnemy::EATTACK_2) {
 								switch (m->mTag) {
 								case CCollider::EHEAD:
 									mHp -= DAMAGE;
@@ -325,7 +327,7 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 				if (m->mTag == CCollider::EBODY && o->mTag == CCollider::EBODY) {
 					CVector adjust;
 					if (CCollider::CollisionAdjust(m, o, &adjust)) {
-						//敵がスタン状態ではないとき&&プレイヤーが攻撃2状態ではないとき
+						//敵がスタン状態ではないとき、プレイヤーが攻撃2状態ではないとき
 						if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN && mState != EATTACK_2) {
 							//敵のポジションを調整
 							CXEnemy* Enemy = (CXEnemy*)o->mpParent;
@@ -423,6 +425,7 @@ void CXPlayer::Attack_1()
 		mAttackFlag_1 = true;
 		mHit = true;
 		mGraceTime = 0;
+		mAttackFlag_Once = true;
 	}
 
 	if (mGraceTime > 0) {
@@ -460,6 +463,7 @@ void CXPlayer::Attack_2()
 		mAttackFlag_2 = true;
 		mAttack2Speed = ATTACK2_FIRSTSPEED;
 		mHit = true;
+		mAttackFlag_Once = true;
 	}
 
 	if (mAnimationIndex == 7)
@@ -494,6 +498,7 @@ void CXPlayer::Attack_3()
 		ChangeAnimation(5, true, 15);
 		mAttackFlag_3 = true;
 		mHit = true;
+		mAttackFlag_Once = true;
 	}
 
 	if (mAnimationIndex == 5)
@@ -546,19 +551,50 @@ void CXPlayer::Death()
 void CXPlayer::ItemUse()
 {
 	switch (mItemSelect) {
-	case 0:
-		//空
+	case EEMPTY: //空
 		break;
 
-	case 1:
+	case ETRAP:	//罠
+	{
 		//罠生成
-		CTrap * trap = new CTrap;
+		CTrap* trap = new CTrap;
 		trap->SetPos(mPosition);
+		trap->SetRot(mRotation);
 		trap->Update();
+	}
+	break;
+
+	case EPORTION: //回復
+		//体力回復
+		mHp += HEAL_AMOUNT;
 		break;
 	}
 	//待機状態へ移行
 	mState = EIDLE;
+}
+
+//アイテム選択処理
+void CXPlayer::ItemSelect()
+{
+	//ホイ―ル移動量取得
+	int wheel = CInput::GetWheelValue();
+	//ホイールを動かしているとき
+	if (wheel != 0) {
+		//上方向
+		if (wheel > 0) {
+			mItemSelect++;
+			if (mItemSelect == mItemTail) {
+				mItemSelect = mItemHead + 1;
+			}
+		}
+		//下方向
+		else {
+			mItemSelect--;
+			if (mItemSelect == mItemHead) {
+				mItemSelect = mItemTail - 1;
+			}
+		}
+	}
 }
 
 

@@ -15,8 +15,6 @@ private:
 
 	int mStunTime;	//罠にかかった時のスタンする時間
 
-	bool mAttackFlag_1;		//攻撃1状態の時trueを返す
-
 	CVector mPoint;			//移動時の目標地点
 	CVector mPlayerPoint;	//追跡時の目標地点
 	float mPlayerDis;		//プレイヤーまでの距離
@@ -33,9 +31,11 @@ private:
 	void AutoMove();	//移動処理
 	void Chase();		//追跡処理
 	void Attack_1();	//攻撃1処理
+	void Attack_2();	//攻撃2処理
 	void KnockBack();	//ノックバック処理
 	void Death();		//死亡処理
-	void Stun();
+	void Stun();		//スタン処理
+	void Avoid();		//回避処理
 public:
 	//コライダの宣言
 	CCollider mColSphereBody;	//体
@@ -61,16 +61,18 @@ public:
 		EAUTOMOVE,	//移動
 		ECHASE,		//追跡
 		EATTACK_1,	//攻撃1
+		EATTACK_2,	//攻撃2
 		EKNOCKBACK,	//ノックバック
 		EDEATH,		//死亡
 		ESTUN,		//スタン
+		EAVOID,		//回避
 	};
 	EEnemyState mState;	//状態
 
 	static CXEnemy* GetInstance();
 
 	void SetPos(CVector hpos);	//位置を設定
-	CVector GetPos();	//位置を取得
+	CVector GetPos();			//位置を取得
 };
 
 #endif

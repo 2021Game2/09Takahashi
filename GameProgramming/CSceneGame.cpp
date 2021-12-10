@@ -42,6 +42,9 @@ void CSceneGame::Init() {
 	CRes::sKnight.SeparateAnimationSet(0, 1160, 1260, "death1");//11:ダウン
 	CRes::sKnight.SeparateAnimationSet(0, 90, 160, "knockback");//12:ノックバック
 	CRes::sKnight.SeparateAnimationSet(0, 1120, 1160, "stun");//13:スタン
+	CRes::sKnight.SeparateAnimationSet(0, 170, 220, "Dash");//14:ダッシュ
+
+	CRes::sKnight.SeparateAnimationSet(0, 380, 430, "Jump");//15:ジャンプ
 
 	//キャラクターにモデルを設定
 	mPlayer.Init(&CRes::sModelX);
@@ -96,11 +99,14 @@ void CSceneGame::Update() {
 	mFont.DrawString(buf, 50, 150, 10, 12);
 
 	switch (Item) {
-	case 0:
+	case 1:
 		sprintf(buf, "SELECTITEM:EMPTY");
 		break;
-	case 1:
+	case 2:
 		sprintf(buf, "SELECTITEM:TRAP");
+		break;
+	case 3:
+		sprintf(buf, "SELECTITEM:PORTION");
 		break;
 	}
 	mFont.DrawString(buf, 50, 200, 10, 12);
