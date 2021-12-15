@@ -28,6 +28,7 @@ public:
 	void Update();
 	//描画
 	void Render();
+	void Render2D();
 	//リストから削除
 	//Remove(タスクのポインタ)
 	void Remove(CTask *task);

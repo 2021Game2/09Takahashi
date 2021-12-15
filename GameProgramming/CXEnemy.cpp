@@ -3,6 +3,7 @@
 #include "CUtil.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "CCamera.h"
 
 #define HP_MAX 500			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
@@ -14,10 +15,14 @@
 #define CHASE_DIS_MAX 20.0f	//追跡可能な最大距離
 #define SEARCH_DIS 15.0f	//追跡を開始する距離
 #define STUN_TIME 300		//罠にかかった時のスタン時間
+#define AVOID_DIS 6.0f		//回避可能になる距離
+#define GAUGE_WID_MAX 50.0f	//ゲージの幅の最大値
 
 CXEnemy* CXEnemy::mInstance;
 
+#ifdef _DEBUG
 extern int EHp;	//敵の体力確認用、後で削除
+#endif
 
 CXEnemy::CXEnemy()
 	: mColSphereBody(this, nullptr, CVector(0.5f, -1.0f, 0.0f), 1.2f)
@@ -46,6 +51,8 @@ CXEnemy::CXEnemy()
 	mState = EIDLE;	//待機
 
 	mInstance = this;
+
+	mTexture.Load("Gauge.png");
 }
 
 void CXEnemy::Init(CModelX* model)
@@ -133,15 +140,16 @@ void CXEnemy::Update()
 	//移動する
 	mPosition += mMoveDir * mSpeed;
 
+	//移動方向リセット
+	mMoveDir = CVector(0.0f, 0.0f, 0.0f);
+	//移動スピードリセット
+	mSpeed = 0.0f;
+
 	//表示が180度反転してるので調整
 	CVector adjust_rot = mRot;
 	adjust_rot.mY += M_PI;
 	mRotation = (adjust_rot) * (180.0f / M_PI);
 
-	//移動方向リセット
-	mMoveDir = CVector(0.0f, 0.0f, 0.0f);
-	//移動スピードリセット
-	mSpeed = 0.0f;
 
 	//体力が0になると死亡状態へ移行
 	if (mHp <= 0) {
@@ -151,10 +159,37 @@ void CXEnemy::Update()
 
 	//////////////////////
 	//後で削除する
+#ifdef _DEBUG
 	EHp = mHp;
+#endif
 	//////////////////////
 
 	CXCharacter::Update();
+}
+
+void CXEnemy::Render2D()
+{
+	//体力の割合
+	float hpRate = (float)mHp / (float)HP_MAX;
+	//体力ゲージの幅
+	float hpGaugeWid = GAUGE_WID_MAX * hpRate;
+
+	CVector ret;
+	Camera.WorldToScreen(&ret, mPosition);
+
+	//2D描画開始
+	CUtil::Start2D(0, 800, 0, 600);
+
+	//体力が減ると幅が減少する、左揃え
+	//mFont.DrawString("0", ret.mX - GAUGE_WID_MAX * (1 - hpRate), ret.mY + 150.0f, hpGaugeWid, 10);
+
+	//ゲージ背景
+	mTexture.Draw(ret.mX - GAUGE_WID_MAX, ret.mX+GAUGE_WID_MAX, ret.mY + 137.5f, ret.mY + 152.5f, 210, 290, 63, 0);
+	//体力ゲージ
+	mTexture.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX-GAUGE_WID_MAX)+hpGaugeWid*2.0f, ret.mY + 137.5f, ret.mY + 152.5f, 0, 0, 0, 0);
+
+	//2Dの描画終了
+	CUtil::End2D();
 }
 
 CXEnemy* CXEnemy::GetInstance()
@@ -300,9 +335,11 @@ void CXEnemy::Chase()
 	int random = 0; 
 	//プレイヤーが攻撃をしたとき、ランダムで回避状態へ移行
 	if (CXPlayer::GetInstance()->mAttackFlag_Once == true) {
-		random = rand() % 2;
-		if (random == 0) {
-			mState = EAVOID;
+		if (mPlayerDis <= AVOID_DIS) {
+			random = rand() % 2;
+			if (random == 0) {
+				mState = EAVOID;
+			}
 		}
 	}
 
@@ -441,4 +478,10 @@ void CXEnemy::SetPos(CVector hpos)
 CVector CXEnemy::GetPos()
 {
 	return mPosition;
+}
+
+//死亡時trueを返す
+bool CXEnemy::DeathFlag()
+{
+	return (mState == EDEATH);
 }

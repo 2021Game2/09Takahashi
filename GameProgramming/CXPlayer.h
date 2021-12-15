@@ -3,10 +3,15 @@
 
 #include "CXCharacter.h"
 #include "CCollider.h"
+#include "CText.h"
+#include "CTexture.h"
 
 class CXPlayer : public CXCharacter
 {
 private:
+	CText mFont;
+	CTexture mTexture;
+
 	//コライダの宣言
 	CCollider mColSphereBody;	//体
 	CCollider mColSphereHead;	//頭
@@ -34,7 +39,7 @@ private:
 
 	int mGraceTime;			//派生攻撃の受付時間
 
-	CVector mMove;	
+	CVector mMoveDir;	
 	CVector mMove2;
 
 	CVector mMoveSide;
@@ -74,6 +79,7 @@ public:
 	void Init(CModelX* model);
 
 	void Update();
+	void Render2D();
 
 	//衝突処理
 	//m:自分のコライダ o:相手のコライダ

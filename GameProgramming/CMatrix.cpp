@@ -183,6 +183,15 @@ void CMatrix::operator+=(const CMatrix& m)
 	}
 }
 
+CVector CMatrix::operator*(const CVector& v) {
+
+	return CVector(
+		v.mX * mM[0][0] + v.mY * mM[1][0] + v.mZ * mM[2][0] + mM[3][0],
+		v.mX * mM[0][1] + v.mY * mM[1][1] + v.mZ * mM[2][1] + mM[3][1],
+		v.mX * mM[0][2] + v.mY * mM[1][2] + v.mZ * mM[2][2] + mM[3][2]
+	);
+}
+
 /*
 getInverse
 ‹ts—ñ‚Ìæ“¾

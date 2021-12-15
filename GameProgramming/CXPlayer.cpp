@@ -11,7 +11,7 @@
 #define GRAVITY 0.9f			//重力
 #define HP_MAX 100				//体力最大値
 #define STAMINA_MAX 100			//スタミナ最大値
-#define AVOID_STAMINA 40		//回避時のスタミナの減少量
+#define AVOID_STAMINA 30		//回避時のスタミナの減少量
 #define AVOID_TIME 30			//回避時間
 #define AVOID_FIRSTSPEED 0.5f	//回避時の初速
 #define SPEED_DEFAULT 0.15f		//スピード(通常時)
@@ -24,11 +24,15 @@
 #define GRACETIME 10			//派生攻撃の受付時間
 #define HEAL_AMOUNT HP_MAX		//回復量
 
+#define GAUGE_WID_MAX 350.0f	//ゲージの幅の最大値
+
 CXPlayer* CXPlayer::mInstance;
 
+#ifdef _DEBUG
 extern int S;	//確認用、後で削除
 extern int PHp;	//確認用、後で削除
 extern int Item;	//確認用、後で削除
+#endif 
 
 CXPlayer::CXPlayer()
 	: mColSphereBody(this, nullptr, CVector(), 0.5f)
@@ -43,7 +47,7 @@ CXPlayer::CXPlayer()
 	, mMoveKeep(0.0f, 0.0f, 0.0f)
 	, mInvincibleFlag(false)
 	, mInvincibleTime(0)
-	, mMove(0.0f, 0.0f, 0.0f)
+	, mMoveDir(0.0f, 0.0f, 0.0f)
 	, mMove2(0.0f, 0.0f, 0.0f)
 	, mSideVec(0.0f, 0.0f, 0.0f)
 	, mFrontVec(0.0f, 0.0f, 0.0f)
@@ -66,6 +70,10 @@ CXPlayer::CXPlayer()
 	mState = EIDLE;	//待機状態
 
 	mInstance = this;
+
+	//mFont.LoadTexture("FontG2.png", 1, 4096 / 64);
+
+	mTexture.Load("Gauge.png");
 }
 
 void CXPlayer::Init(CModelX* model)
@@ -235,12 +243,11 @@ void CXPlayer::Update()
 	//座標移動
 	mPosition += mMove2;
 
-	//移動量を減らす
 	mMove2 = mMove2 * GRAVITY;
 
 	//普通に3次元ベクトル計算で算出したほうが正確だが計算量を懸念する場合は擬似計算で軽量化
 	//擬似ベクトル計算
-	Check tCheck = CUtil::GetCheck2D(mMove.mX, mMove.mZ, 0, 0, mRotation.mY * (M_PI / 180.0f));
+	Check tCheck = CUtil::GetCheck2D(mMoveDir.mX, mMoveDir.mZ, 0, 0, mRotation.mY * (M_PI / 180.0f));
 
 	//回転速度　degreeに直す
 	mTurnspeed = (180.0f / M_PI) * 0.5f;
@@ -257,7 +264,8 @@ void CXPlayer::Update()
 	}
 
 	//リセット
-	mMove = CVector(0.0f, 0.0f, 0.0f);
+	mMoveDir = CVector(0.0f, 0.0f, 0.0f);
+	mSpeed = 0.0f;
 
 	//体力が0になると死亡
 	if (mHp <= 0) {
@@ -269,6 +277,7 @@ void CXPlayer::Update()
 
 	//後で削除する
 	//////////////////////////////
+#ifdef _DEBUG
 	if (mHp<=0&&CKey::Once(VK_RETURN)) {
 		mHp = HP_MAX;
 		mState = EIDLE;
@@ -276,12 +285,45 @@ void CXPlayer::Update()
 	S = mStamina;
 	PHp = mHp;
 	Item = mItemSelect;
+#endif
 	//////////////////////////////
 
 	//注視点
 	Camera.SetTarget(mPosition);
 
 	CXCharacter::Update();
+}
+
+void CXPlayer::Render2D()
+{
+	//体力の割合
+	float hpRate = (float)mHp / (float)HP_MAX;
+	//体力ゲージの幅
+	float hpGaugeWid = GAUGE_WID_MAX * hpRate;
+
+	//スタミナの割合
+	float staminaRate = (float)mStamina / (float)STAMINA_MAX;
+	//スタミナゲージの幅
+	float staminaGaugeWid = GAUGE_WID_MAX * staminaRate;
+
+	//2D描画開始
+	CUtil::Start2D(0, 800, 0, 600);
+
+	/*
+	//体力が減ると幅が減少する、左揃え
+	mFont.DrawString("0", 400 - GAUGE_WID_MAX * (1.0f - hpRate), 575.0f, hpGaugeWid, 15);
+	//スタミナが減ると幅が減少する、左揃え
+	mFont.DrawString("1", 400 - GAUGE_WID_MAX * (1.0f - staminaRate), 535.0f, staminaGaugeWid, 15);
+	*/
+
+	mTexture.Draw(20, GAUGE_WID_MAX, 560, 590, 210, 290, 63, 0);	//ゲージ背景
+	mTexture.Draw(20, hpGaugeWid, 560, 590, 0, 0, 0, 0);			//体力ゲージ
+
+	mTexture.Draw(20, GAUGE_WID_MAX, 520, 550, 210, 290, 63, 0);	//ゲージ背景
+	mTexture.Draw(20, staminaGaugeWid, 520, 550, 110, 190, 63, 0);	//スタミナゲージ
+
+	//2Dの描画終了
+	CUtil::End2D();
 }
 
 void CXPlayer::Collision(CCollider* m, CCollider* o)
@@ -377,28 +419,25 @@ void CXPlayer::Move()
 
 	if (CKey::Push('A'))
 	{
-		mMove -= mSideVec;
+		mMoveDir -= mSideVec;
 	}
 	else if (CKey::Push('D'))
 	{
-		mMove += mSideVec;
+		mMoveDir += mSideVec;
 	}
 	if (CKey::Push('W')) {
-		mMove += mFrontVec;
+		mMoveDir += mFrontVec;
 	}
 	else if (CKey::Push('S'))
 	{
-		mMove -= mFrontVec;
+		mMoveDir -= mFrontVec;
 	}
 
 	//移動量正規化　これをしないと斜め移動が早くなってしまうので注意
 	//ジャンプ時などはY軸を正規化しないよう注意
-	mMove = mMove.Normalize();
-	mMoveKeep = mMove;	//Move保存
-	if (mMove.Length() != 0.0f) {
-		//平行移動量
-		mMove2 = mMove * mSpeed;
-	}
+	mMoveDir = mMoveDir.Normalize();
+	mMoveKeep = mMoveDir;	//MoveDir保存
+	mMove2 = mMoveDir * mSpeed;
 }
 
 //ダッシュ処理
@@ -449,10 +488,8 @@ void CXPlayer::Attack_1()
 		}
 	}
 
-	//移動量正規化　これをしないと斜め移動が早くなってしまうので注意
-	//ジャンプ時などはY軸を正規化しないよう注意
-	mMove = CXEnemy::GetInstance()->mPosition - mPosition;
-	mMove = mMove.Normalize();
+	mMoveDir = CXEnemy::GetInstance()->mPosition - mPosition;
+	mMoveDir = mMoveDir.Normalize();
 }
 
 //攻撃2処理
@@ -484,10 +521,10 @@ void CXPlayer::Attack_2()
 
 	//移動量正規化　これをしないと斜め移動が早くなってしまうので注意
 	//ジャンプ時などはY軸を正規化しないよう注意
-	mMove = CXEnemy::GetInstance()->mPosition - mPosition;
-	mMove = mMove.Normalize();
+	mMoveDir = CXEnemy::GetInstance()->mPosition - mPosition;
+	mMoveDir = mMoveDir.Normalize();
 
-	mMove2 = mMove * mAttack2Speed;
+	mMove2 = mMoveDir * mAttack2Speed;
 	mAttack2Speed = mAttack2Speed * GRAVITY;
 }
 
@@ -532,9 +569,10 @@ void CXPlayer::Avoid()
 	}
 
 	mMove2 = mMoveKeep * mAvoidSpeed;
+	mAvoidSpeed = mAvoidSpeed * GRAVITY;	//スピードを下げていく
+
 	//回避時間カウントダウン
 	mAvoidTime--;
-	mAvoidSpeed = mAvoidSpeed * GRAVITY;	//スピードを下げていく
 	//回避時間切れ
 	if (mAvoidTime <= 0) {
 		mAvoid = false;	//回避終了

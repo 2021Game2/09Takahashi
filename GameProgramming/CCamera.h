@@ -42,6 +42,12 @@ public:
 
 	//ベクトル取得
 	CMatrix GetMat();
+
+	//スクリーン座標変換
+	//戻り値 表示範囲
+	//pOut 結果格納用
+	//pos 2Dに変換したいワールド座標
+	bool WorldToScreen(CVector* pOut, const CVector& pos);
 };
 
 //カメラの外部参照

@@ -17,6 +17,9 @@ private:
 	//敵のインスタンス
 	CXEnemy mEnemy;
 
+	int mTime;
+	int mFrameCount;
+
 public:
 	~CSceneGame();
 	//初期化処理のオーバーライド

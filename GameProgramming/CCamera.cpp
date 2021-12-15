@@ -4,6 +4,7 @@
 #include <corecrt_math.h>
 #include <stdio.h>
 #include "CInput.h"
+#include "main.h"
 
 //カメラの外部変数
 CCamera Camera;
@@ -121,4 +122,26 @@ void CCamera::Render() {
 
 CMatrix CCamera::GetMat() {
 	return mMatrix;
+}
+
+bool CCamera::WorldToScreen(CVector* pOut, const CVector& pos)
+{
+	//座標変換
+	CVector	screen_pos = mMatrix * pos;
+
+	//画面外なのでリターン
+	if (screen_pos.mZ >= 0.0f) {
+		return false;
+	}
+	//座標調整
+	screen_pos = screen_pos / -screen_pos.mZ;
+
+	//	printf("%f,%f,%f\n", screen_pos.mX, screen_pos.mY, screen_pos.mZ);
+
+	//スクリーン変換
+	pOut->mX = (1.0f + screen_pos.mX) * WINDOW_WIDTH * 0.5f;
+	pOut->mY = (1.0f + screen_pos.mY) * WINDOW_HEIGHT * 0.5f;
+	pOut->mZ = screen_pos.mZ;
+
+	return true;
 }

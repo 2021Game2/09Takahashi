@@ -71,6 +71,17 @@ void CTaskManager::Render() {
 		task = task->mpNext;
 	}
 }
+void CTaskManager::Render2D() {
+	//先頭から最後まで繰り返し
+	CTask* task = mHead.mpNext;
+	while (task->mpNext) {
+		//描画処理を呼ぶ
+		task->Render2D();
+		//次へ
+		task = task->mpNext;
+	}
+}
+
 //リストから削除
 //Remove(タスクのポインタ)
 void CTaskManager::Remove(CTask *task) {

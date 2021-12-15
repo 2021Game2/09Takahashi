@@ -3,10 +3,13 @@
 
 #include "CXCharacter.h"
 #include "CCollider.h"
+#include "CTexture.h"
 
 class CXEnemy : public CXCharacter
 {
 private:
+	CTexture mTexture;
+
 	CCollider mColSphereSword0;	//Œ•
 	CCollider mColSphereSword1;	//Œ•
 	CCollider mColSphereSword2;	//Œ•
@@ -53,6 +56,7 @@ public:
 	void Collision(CCollider* m, CCollider* o);
 
 	void Update();
+	void Render2D();
 
 	//“G‚Ìó‘Ô
 	enum EEnemyState
@@ -73,6 +77,7 @@ public:
 
 	void SetPos(CVector hpos);	//ˆÊ’u‚ğİ’è
 	CVector GetPos();			//ˆÊ’u‚ğæ“¾
+	bool DeathFlag();			//€–Strue‚ğ•Ô‚·
 };
 
 #endif

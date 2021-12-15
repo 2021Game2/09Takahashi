@@ -58,6 +58,8 @@ public:
 	//CMatrix1 += CMatrix2 ‚Ì‰‰Z‚ğs‚¤
 	void operator+=(const CMatrix& m);
 
+	CVector operator*(const CVector& v);
+
 	CMatrix Inverse(void);
 	CVector GetXVec();
 	CVector GetYVec();

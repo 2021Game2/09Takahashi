@@ -11,13 +11,17 @@
 #include "CMaterial.h"
 //
 #include "CCollisionManager.h"
+//
+#include "CXEnemy.h"
 
 //CMatrix Matrix;
 
+#ifdef _DEBUG
 int S;	//スタミナ確認用、後で削除
 int EHp;	//敵の体力確認用、後で削除
 int PHp;	//プレイヤーの体力確認用、後で削除
 int Item;	//選択中のアイテム確認用、後で削除
+#endif
 
 CSceneGame::~CSceneGame() {
 
@@ -58,6 +62,9 @@ void CSceneGame::Init() {
 
 	//カメラ初期化
 	Camera.Init();
+
+	mTime = 0;
+	mFrameCount = 1;
 }
 
 
@@ -77,15 +84,28 @@ void CSceneGame::Update() {
 	CTaskManager::Get()->Delete();
 	//タスク描画
 	CTaskManager::Get()->Render();
+	CTaskManager::Get()->Render2D();
 
 	//コライダの描画
 	CCollisionManager::Get()->Render();
 
+	//敵が死亡状態になるまでタイムを加算
+	if (CXEnemy::GetInstance()->DeathFlag() != true) {
+		mFrameCount++;
+		if (mFrameCount % 60 == 0)mTime++;
+	}
+
 	//2D描画開始
 	CUtil::Start2D(0, 800, 0, 600);
 
+#ifdef _DEBUG
 	//確認用、後で削除
 	char buf[64];
+
+	//タイム
+	sprintf(buf, "TIME:%d", mTime);
+	mFont.DrawString(buf, 50, 250, 10, 12);
+
 	//スタミナ
 	sprintf(buf, "STAMINA:%d", S);
 	mFont.DrawString(buf, 50, 50, 10, 12);
@@ -110,6 +130,7 @@ void CSceneGame::Update() {
 		break;
 	}
 	mFont.DrawString(buf, 50, 200, 10, 12);
+#endif
 
 	//2Dの描画終了
 	CUtil::End2D();
