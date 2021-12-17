@@ -4,11 +4,13 @@
 #include "CXCharacter.h"
 #include "CCollider.h"
 #include "CTexture.h"
+#include "CText.h"
 
 class CXEnemy : public CXCharacter
 {
 private:
 	CTexture mTexture;
+	CText mFont;
 
 	CCollider mColSphereSword0;	//Œ•
 	CCollider mColSphereSword1;	//Œ•
@@ -78,6 +80,8 @@ public:
 	void SetPos(CVector hpos);	//ˆÊ’u‚ğİ’è
 	CVector GetPos();			//ˆÊ’u‚ğæ“¾
 	bool DeathFlag();			//€–Strue‚ğ•Ô‚·
+
+	bool mHit;	//UŒ‚‚Étrue‚ğ•Ô‚·@“G‚ÉUŒ‚‚ª“–‚½‚éorUŒ‚I—¹‚Éfalse‚ğ•Ô‚·
 };
 
 #endif

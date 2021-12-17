@@ -28,12 +28,6 @@
 
 CXPlayer* CXPlayer::mInstance;
 
-#ifdef _DEBUG
-extern int S;	//確認用、後で削除
-extern int PHp;	//確認用、後で削除
-extern int Item;	//確認用、後で削除
-#endif 
-
 CXPlayer::CXPlayer()
 	: mColSphereBody(this, nullptr, CVector(), 0.5f)
 	, mColSphereHead(this, nullptr, CVector(0.0f, 5.0f, -3.0f), 0.5f)
@@ -71,7 +65,7 @@ CXPlayer::CXPlayer()
 
 	mInstance = this;
 
-	//mFont.LoadTexture("FontG2.png", 1, 4096 / 64);
+	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
 
 	mTexture.Load("Gauge.png");
 }
@@ -224,8 +218,6 @@ void CXPlayer::Update()
 		break;
 	}
 
-	
-
 	//ダッシュ、回避をしていない状態の時スタミナを回復させる
 	if (mState != EDASH && mState != EAVOID && mStamina < STAMINA_MAX) {
 		mStamina++;
@@ -278,13 +270,11 @@ void CXPlayer::Update()
 	//後で削除する
 	//////////////////////////////
 #ifdef _DEBUG
+	//リターンを押すと復活
 	if (mHp<=0&&CKey::Once(VK_RETURN)) {
 		mHp = HP_MAX;
 		mState = EIDLE;
 	}
-	S = mStamina;
-	PHp = mHp;
-	Item = mItemSelect;
 #endif
 	//////////////////////////////
 
@@ -296,6 +286,15 @@ void CXPlayer::Update()
 
 void CXPlayer::Render2D()
 {
+	//2D描画開始
+	CUtil::Start2D(0, 800, 0, 600);
+	/*
+	//体力が減ると幅が減少する、左揃え
+	mFont.DrawString("0", 400 - GAUGE_WID_MAX * (1.0f - hpRate), 575.0f, hpGaugeWid, 15);
+	//スタミナが減ると幅が減少する、左揃え
+	mFont.DrawString("1", 400 - GAUGE_WID_MAX * (1.0f - staminaRate), 535.0f, staminaGaugeWid, 15);
+	*/
+
 	//体力の割合
 	float hpRate = (float)mHp / (float)HP_MAX;
 	//体力ゲージの幅
@@ -306,21 +305,31 @@ void CXPlayer::Render2D()
 	//スタミナゲージの幅
 	float staminaGaugeWid = GAUGE_WID_MAX * staminaRate;
 
-	//2D描画開始
-	CUtil::Start2D(0, 800, 0, 600);
-
-	/*
-	//体力が減ると幅が減少する、左揃え
-	mFont.DrawString("0", 400 - GAUGE_WID_MAX * (1.0f - hpRate), 575.0f, hpGaugeWid, 15);
-	//スタミナが減ると幅が減少する、左揃え
-	mFont.DrawString("1", 400 - GAUGE_WID_MAX * (1.0f - staminaRate), 535.0f, staminaGaugeWid, 15);
-	*/
-
 	mTexture.Draw(20, GAUGE_WID_MAX, 560, 590, 210, 290, 63, 0);	//ゲージ背景
 	mTexture.Draw(20, hpGaugeWid, 560, 590, 0, 0, 0, 0);			//体力ゲージ
 
 	mTexture.Draw(20, GAUGE_WID_MAX, 520, 550, 210, 290, 63, 0);	//ゲージ背景
 	mTexture.Draw(20, staminaGaugeWid, 520, 550, 110, 190, 63, 0);	//スタミナゲージ
+
+#ifdef _DEBUG
+	char buf[64];
+
+	sprintf(buf, "INVICIBLETIME:%d", mInvincibleTime);
+	mFont.DrawString(buf, 50, 150, 10, 12);
+
+	switch (mItemSelect) {
+	case 1:
+		sprintf(buf, "SELECTITEM:EMPTY");
+		break;
+	case 2:
+		sprintf(buf, "SELECTITEM:TRAP");
+		break;
+	case 3:
+		sprintf(buf, "SELECTITEM:PORTION");
+		break;
+	}
+	mFont.DrawString(buf, 50, 50, 10, 12);
+#endif
 
 	//2Dの描画終了
 	CUtil::End2D();
@@ -328,38 +337,35 @@ void CXPlayer::Render2D()
 
 void CXPlayer::Collision(CCollider* m, CCollider* o)
 {
-	if (m->mType == CCollider::ESPHERE) {
-		if (o->mType == CCollider::ESPHERE) {
-			if (o->mpParent->mTag == EENEMY) {
-				//敵の攻撃を受けた時
-				if (o->mTag == CCollider::ESWORD) {
-					if (mInvincibleFlag == false) {
+	//自分が球コライダ
+	if (m->mType == CCollider::ESPHERE) 
+	{
+		//相手が球コライダ
+		if (o->mType == CCollider::ESPHERE) 
+		{
+			//相手の親のタグが敵
+			if (o->mpParent->mTag == EENEMY) 
+			{
+				//相手のコライダのタグが剣
+				if (o->mTag == CCollider::ESWORD) 
+				{
+					//無敵状態ではないとき
+					if (mInvincibleFlag == false) 
+					{
+						//衝突判定
 						if (CCollider::Collision(m, o)) {
 							//キャスト変換
-							if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EATTACK_1 || ((CXEnemy*)(o->mpParent))->mState == CXEnemy::EATTACK_2) {
+							//敵の攻撃のヒット判定が有効なとき
+							if (((CXEnemy*)(o->mpParent))->mHit == true)
+							{
+								//攻撃を受けた箇所
 								switch (m->mTag) {
-								case CCollider::EHEAD:
-									mHp -= DAMAGE;
-									mInvincibleTime = INVINCIBLETIME_DAMAGE;
-									mInvincibleFlag = true;
-									break;
-
-								case CCollider::EBODY:
-									mHp -= DAMAGE;
-									mInvincibleTime = INVINCIBLETIME_DAMAGE;
-									mInvincibleFlag = true;
+								case CCollider::EHEAD:	//頭
+								case CCollider::EBODY:	//体
+									mHp -= DAMAGE;		//ダメージを受ける
+									((CXEnemy*)(o->mpParent))->mHit = false; //敵の攻撃のヒット判定を終了させる
 									break;
 								}
-							}
-						}
-					}
-				}
-				//敵に攻撃が当たった時、mHitをfalseにする
-				if (m->mTag == CCollider::ESWORD) {
-					if (o->mTag == CCollider::EHEAD || o->mTag == CCollider::EBODY) {
-						if (mHit == true) {
-							if (CCollider::Collision(m, o)) {
-								mHit = false;
 							}
 						}
 					}
@@ -462,7 +468,6 @@ void CXPlayer::Attack_1()
 	if (mAttackFlag_1 == false) {
 		ChangeAnimation(3, true, 20);
 		mAttackFlag_1 = true;
-		mHit = true;
 		mGraceTime = 0;
 		mAttackFlag_Once = true;
 	}
@@ -473,9 +478,13 @@ void CXPlayer::Attack_1()
 
 	if (mAnimationIndex == 3)
 	{
+		//ヒット判定発生
+		if (mAnimationFrame == 5) {
+			mHit = true;
+		}
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
-			mHit = false;
+			mHit = false; //ヒット判定終了
 			ChangeAnimation(4, false, 30);
 			mGraceTime = GRACETIME;	//受付時間を入れる
 		}
@@ -499,14 +508,18 @@ void CXPlayer::Attack_2()
 		ChangeAnimation(7, true, 30);
 		mAttackFlag_2 = true;
 		mAttack2Speed = ATTACK2_FIRSTSPEED;
-		mHit = true;
 		mAttackFlag_Once = true;
 	}
 
 	if (mAnimationIndex == 7)
 	{
+		//ヒット判定発生
+		if (mAnimationFrame == 5) {
+			mHit = true;
+		}
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
+			mHit = false; //ヒット判定終了
 			ChangeAnimation(8, false, 30);
 		}
 	}
@@ -515,7 +528,7 @@ void CXPlayer::Attack_2()
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			mAttackFlag_2 = false;
-			mHit = false;
+			//mHit = false;
 		}
 	}
 
@@ -534,14 +547,18 @@ void CXPlayer::Attack_3()
 	if (mAttackFlag_3 == false) {
 		ChangeAnimation(5, true, 15);
 		mAttackFlag_3 = true;
-		mHit = true;
 		mAttackFlag_Once = true;
 	}
 
 	if (mAnimationIndex == 5)
 	{
+		//ヒット判定発生
+		if (mAnimationFrame == 0) {
+			mHit = true;
+		}
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
+			mHit = false; //ヒット判定終了
 			ChangeAnimation(6, false, 30);
 		}
 	}

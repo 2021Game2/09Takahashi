@@ -16,13 +16,6 @@
 
 //CMatrix Matrix;
 
-#ifdef _DEBUG
-int S;	//スタミナ確認用、後で削除
-int EHp;	//敵の体力確認用、後で削除
-int PHp;	//プレイヤーの体力確認用、後で削除
-int Item;	//選択中のアイテム確認用、後で削除
-#endif
-
 CSceneGame::~CSceneGame() {
 
 }
@@ -101,35 +94,9 @@ void CSceneGame::Update() {
 #ifdef _DEBUG
 	//確認用、後で削除
 	char buf[64];
-
 	//タイム
 	sprintf(buf, "TIME:%d", mTime);
-	mFont.DrawString(buf, 50, 250, 10, 12);
-
-	//スタミナ
-	sprintf(buf, "STAMINA:%d", S);
-	mFont.DrawString(buf, 50, 50, 10, 12);
-
-	//敵の体力
-	sprintf(buf, "EHP:%d", EHp);
 	mFont.DrawString(buf, 50, 100, 10, 12);
-
-	//プレイヤーの体力
-	sprintf(buf, "PHP:%d", PHp);
-	mFont.DrawString(buf, 50, 150, 10, 12);
-
-	switch (Item) {
-	case 1:
-		sprintf(buf, "SELECTITEM:EMPTY");
-		break;
-	case 2:
-		sprintf(buf, "SELECTITEM:TRAP");
-		break;
-	case 3:
-		sprintf(buf, "SELECTITEM:PORTION");
-		break;
-	}
-	mFont.DrawString(buf, 50, 200, 10, 12);
 #endif
 
 	//2Dの描画終了

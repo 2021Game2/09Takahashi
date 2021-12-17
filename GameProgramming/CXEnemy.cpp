@@ -20,10 +20,6 @@
 
 CXEnemy* CXEnemy::mInstance;
 
-#ifdef _DEBUG
-extern int EHp;	//敵の体力確認用、後で削除
-#endif
-
 CXEnemy::CXEnemy()
 	: mColSphereBody(this, nullptr, CVector(0.5f, -1.0f, 0.0f), 1.2f)
 	, mColSphereHead(this, nullptr, CVector(0.0f, 1.f, 0.0f), 1.2f)
@@ -39,6 +35,7 @@ CXEnemy::CXEnemy()
 	, mSpeed(0.0f)
 	, mDot(0.0f)
 	, mStunTime(0)
+	,mHit(false)
 {
 	mTag = EENEMY;	//敵
 
@@ -53,6 +50,8 @@ CXEnemy::CXEnemy()
 	mInstance = this;
 
 	mTexture.Load("Gauge.png");
+
+	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
 }
 
 void CXEnemy::Init(CModelX* model)
@@ -157,37 +156,35 @@ void CXEnemy::Update()
 		mHp = 0;
 	}
 
-	//////////////////////
-	//後で削除する
-#ifdef _DEBUG
-	EHp = mHp;
-#endif
-	//////////////////////
-
 	CXCharacter::Update();
 }
 
 void CXEnemy::Render2D()
 {
-	//体力の割合
-	float hpRate = (float)mHp / (float)HP_MAX;
-	//体力ゲージの幅
-	float hpGaugeWid = GAUGE_WID_MAX * hpRate;
-
-	CVector ret;
-	Camera.WorldToScreen(&ret, mPosition);
-
 	//2D描画開始
 	CUtil::Start2D(0, 800, 0, 600);
 
 	//体力が減ると幅が減少する、左揃え
 	//mFont.DrawString("0", ret.mX - GAUGE_WID_MAX * (1 - hpRate), ret.mY + 150.0f, hpGaugeWid, 10);
 
+	CVector ret;
+	Camera.WorldToScreen(&ret, mPosition);
+
+	//体力の割合
+	float hpRate = (float)mHp / (float)HP_MAX;
+	//体力ゲージの幅
+	float hpGaugeWid = GAUGE_WID_MAX * hpRate;
+
 	//ゲージ背景
 	mTexture.Draw(ret.mX - GAUGE_WID_MAX, ret.mX+GAUGE_WID_MAX, ret.mY + 137.5f, ret.mY + 152.5f, 210, 290, 63, 0);
 	//体力ゲージ
 	mTexture.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX-GAUGE_WID_MAX)+hpGaugeWid*2.0f, ret.mY + 137.5f, ret.mY + 152.5f, 0, 0, 0, 0);
 
+#ifdef _DEBUG
+	char buf[64];
+	sprintf(buf, "EATTACKHIT:%d", mHit);
+	mFont.DrawString(buf, 50, 200, 10, 12);
+#endif
 	//2Dの描画終了
 	CUtil::End2D();
 }
@@ -199,7 +196,7 @@ CXEnemy* CXEnemy::GetInstance()
 
 void CXEnemy::Collision(CCollider* m, CCollider* o)
 {
-	//死亡状態の時はリターン
+	//自分が死亡状態の時はリターン
 	if (mState == EDEATH)return;
 
 	//自分が球コライダ
@@ -218,26 +215,33 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 					if (CCollider::Collision(m, o))
 					{
 						//キャスト変換
-						//プレイヤーの攻撃を受けたとき
+						//プレイヤーの攻撃のヒット判定が有効なとき
 						if (((CXPlayer*)(o->mpParent))->mHit == true)
 						{
 							//攻撃を受けた箇所
 							switch (m->mTag) {
 							case CCollider::EBODY:	//体
-								mHp -= DAMAGE_BODY;	//ダメージ(体)	
+								mHp -= DAMAGE_BODY;	//ダメージを受ける(体)	
+								((CXPlayer*)(o->mpParent))->mHit = false;
+								//スタン状態で無ければノックバック状態へ移行
+								if (mState != ESTUN) {
+									mState = EKNOCKBACK;
+									mHit = false; //自分の攻撃のヒット判定を終了させる
+								}
 								break;
 
 							case CCollider::EHEAD:	//頭
-								mHp -= DAMAGE_HEAD;	//ダメージ(頭)
+								mHp -= DAMAGE_HEAD;	//ダメージを受ける(頭)
+								((CXPlayer*)(o->mpParent))->mHit = false;
+								//スタン状態で無ければノックバック状態へ移行
+								if (mState != ESTUN) {
+									mState = EKNOCKBACK;
+									mHit = false; //自分の攻撃のヒット判定を終了させる
+								}
 								break;
 
-							default:
-								return; //上記以外はリターン
+							default: //上記以外
 								break;
-							}
-							//スタン状態ではない時ノックバック状態へ移行
-							if (mState != ESTUN) {
-								mState = EKNOCKBACK;
 							}
 						}
 					}
@@ -256,7 +260,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 						//スタン状態でなければ、スタン状態へ移行
 						if (mState != ESTUN){
 							mState = ESTUN;
-							mStunTime = STUN_TIME;
+							mStunTime = STUN_TIME; //スタン時間を入れる
 						}
 					}
 				}
@@ -364,13 +368,22 @@ void CXEnemy::Attack_1()
 	//mMoveDirにプレイヤー方向のベクトルを入れる
 	mMoveDir = mPlayerPoint.Normalize();
 
-	ChangeAnimation(7, false, 70);
+	ChangeAnimation(7, false, 75);
 
 	if (mAnimationIndex == 7)
 	{
+		//ヒット判定発生
+		if (mAnimationFrame == 30) {
+			mHit = true;
+		}
+		//ヒット判定終了
+		if (mAnimationFrame == 60) {
+			mHit = false;
+		}
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			mState = EIDLE;
+			//mHit = false;
 		}
 	}
 }
@@ -396,9 +409,18 @@ void CXEnemy::Attack_2()
 
 	if (mAnimationIndex == 8)
 	{
+		//ヒット判定発生
+		if (mAnimationFrame == 35) {
+			mHit = true;
+		}
+		//ヒット判定終了
+		if (mAnimationFrame == 70) {
+			mHit = false;
+		}
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			mState = EIDLE;	//待機状態へ移行
+			//mHit = false;
 		}
 	}
 }
