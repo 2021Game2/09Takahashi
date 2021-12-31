@@ -14,7 +14,7 @@
 #define SPEED_ATTACK_2 0.2f //攻撃2状態の移動速度
 #define CHASE_DIS_MAX 20.0f	//追跡可能な最大距離
 #define SEARCH_DIS 15.0f	//追跡を開始する距離
-#define STUN_TIME 300		//罠にかかった時のスタン時間
+#define STUN_TIME 480		//罠にかかった時のスタン時間
 #define AVOID_DIS 6.0f		//回避可能になる距離
 #define GAUGE_WID_MAX 50.0f	//ゲージの幅の最大値
 
@@ -23,9 +23,9 @@ CXEnemy* CXEnemy::mInstance;
 CXEnemy::CXEnemy()
 	: mColSphereBody(this, nullptr, CVector(0.5f, -1.0f, 0.0f), 1.2f)
 	, mColSphereHead(this, nullptr, CVector(0.0f, 1.f, 0.0f), 1.2f)
-	, mColSphereSword0(this, nullptr, CVector(0.7f, 3.5f, -0.2f), 0.6f)
-	, mColSphereSword1(this, nullptr, CVector(0.5f, 2.5f, -0.2f), 0.6f)
-	, mColSphereSword2(this, nullptr, CVector(0.3f, 1.5f, -0.2f), 0.6f)
+	, mColSphereSword0(this, nullptr, CVector(0.7f, 3.5f, -0.2f), 0.8f)
+	, mColSphereSword1(this, nullptr, CVector(0.5f, 2.5f, -0.2f), 0.8f)
+	, mColSphereSword2(this, nullptr, CVector(0.3f, 1.5f, -0.2f), 0.8f)
 	, mHp(HP_MAX)
 	, mPoint(0.0f, 0.0f, 0.0f)
 	, mPlayerPoint(0.0f, 0.0f, 0.0f)
@@ -168,7 +168,9 @@ void CXEnemy::Render2D()
 	//mFont.DrawString("0", ret.mX - GAUGE_WID_MAX * (1 - hpRate), ret.mY + 150.0f, hpGaugeWid, 10);
 
 	CVector ret;
-	Camera.WorldToScreen(&ret, mPosition);
+	//Camera.WorldToScreen(&ret, mPosition);
+	CVector tpos = mpCombinedMatrix[6].GetPos();
+	Camera.WorldToScreen(&ret, tpos);
 
 	//体力の割合
 	float hpRate = (float)mHp / (float)HP_MAX;
@@ -176,9 +178,9 @@ void CXEnemy::Render2D()
 	float hpGaugeWid = GAUGE_WID_MAX * hpRate;
 
 	//ゲージ背景
-	mTexture.Draw(ret.mX - GAUGE_WID_MAX, ret.mX+GAUGE_WID_MAX, ret.mY + 137.5f, ret.mY + 152.5f, 210, 290, 63, 0);
+	mTexture.Draw(ret.mX - GAUGE_WID_MAX, ret.mX + GAUGE_WID_MAX, ret.mY + 30.0f, ret.mY + 45.0f, 210, 290, 63, 0);
 	//体力ゲージ
-	mTexture.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX-GAUGE_WID_MAX)+hpGaugeWid*2.0f, ret.mY + 137.5f, ret.mY + 152.5f, 0, 0, 0, 0);
+	mTexture.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX - GAUGE_WID_MAX) + hpGaugeWid * 2.0f, ret.mY + 30.0f, ret.mY + 45.0f, 0, 0, 0, 0);
 
 #ifdef _DEBUG
 	char buf[64];
@@ -261,6 +263,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 						if (mState != ESTUN){
 							mState = ESTUN;
 							mStunTime = STUN_TIME; //スタン時間を入れる
+							mHit = false;
 						}
 					}
 				}
@@ -340,18 +343,28 @@ void CXEnemy::Chase()
 	//プレイヤーが攻撃をしたとき、ランダムで回避状態へ移行
 	if (CXPlayer::GetInstance()->mAttackFlag_Once == true) {
 		if (mPlayerDis <= AVOID_DIS) {
-			random = rand() % 2;
+			random = rand() % 3;
 			if (random == 0) {
 				mState = EAVOID;
 			}
 		}
 	}
 
-	//プレイヤーとの距離が攻撃可能な距離のときランダムで攻撃1状態へ移行
+	//プレイヤーとの距離が攻撃可能な距離のとき、ランダムで攻撃状態へ移行
 	if (mPlayerDis <= ATTACK_DIS) {
+		//攻撃するか判定
 		random = rand() % 90;
 		if (random == 0){
-			mState = EATTACK_1;
+			//攻撃の種類を決める
+			random = rand() % 2;
+			switch (random) {
+			case 0:
+				mState = EATTACK_1; //攻撃1状態へ移行
+				break;
+			case 1:
+				mState = EATTACK_2; //攻撃2状態へ移行
+				break;
+			}
 		}
 	}
 
@@ -366,7 +379,7 @@ void CXEnemy::Chase()
 void CXEnemy::Attack_1()
 {
 	//mMoveDirにプレイヤー方向のベクトルを入れる
-	mMoveDir = mPlayerPoint.Normalize();
+	//mMoveDir = mPlayerPoint.Normalize();
 
 	ChangeAnimation(7, false, 75);
 
@@ -410,11 +423,11 @@ void CXEnemy::Attack_2()
 	if (mAnimationIndex == 8)
 	{
 		//ヒット判定発生
-		if (mAnimationFrame == 35) {
+		if (mAnimationFrame == 30) {
 			mHit = true;
 		}
 		//ヒット判定終了
-		if (mAnimationFrame == 70) {
+		if (mAnimationFrame == 65) {
 			mHit = false;
 		}
 		if (mAnimationFrame >= mAnimationFrameSize)

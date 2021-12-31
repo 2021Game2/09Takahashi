@@ -21,6 +21,8 @@ CSceneGame::~CSceneGame() {
 }
 
 void CSceneGame::Init() {
+	mScene = EGAME;
+
 	//テキストフォントの読み込みと設定
 	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
 
@@ -79,13 +81,22 @@ void CSceneGame::Update() {
 	CTaskManager::Get()->Render();
 	CTaskManager::Get()->Render2D();
 
+#ifdef _DEBUG
 	//コライダの描画
 	CCollisionManager::Get()->Render();
+#endif
 
 	//敵が死亡状態になるまでタイムを加算
 	if (CXEnemy::GetInstance()->DeathFlag() != true) {
 		mFrameCount++;
 		if (mFrameCount % 60 == 0)mTime++;
+	}
+	else {
+#ifdef _DEBUG
+		if (CKey::Once(VK_RETURN)) {
+			mScene = ERESULT;
+		}
+#endif
 	}
 
 	//2D描画開始
@@ -103,6 +114,12 @@ void CSceneGame::Update() {
 	CUtil::End2D();
 
 	return;
+}
+
+
+CScene::EScene CSceneGame::GetNextScene()
+{
+	return mScene;
 }
 	
 

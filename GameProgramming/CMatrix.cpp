@@ -249,3 +249,6 @@ CVector CMatrix::GetYVec() {
 CVector CMatrix::GetZVec() {
 	return CVector(-m20, -m21, -m22);//奥行きの逆方向なのでマイナスにしておく
 }
+CVector CMatrix::GetPos() {
+	return CVector(m03, m13, m23);
+}

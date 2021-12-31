@@ -133,6 +133,8 @@ bool CCamera::WorldToScreen(CVector* pOut, const CVector& pos)
 	if (screen_pos.mZ >= 0.0f) {
 		return false;
 	}
+
+	float Z = -screen_pos.mZ;
 	//座標調整
 	screen_pos = screen_pos / -screen_pos.mZ;
 
@@ -141,7 +143,7 @@ bool CCamera::WorldToScreen(CVector* pOut, const CVector& pos)
 	//スクリーン変換
 	pOut->mX = (1.0f + screen_pos.mX) * WINDOW_WIDTH * 0.5f;
 	pOut->mY = (1.0f + screen_pos.mY) * WINDOW_HEIGHT * 0.5f;
-	pOut->mZ = screen_pos.mZ;
+	pOut->mZ = Z; //screen_pos.mZ
 
 	return true;
 }

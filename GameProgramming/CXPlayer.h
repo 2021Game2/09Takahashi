@@ -11,6 +11,8 @@ class CXPlayer : public CXCharacter
 private:
 	CText mFont;
 	CTexture mTexture;
+	CTexture mItemTexture;
+	CTexture mItemTexture2;
 
 	//コライダの宣言
 	CCollider mColSphereBody;	//体
@@ -38,6 +40,7 @@ private:
 	bool mAttackFlag_3;		//攻撃3状態の時trueを返す
 
 	int mGraceTime;			//派生攻撃の受付時間
+	int mCombo;				//派生攻撃を連続で行った回数
 
 	CVector mMoveDir;	
 	CVector mMove2;
@@ -51,14 +54,13 @@ private:
 
 	enum EItem {
 		HEAD = 0,
-		EEMPTY,		//空
 		ETRAP,		//罠
-		EPORTION,	//回復
+		EPORTION,	//回復薬
 		TAIL,
 	};
-	int mItemHead = HEAD;	//最前列
-	int mItemTail = TAIL;	//最後尾
 	int mItemSelect;		//選択中のアイテム
+	int mTrapQuantity;		//罠の所持数
+	int mPortionQuantity;	//回復薬の所持数
 
 	void Idle();		//待機処理
 	void Move();		//移動処理
@@ -70,6 +72,7 @@ private:
 	void Death();		//死亡処理
 	void ItemUse();		//アイテム使用処理
 	void ItemSelect();	//アイテム選択処理
+	void KnockBack();	//ノックバック処理
 public:
 	CXPlayer();
 
@@ -97,6 +100,7 @@ public:
 		EATTACK_3,	//攻撃3(攻撃1から派生)
 		EDEATH,		//死亡
 		EITEMUSE,	//アイテム使用
+		EKNOCKBACK,	//ノックバック
 	};
 	EPlayerState mState;
 

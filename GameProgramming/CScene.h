@@ -8,6 +8,13 @@
 */
 class CScene {
 public:
+	enum EScene {
+		ETITLE,		//タイトル
+		EGAME,		//ゲーム
+		ERESULT,	//リザルト
+	};
+	EScene mScene;
+
 	CText mFont;
 	//virtual 仮想関数
 	//ポリモーフィズムの実装
@@ -15,7 +22,7 @@ public:
 	virtual void Init() = 0;	//純粋仮想関数 初期化処理
 	virtual void Update() = 0; //純粋仮想関数 更新処理
 	//次のシーンの取得
-	//virtual EScene GetNextScene() = 0;
+	virtual EScene GetNextScene() = 0;
 	virtual ~CScene() {}	//デストラクタの定義
 };
 

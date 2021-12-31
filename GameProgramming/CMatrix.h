@@ -64,6 +64,7 @@ public:
 	CVector GetXVec();
 	CVector GetYVec();
 	CVector GetZVec();
+	CVector GetPos();
 };
 #endif
 

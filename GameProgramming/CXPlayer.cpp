@@ -21,8 +21,12 @@
 #define INVINCIBLETIME_DAMAGE 60//無敵時間(ダメージ発生時)
 #define DAMAGE 20				//ダメージ
 #define ATTACK2_FIRSTSPEED 0.6f	//攻撃2使用時の初速
-#define GRACETIME 10			//派生攻撃の受付時間
-#define HEAL_AMOUNT HP_MAX		//回復量
+#define GRACETIME 15			//派生攻撃の受付時間
+#define COMBO_MAX 4				//攻撃を連続で派生させられる上限
+
+#define PORTION_QUANTITY 5		//回復薬の所持数
+#define HEAL_AMOUNT 30			//回復薬を使用したときの回復量
+#define TRAP_QUANTITY 2			//罠の所持数
 
 #define GAUGE_WID_MAX 350.0f	//ゲージの幅の最大値
 
@@ -50,10 +54,13 @@ CXPlayer::CXPlayer()
 	, mAttackFlag_2(false)
 	, mAttack2Speed(0.0f)
 	, mAttackFlag_3(false)
-	,mGraceTime(0)
-	,mHit(false)
-	,mItemSelect(EEMPTY)
-	,mAttackFlag_Once(false)
+	, mGraceTime(0)
+	, mHit(false)
+	, mItemSelect(HEAD + 1)
+	, mAttackFlag_Once(false)
+	,mCombo(0)
+	,mTrapQuantity(TRAP_QUANTITY)
+	,mPortionQuantity(PORTION_QUANTITY)
 {
 	//タグにプレイヤーを設定します
 	mTag = EPLAYER;
@@ -68,6 +75,8 @@ CXPlayer::CXPlayer()
 	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
 
 	mTexture.Load("Gauge.png");
+	mItemTexture.Load("Portion.png");
+	mItemTexture2.Load("Trap.png");
 }
 
 void CXPlayer::Init(CModelX* model)
@@ -108,27 +117,14 @@ void CXPlayer::Update()
 
 	case EATTACK_1:	//攻撃1状態
 		Attack_1();	//攻撃1の処理を呼ぶ
-		//受付時間内に左クリックで攻撃3へ移行
-		if (mGraceTime > 0 && CKey::Once(VK_LBUTTON)) {
-			mState = EATTACK_3;
-		}
-		if (mAttackFlag_1 == false) {
-			mState = EIDLE;
-		}
 		break;
 
 	case EATTACK_2:	//攻撃2状態
 		Attack_2();	//攻撃2の処理を呼ぶ
-		if (mAttackFlag_2 == false) {
-			mState = EIDLE;
-		}
 		break;
 
 	case EATTACK_3:	//攻撃3状態の時
 		Attack_3();	//攻撃3の処理を呼ぶ
-		if (mAttackFlag_3 == false) {
-			mState = EIDLE;
-		}
 		break;
 
 	case EMOVE:	//移動状態
@@ -215,6 +211,10 @@ void CXPlayer::Update()
 
 	case EITEMUSE:	//アイテム使用中
 		ItemUse();	//アイテム使用処理を呼ぶ
+		break;
+
+	case EKNOCKBACK: //ノックバック状態
+		KnockBack(); //ノックバック処理を呼ぶ
 		break;
 	}
 
@@ -311,24 +311,29 @@ void CXPlayer::Render2D()
 	mTexture.Draw(20, GAUGE_WID_MAX, 520, 550, 210, 290, 63, 0);	//ゲージ背景
 	mTexture.Draw(20, staminaGaugeWid, 520, 550, 110, 190, 63, 0);	//スタミナゲージ
 
-#ifdef _DEBUG
 	char buf[64];
+	mTexture.Draw(640, 760, 40, 160, 310, 390, 63, 0);	//アイテム背景
+	//選択中のアイテム
+	switch (mItemSelect) {	
+	case ETRAP: //罠
+		mItemTexture2.Draw(650, 750, 50, 150, 0, 255, 255, 0); //罠画像
+		sprintf(buf, "%d", mTrapQuantity);
+		break;
+	case EPORTION: //回復
+		mItemTexture.Draw(650, 750, 50, 150, 0, 255, 255, 0); //回復画像
+		sprintf(buf, "%d", mPortionQuantity);
+		break;
+	}
+	mFont.DrawString(buf, 740, 60, 15, 15);
+
+#ifdef _DEBUG
+	//char buf[64];
+
+	sprintf(buf, "COMBO:%d", mCombo);
+	mFont.DrawString(buf, 50, 250, 10, 12);
 
 	sprintf(buf, "INVICIBLETIME:%d", mInvincibleTime);
 	mFont.DrawString(buf, 50, 150, 10, 12);
-
-	switch (mItemSelect) {
-	case 1:
-		sprintf(buf, "SELECTITEM:EMPTY");
-		break;
-	case 2:
-		sprintf(buf, "SELECTITEM:TRAP");
-		break;
-	case 3:
-		sprintf(buf, "SELECTITEM:PORTION");
-		break;
-	}
-	mFont.DrawString(buf, 50, 50, 10, 12);
 #endif
 
 	//2Dの描画終了
@@ -337,20 +342,23 @@ void CXPlayer::Render2D()
 
 void CXPlayer::Collision(CCollider* m, CCollider* o)
 {
+	//死亡状態の時はreturnする
+	if (mState == EDEATH) return;
+
 	//自分が球コライダ
-	if (m->mType == CCollider::ESPHERE) 
+	if (m->mType == CCollider::ESPHERE)
 	{
 		//相手が球コライダ
-		if (o->mType == CCollider::ESPHERE) 
+		if (o->mType == CCollider::ESPHERE)
 		{
 			//相手の親のタグが敵
-			if (o->mpParent->mTag == EENEMY) 
+			if (o->mpParent->mTag == EENEMY)
 			{
 				//相手のコライダのタグが剣
-				if (o->mTag == CCollider::ESWORD) 
+				if (o->mTag == CCollider::ESWORD)
 				{
 					//無敵状態ではないとき
-					if (mInvincibleFlag == false) 
+					if (mInvincibleFlag == false)
 					{
 						//衝突判定
 						if (CCollider::Collision(m, o)) {
@@ -364,6 +372,12 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 								case CCollider::EBODY:	//体
 									mHp -= DAMAGE;		//ダメージを受ける
 									((CXEnemy*)(o->mpParent))->mHit = false; //敵の攻撃のヒット判定を終了させる
+									mState = EKNOCKBACK; //ノックバック状態へ移行
+									mHit = false; //自分の攻撃のヒット判定を無効にする
+									mAttackFlag_1 = false;
+									mAttackFlag_2 = false;
+									mAttackFlag_3 = false;
+									mMove2 = CVector(0.0f, 0.0f, 0.0f);
 									break;
 								}
 							}
@@ -381,7 +395,7 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 							CXEnemy* Enemy = (CXEnemy*)o->mpParent;
 							Enemy->SetPos(Enemy->GetPos() + adjust);
 						}
-						else{
+						else {
 							//プレイヤーのポジションを調整
 							mPosition -= adjust;
 						}
@@ -401,6 +415,7 @@ CXPlayer* CXPlayer::GetInstance()
 void CXPlayer::Idle()
 {
 	ChangeAnimation(0, true, 60);	//待機モーション
+	mCombo = 0;
 }
 
 //移動処理
@@ -470,6 +485,7 @@ void CXPlayer::Attack_1()
 		mAttackFlag_1 = true;
 		mGraceTime = 0;
 		mAttackFlag_Once = true;
+		mCombo++;
 	}
 
 	if (mGraceTime > 0) {
@@ -491,8 +507,20 @@ void CXPlayer::Attack_1()
 	}
 	else if (mAnimationIndex == 4)
 	{
+		if (mAnimationFrame < GRACETIME) {
+			if (CKey::Once(VK_LBUTTON)) {
+				if (mCombo < COMBO_MAX) {
+					mState = EATTACK_3;
+				}
+				else {
+					mState = EATTACK_2;
+				}
+				mAttackFlag_1 = false;
+			}
+		}
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
+			mState = EIDLE;
 			mAttackFlag_1 = false;
 		}
 	}
@@ -514,7 +542,7 @@ void CXPlayer::Attack_2()
 	if (mAnimationIndex == 7)
 	{
 		//ヒット判定発生
-		if (mAnimationFrame == 5) {
+		if (mAnimationFrame == 8) {
 			mHit = true;
 		}
 		if (mAnimationFrame >= mAnimationFrameSize)
@@ -527,6 +555,7 @@ void CXPlayer::Attack_2()
 	{
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
+			mState = EIDLE;
 			mAttackFlag_2 = false;
 			//mHit = false;
 		}
@@ -548,6 +577,7 @@ void CXPlayer::Attack_3()
 		ChangeAnimation(5, true, 15);
 		mAttackFlag_3 = true;
 		mAttackFlag_Once = true;
+		mCombo++;
 	}
 
 	if (mAnimationIndex == 5)
@@ -564,11 +594,22 @@ void CXPlayer::Attack_3()
 	}
 	else if (mAnimationIndex == 6)
 	{
+		if (mAnimationFrame < GRACETIME) {
+			if (CKey::Once(VK_LBUTTON)) {
+				if (mCombo < COMBO_MAX) {
+					mState = EATTACK_1;
+				}
+				else {
+					mState = EATTACK_2;
+				}
+				mAttackFlag_3 = false;
+			}
+		}
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
+			mState = EIDLE;
 			mAttackFlag_3 = false;
-			mAttackFlag_1 = false;
-			mHit = false;
+			//mHit = false;
 		}
 	}
 }
@@ -602,26 +643,55 @@ void CXPlayer::Death()
 	ChangeAnimation(11, false, 60);	//倒れるアニメーション
 }
 
+//ノックバック処理
+void CXPlayer::KnockBack()
+{
+	ChangeAnimation(2, false, 20);
+
+	//ノックバック方向
+	mMoveDir = CXEnemy::GetInstance()->mPosition - mPosition;
+	mMoveDir = mMoveDir.Normalize();
+
+	//ノックバック量
+	float KnockBackAmount = 0.1f;
+
+	//ノックバックさせる
+	mPosition -= mMoveDir * KnockBackAmount;
+
+	if (mAnimationIndex == 2)
+	{
+		if (mAnimationFrame >= mAnimationFrameSize)
+		{
+			mState = EIDLE;
+		}
+	}
+}
+
 //アイテム使用処理
 void CXPlayer::ItemUse()
 {
 	switch (mItemSelect) {
-	case EEMPTY: //空
-		break;
-
 	case ETRAP:	//罠
-	{
-		//罠生成
-		CTrap* trap = new CTrap;
-		trap->SetPos(mPosition);
-		trap->SetRot(mRotation);
-		trap->Update();
-	}
+		//罠の所持数が0より多いとき
+		if (mTrapQuantity > 0) {
+			//罠の所持数を減らす
+			mTrapQuantity--;
+			//罠生成
+			CTrap* trap = new CTrap;
+			trap->SetPos(mPosition);
+			trap->SetRot(mRotation);
+			trap->Update();
+		}
 	break;
 
-	case EPORTION: //回復
-		//体力回復
-		mHp += HEAL_AMOUNT;
+	case EPORTION: //回復薬
+		//回復薬の所持数が0より多いとき、現在の体力が体力最大値を下回っているとき
+		if (mPortionQuantity > 0 && mHp < HP_MAX) {
+			//回復薬の所持数を減らす
+			mPortionQuantity--;
+			//体力を回復させる
+			mHp += HEAL_AMOUNT;
+		}
 		break;
 	}
 	//待機状態へ移行
@@ -638,15 +708,15 @@ void CXPlayer::ItemSelect()
 		//上方向
 		if (wheel > 0) {
 			mItemSelect++;
-			if (mItemSelect == mItemTail) {
-				mItemSelect = mItemHead + 1;
+			if (mItemSelect == TAIL) {
+				mItemSelect = HEAD + 1;
 			}
 		}
 		//下方向
 		else {
 			mItemSelect--;
-			if (mItemSelect == mItemHead) {
-				mItemSelect = mItemTail - 1;
+			if (mItemSelect == HEAD) {
+				mItemSelect = TAIL - 1;
 			}
 		}
 	}
