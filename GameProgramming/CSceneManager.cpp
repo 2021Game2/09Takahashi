@@ -2,6 +2,7 @@
 #include "CSceneGame.h"
 #include "CSceneTitle.h"
 #include "CSceneResult.h"
+#include "CSceneRecord.h"
 
 //コンストラクタ
 CSceneManager::CSceneManager()
@@ -43,6 +44,10 @@ void CSceneManager::Update() {
 			break;
 		case CScene::ERESULT:
 			mpScene = new CSceneResult();
+			mpScene->Init();
+			break;
+		case CScene::ERECORD:
+			mpScene = new CSceneRecord();
 			mpScene->Init();
 			break;
 		}

@@ -12,6 +12,7 @@ public:
 		ETITLE,		//タイトル
 		EGAME,		//ゲーム
 		ERESULT,	//リザルト
+		ERECORD,	//レコード
 	};
 	EScene mScene;
 

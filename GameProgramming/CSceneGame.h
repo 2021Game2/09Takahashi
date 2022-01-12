@@ -4,6 +4,7 @@
 #include "CXPlayer.h"
 #include "CXEnemy.h"
 #include "CMap.h"
+#include <time.h>
 
 /*
 ゲームのシーン
@@ -17,8 +18,8 @@ private:
 	//敵のインスタンス
 	CXEnemy mEnemy;
 
-	int mTime;
-	int mFrameCount;
+	clock_t start, end;
+	bool mCountStart; //クリア時間計測開始用
 
 public:
 	~CSceneGame();
@@ -28,6 +29,8 @@ public:
 	void Update();
 
 	EScene GetNextScene();
+
+	static float mClearTime;	//クリアまでにかかった時間
 };
 
 #endif

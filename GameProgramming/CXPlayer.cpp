@@ -708,17 +708,18 @@ void CXPlayer::ItemSelect()
 		//ã•ûŒü
 		if (wheel > 0) {
 			mItemSelect++;
-			if (mItemSelect == TAIL) {
-				mItemSelect = HEAD + 1;
-			}
 		}
 		//‰º•ûŒü
 		else {
 			mItemSelect--;
-			if (mItemSelect == HEAD) {
-				mItemSelect = TAIL - 1;
-			}
 		}
+	}
+
+	if (mItemSelect == TAIL) {
+		mItemSelect = HEAD + 1;
+	}
+	if (mItemSelect == HEAD) {
+		mItemSelect = TAIL - 1;
 	}
 }
 

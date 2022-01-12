@@ -4,8 +4,9 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "CCamera.h"
+#include <time.h>
 
-#define HP_MAX 500			//体力最大値
+#define HP_MAX 5			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
 #define ATTACK_DIS 4.0f		//攻撃可能になる距離
@@ -52,6 +53,8 @@ CXEnemy::CXEnemy()
 	mTexture.Load("Gauge.png");
 
 	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
+
+	srand((unsigned)time(NULL)); //乱数用
 }
 
 void CXEnemy::Init(CModelX* model)

@@ -12,9 +12,9 @@
 //
 #include "CCollisionManager.h"
 //
-#include "CXEnemy.h"
-
 //CMatrix Matrix;
+
+float CSceneGame::mClearTime = 0.0f; //クリアまでにかかった時間
 
 CSceneGame::~CSceneGame() {
 
@@ -22,6 +22,9 @@ CSceneGame::~CSceneGame() {
 
 void CSceneGame::Init() {
 	mScene = EGAME;
+
+	mCountStart = false;
+	mClearTime = 0.0f;
 
 	//テキストフォントの読み込みと設定
 	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
@@ -57,14 +60,10 @@ void CSceneGame::Init() {
 
 	//カメラ初期化
 	Camera.Init();
-
-	mTime = 0;
-	mFrameCount = 1;
 }
 
 
 void CSceneGame::Update() {
-
 	//更新
 	CTaskManager::Get()->Update();
 
@@ -86,17 +85,23 @@ void CSceneGame::Update() {
 	CCollisionManager::Get()->Render();
 #endif
 
-	//敵が死亡状態になるまでタイムを加算
+	//時間計測開始
+	if (mCountStart == false) {
+		start = clock();
+		mCountStart = true;
+	}
+
+	//敵が死亡状態になると時間計測終了
 	if (CXEnemy::GetInstance()->DeathFlag() != true) {
-		mFrameCount++;
-		if (mFrameCount % 60 == 0)mTime++;
+		end = clock();
 	}
 	else {
-#ifdef _DEBUG
+		//クリア時間を記録
+		mClearTime = (float)(end - start) / 1000;
+		//Enterキーを押すとリザルト画面に移行する
 		if (CKey::Once(VK_RETURN)) {
 			mScene = ERESULT;
 		}
-#endif
 	}
 
 	//2D描画開始
@@ -106,8 +111,12 @@ void CSceneGame::Update() {
 	//確認用、後で削除
 	char buf[64];
 	//タイム
-	sprintf(buf, "TIME:%d", mTime);
+	sprintf(buf, "TIME:%06.2f", (float)(end - start) / 1000);
 	mFont.DrawString(buf, 50, 100, 10, 12);
+
+	if (CXEnemy::GetInstance()->DeathFlag() == true) {
+		mFont.DrawString("PUSH ENTER", 50, 50, 20, 20);
+	}
 #endif
 
 	//2Dの描画終了
