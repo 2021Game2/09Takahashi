@@ -56,6 +56,8 @@ public:
 
 	//コールバック系の数値をﾘｾｯﾄ
 	static void InputReset();
+
+	static void CInput::SetMousePosW(int x, int y);
 };
 
 #endif

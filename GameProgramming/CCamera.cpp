@@ -9,6 +9,9 @@
 //カメラの外部変数
 CCamera Camera;
 
+#define WIN_X WINDOW_WIDTH/2
+#define WIN_Y WINDOW_HEIGHT/2
+
 void CCamera::Init()
 {
 	//カメラのパラメータを作成する
@@ -22,6 +25,11 @@ void CCamera::Init()
 
 	//カメラクラスの設定
 	Set(e, c, u);
+}
+
+CCamera::CCamera()
+	:mSkip(true)
+{
 }
 
 void CCamera::Set(const CVector &eye, const CVector &center,
@@ -45,17 +53,24 @@ void CCamera::SetTarget(const CVector& target)
 void CCamera::Update() {
 	static int oldMouseX(0), oldMouseY(0);
 	int mouseX(0), mouseY(0);
-	CInput::GetMousePos(&mouseX, &mouseY);
+	CInput::GetMousePosW(&mouseX, &mouseY);
 
 
 	float moveX = (float)(oldMouseX - mouseX);
 	float moveY = (float)(oldMouseY - mouseY);
 
 
-	if (CInput::GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-		if (moveX != 0) mAngleX += (moveX * 0.01f);
-		if (moveY != 0) mAngleY += (moveY * 0.01f);
+	if (mSkip == false) {
+		if (moveX != 0) mAngleX += (moveX * 0.005f);
+		if (moveY != 0) mAngleY += (moveY * 0.005f);
 	}
+	mSkip = false;
+
+	int X = WIN_X;
+	int Y = WIN_Y;
+	CInput::SetMousePosW(X, Y);
+	oldMouseX = X;
+	oldMouseY = Y;
 
 	/*
 	int wheel = CInput::GetWheelValue();
@@ -104,9 +119,10 @@ void CCamera::Update() {
 	mCenter = mTarget;
 	mCenter.mY += DEF_CAMERA_HEAD_ADJUST;//頭上補正
 	mEye = mPos;
-
+	/*
 	oldMouseX = mouseX;
 	oldMouseY = mouseY;
+	*/
 	CInput::InputReset();
 
 }

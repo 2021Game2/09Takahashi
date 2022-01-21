@@ -4,9 +4,10 @@
 
 class CTrap :public CCharacter {
 private:
-	static CTrap* mInstance;
 	CCollider mCollider;
 	CModel mModel;
+
+	bool mEnemyCol; //“G‚Æ“–‚½‚é‚Ætrue
 public:
 	CTrap();
 
@@ -14,6 +15,7 @@ public:
 
 	void Collision(CCollider* m, CCollider* o);
 
+	static CTrap* mInstance;
 	static CTrap* GetInstance();
 
 	void SetPos(CVector hpos);	//ˆÊ’u‚ğİ’è

@@ -6,7 +6,7 @@
 #include "CCamera.h"
 #include <time.h>
 
-#define HP_MAX 10			//体力最大値
+#define HP_MAX 750			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
 #define ATTACK_DIS 5.0f		//攻撃可能になる距離
@@ -15,7 +15,7 @@
 #define SPEED_ATTACK_2 0.2f //攻撃2状態の移動速度
 #define CHASE_DIS_MAX 20.0f	//追跡可能な最大距離
 #define SEARCH_DIS 15.0f	//追跡を開始する距離
-#define STUN_TIME 480		//罠にかかった時のスタン時間
+#define STUN_TIME 420		//罠にかかった時のスタン時間
 #define AVOID_DIS 6.0f		//回避可能になる距離
 #define GAUGE_WID_MAX 50.0f	//ゲージの幅の最大値
 
@@ -386,7 +386,7 @@ void CXEnemy::Chase()
 	//プレイヤーとの距離が攻撃可能な距離のとき、ランダムで攻撃状態へ移行
 	if (mPlayerDis <= ATTACK_DIS) {
 		//攻撃するか判定
-		random = rand() % 180;
+		random = rand() % 240;
 		if (random == 0){
 			//攻撃の種類を決める
 			random = rand() % 2;
@@ -412,7 +412,7 @@ void CXEnemy::Chase()
 void CXEnemy::Attack_1()
 {
 	//mMoveDirにプレイヤー方向のベクトルを入れる
-	//mMoveDir = mPlayerPoint.Normalize();
+	mMoveDir = mPlayerPoint.Normalize();
 
 	ChangeAnimation(7, false, 75);
 

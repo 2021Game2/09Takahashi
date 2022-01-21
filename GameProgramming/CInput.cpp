@@ -82,3 +82,8 @@ void CInput::InputReset()
 	sm_wheel = 0;
 }
 
+void CInput::SetMousePosW(int x, int y)
+{
+	glfwSetCursorPos(mpWindow, x, y);
+}
+

@@ -8,6 +8,7 @@ CTrap* CTrap::mInstance;
 
 CTrap::CTrap()
 	:mCollider(this, &mMatrix, CVector(0.0f, 0.0f, 0.0f), 1.0f)
+	,mEnemyCol(false)
 {
 	mTag = ETRAP;	//ã©
 	mCollider.mTag = CCollider::EBODY;	//–{‘Ì
@@ -20,6 +21,10 @@ CTrap::CTrap()
 
 void CTrap::Update()
 {
+	//“–‚½‚Á‚½‚çYÀ•W‚ğ‰º‚°‚é
+	if (mEnemyCol == true) {
+		mPosition.mY = -10.0f;
+	}
 	CTransform::Update();
 }
 
@@ -37,8 +42,8 @@ void CTrap::Collision(CCollider* m, CCollider* o)
 					{
 						if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN && ((CXEnemy*)(o->mpParent))->mState != CXEnemy::EDEATH)
 						{
-							//ã©‚ğíœ
-							mEnabled = false;
+							mEnemyCol = true;
+							CTrapManager::GetInstance()->mMapTrap = false;
 						}
 					}
 				}

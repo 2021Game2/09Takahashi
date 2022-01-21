@@ -10,6 +10,7 @@
 */
 class CCamera {
 public:
+	CCamera();
 	//視点
 	CVector mEye;
 	//注視点
@@ -48,6 +49,8 @@ public:
 	//pOut 結果格納用
 	//pos 2Dに変換したいワールド座標
 	bool WorldToScreen(CVector* pOut, const CVector& pos);
+
+	bool mSkip;
 };
 
 //カメラの外部参照

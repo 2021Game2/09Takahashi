@@ -7,8 +7,6 @@ private:
 		EBACKGROUND = 0,//背景
 		EGAMESTART,		//ゲームスタート
 		ERECORD,		//レコード
-		EMANUAL,		//マニュアル
-		
 	};
 	int mSelect;
 

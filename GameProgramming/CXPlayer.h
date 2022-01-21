@@ -59,7 +59,6 @@ private:
 		TAIL,
 	};
 	int mItemSelect;		//選択中のアイテム
-	int mTrapQuantity;		//罠の所持数
 	int mPortionQuantity;	//回復薬の所持数
 
 	void Idle();		//待機処理

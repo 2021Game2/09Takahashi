@@ -75,6 +75,8 @@ void CSceneGame::Init() {
 		CVector(), CVector(4.0f, 3.0f, 4.0f));
 
 	CTrapManager::Generate();
+
+	ShowCursor(false);
 }
 
 
@@ -116,6 +118,7 @@ void CSceneGame::Update() {
 		//Enterキーを押すとリザルトに移行する
 		if (CKey::Once(VK_RETURN)) {
 			mScene = ERESULT;
+			ShowCursor(true);
 		}
 	}
 
@@ -124,6 +127,7 @@ void CSceneGame::Update() {
 		//Enterキーでタイトルに移行する
 		if (CKey::Once(VK_RETURN)) {
 			mScene = ETITLE;
+			ShowCursor(true);
 		}
 	}
 

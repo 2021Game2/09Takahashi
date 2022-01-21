@@ -6,7 +6,6 @@
 #include <math.h>
 #include "CInput.h"
 #include "CXEnemy.h"
-#include "CTrap.h"
 #include "CTrapManager.h"
 
 #define GRAVITY 0.9f			//重力
@@ -27,7 +26,6 @@
 
 #define PORTION_QUANTITY 5		//回復薬の所持数
 #define HEAL_AMOUNT 30			//回復薬を使用したときの回復量
-#define TRAP_QUANTITY 3			//罠の所持数
 
 #define GAUGE_WID_MAX 350.0f	//ゲージの幅の最大値
 
@@ -60,7 +58,6 @@ CXPlayer::CXPlayer()
 	, mItemSelect(HEAD + 1)
 	, mAttackFlag_Once(false)
 	,mCombo(0)
-	,mTrapQuantity(TRAP_QUANTITY)
 	,mPortionQuantity(PORTION_QUANTITY)
 {
 	//タグにプレイヤーを設定します
@@ -307,7 +304,7 @@ void CXPlayer::Render2D()
 	switch (mItemSelect) {	
 	case ETRAP: //罠
 		mItemTexture2.Draw(650, 750, 50, 150, 0, 255, 255, 0); //罠画像
-		sprintf(buf, "%d", mTrapQuantity);
+		sprintf(buf, "%d", CTrapManager::GetInstance()->mTrapQuantity);
 		break;
 	case EPORTION: //回復
 		mItemTexture.Draw(650, 750, 50, 150, 0, 255, 255, 0); //回復画像
@@ -677,14 +674,9 @@ void CXPlayer::ItemUse()
 {
 	switch (mItemSelect) {
 	case ETRAP:	//罠
-		//罠の所持数が0より多いとき
-		if (mTrapQuantity > 0) {
-			//罠の所持数を減らす
-			mTrapQuantity--;
-			//罠生成
-			CTrapManager::GetInstance()->TrapGenerate(mPosition, mRotation);
-		}
-	break;
+		//罠生成
+		CTrapManager::GetInstance()->TrapGenerate(mPosition, mRotation);
+		break;
 
 	case EPORTION: //回復薬
 		//回復薬の所持数が0より多いとき、現在の体力が体力最大値を下回っているとき

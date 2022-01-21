@@ -27,18 +27,13 @@ void CSceneTitle::Update()
 	mSelect = EBACKGROUND;
 
 	if ((mouseX >= 240 - 20 && mouseX <= (240 - 20) + (40 * 9)) &&
-		(mouseY >= 230 - 20 && mouseY <= 230 + 20)) {
+		(mouseY >= 220 - 20 && mouseY <= 220 + 20)) {
 		mSelect = EGAMESTART;
 	}
 
 	if ((mouseX >= 300 - 20 && mouseX <= (300 - 20) + (40 * 6)) &&
-		(mouseY >= 160 - 20 && mouseY <= 160 + 20)) {
+		(mouseY >= 120 - 20 && mouseY <= 120 + 20)) {
 		mSelect = CSceneTitle::ERECORD;
-	}
-
-	if ((mouseX >= 300 - 20 && mouseX <= (300 - 20) + (40 * 6)) &&
-		(mouseY >= 90 - 20 && mouseY <= 90 + 20)) {
-		mSelect = EMANUAL;
 	}
 
 	if (CKey::Once(VK_LBUTTON)) {
@@ -51,9 +46,6 @@ void CSceneTitle::Update()
 			mScene = CScene::ERECORD;
 			break;
 
-		case EMANUAL:
-			break;
-
 		default:
 			break;
 		}
@@ -61,30 +53,25 @@ void CSceneTitle::Update()
 
 	CUtil::Start2D(0, 800, 0, 600);
 
-	mFont.DrawString("TITLE", 200, 450, 50, 50);
+	mFont.DrawString("BATTLE", 200, 500, 40, 40);
+	mFont.DrawString("COLISEUM", 120, 400, 40, 40);
 
 	switch (mSelect) {
 	case EGAMESTART:
-		mTexture.Draw(220, 580, 210, 250, 338, 338, 20, 20);
+		mTexture.Draw(220, 580, 200, 240, 338, 338, 20, 20);
 		break;
 
 	case CSceneTitle::ERECORD:
-		mTexture.Draw(280, 520, 140, 180, 338, 338, 20, 20);
-		break;
-
-	case EMANUAL:
-		mTexture.Draw(280, 520, 70, 110, 338, 338, 20, 20);
+		mTexture.Draw(280, 520, 100, 140, 338, 338, 20, 20);
 		break;
 
 	default:
 		break;
 	}
 
-	mFont.DrawString("GAMESTART", 240, 230, 20, 20);
+	mFont.DrawString("GAMESTART", 240, 220, 20, 20);
 
-	mFont.DrawString("RECORD", 300, 160, 20, 20);
-
-	mFont.DrawString("MANUAL", 300, 90, 20, 20);
+	mFont.DrawString("RECORD", 300, 120, 20, 20);
 
 	CUtil::End2D();
 }

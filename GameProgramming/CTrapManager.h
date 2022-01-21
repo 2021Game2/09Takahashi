@@ -20,4 +20,7 @@ public:
 	static CModel sTrap;
 
 	void TrapGenerate(CVector pos, CVector rot); //ã©¶¬
+
+	int mTrapQuantity;		//ã©‚ÌŠ”
+	bool mMapTrap;			//ƒ}ƒbƒvã‚Éã©‚ª‚ ‚é‚Ætrue
 };
