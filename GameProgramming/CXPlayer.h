@@ -88,6 +88,8 @@ public:
 	//m:自分のコライダ o:相手のコライダ
 	void Collision(CCollider* m, CCollider* o);
 
+	static CXPlayer* GetInstance();
+
 	//プレイヤーの状態
 	enum EPlayerState
 	{
@@ -106,7 +108,6 @@ public:
 
 	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
 	bool mAttackFlag_Once; //攻撃した瞬間だけtrueを返す
-	static CXPlayer* GetInstance();
 };
 
 #endif

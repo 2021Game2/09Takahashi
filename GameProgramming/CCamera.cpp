@@ -95,7 +95,7 @@ void CCamera::Update() {
 
 	//Yé≤êßå¿ 0Å`3.14Ç™180ìxîÕàÕ
 	if (mAngleY < 0.05f) mAngleY = 0.05f;
-	if (mAngleY > 3.12f) mAngleY = 3.12f;
+	if (mAngleY > 1.51f) mAngleY = 1.51f;
 
 	mPos.mX = mTarget.mX + (sinf(mAngleX)) * (mDist * sinf(mAngleY));
 	mPos.mY = mTarget.mY + cosf(mAngleY) * mDist;

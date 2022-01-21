@@ -6,10 +6,10 @@
 #include "CCamera.h"
 #include <time.h>
 
-#define HP_MAX 5			//体力最大値
+#define HP_MAX 10			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
-#define ATTACK_DIS 4.0f		//攻撃可能になる距離
+#define ATTACK_DIS 5.0f		//攻撃可能になる距離
 #define SPEED_MOVE 0.05f	//通常移動のスピード
 #define SPEED_CHASE 0.1f	//追跡中の移動速度
 #define SPEED_ATTACK_2 0.2f //攻撃2状態の移動速度
@@ -229,7 +229,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 								mHp -= DAMAGE_BODY;	//ダメージを受ける(体)	
 								((CXPlayer*)(o->mpParent))->mHit = false;
 								//スタン状態で無ければノックバック状態へ移行
-								if (mState != ESTUN) {
+								if (mState != ESTUN&&mState!=EATTACK_1&&mState!=EATTACK_2) {
 									mState = EKNOCKBACK;
 									mHit = false; //自分の攻撃のヒット判定を終了させる
 								}
@@ -239,7 +239,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 								mHp -= DAMAGE_HEAD;	//ダメージを受ける(頭)
 								((CXPlayer*)(o->mpParent))->mHit = false;
 								//スタン状態で無ければノックバック状態へ移行
-								if (mState != ESTUN) {
+								if (mState != ESTUN && mState != EATTACK_1 && mState != EATTACK_2) {
 									mState = EKNOCKBACK;
 									mHit = false; //自分の攻撃のヒット判定を終了させる
 								}
@@ -272,6 +272,30 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 				}
 			}
 		}
+		//相手が三角コライダ
+		if (o->mType == CCollider::ETRIANGLE)
+		{
+			//相手の親のタグがマップ
+			if (o->mpParent->mTag == EMAP)
+			{
+				//自分のコライダのタグが頭or体
+				if (m->mTag == CCollider::EHEAD || m->mTag == CCollider::EBODY) {
+					CVector adjust;
+					//マップの壁に当たったとき
+					if (CCollider::CollisionTriangleSphere(o, m, &adjust)) {
+						//マップ外に出ていかないよう位置を調整
+						mPosition += adjust;
+						//移動状態のとき
+						if (mState == EAUTOMOVE) {
+							//目標地点を更新
+							mPoint = mPosition;
+							mPoint.mX += -15.0f + (float)(rand() % 30);
+							mPoint.mZ += 15.0f - (float)(rand() % 15); 
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -281,13 +305,16 @@ void CXEnemy::Idle()
 	//待機アニメーション
 	ChangeAnimation(2, true, 200);
 
-	//プレイヤーが一定距離まで近づくと追跡状態へ移行
-	if (mPlayerDis <= SEARCH_DIS) {
-		mState = ECHASE;
+	//プレイヤーが死亡状態では無いとき
+	if (CXPlayer::GetInstance()->mState != CXPlayer::EPlayerState::EDEATH) {
+		//プレイヤーが一定距離まで近づくと追跡状態へ移行
+		if (mPlayerDis <= SEARCH_DIS) {
+			mState = ECHASE;
+		}
 	}
 
 	//待機状態中ランダムで移動状態へ移行
-	int random = rand() % 180;
+	int random = rand() % 240;
 	if (random == 0) {
 		//目標地点を設定
 		mPoint = mPosition;
@@ -312,9 +339,12 @@ void CXEnemy::AutoMove()
 	//mMoveDirに目標地点方向のベクトルを入れる
 	mMoveDir = Point.Normalize();
 
-	//プレイヤーが一定距離まで近づくと追跡状態へ移行
-	if (mPlayerDis <= SEARCH_DIS) {
-		mState = ECHASE;
+	//プレイヤーが死亡状態では無いとき
+	if (CXPlayer::GetInstance()->mState != CXPlayer::EPlayerState::EDEATH) {
+		//プレイヤーが一定距離まで近づくと追跡状態へ移行
+		if (mPlayerDis <= SEARCH_DIS) {
+			mState = ECHASE;
+		}
 	}
 
 	//目標地点までの距離
@@ -356,7 +386,7 @@ void CXEnemy::Chase()
 	//プレイヤーとの距離が攻撃可能な距離のとき、ランダムで攻撃状態へ移行
 	if (mPlayerDis <= ATTACK_DIS) {
 		//攻撃するか判定
-		random = rand() % 90;
+		random = rand() % 180;
 		if (random == 0){
 			//攻撃の種類を決める
 			random = rand() % 2;
@@ -372,7 +402,7 @@ void CXEnemy::Chase()
 	}
 
 	//追跡状態中にランダムで攻撃2状態へ移行
-	random = rand() % 350;
+	random = rand() % 360;
 	if (random == 0) {
 		mState = EATTACK_2;
 	}
@@ -399,7 +429,6 @@ void CXEnemy::Attack_1()
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			mState = EIDLE;
-			//mHit = false;
 		}
 	}
 }
@@ -436,7 +465,6 @@ void CXEnemy::Attack_2()
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			mState = EIDLE;	//待機状態へ移行
-			//mHit = false;
 		}
 	}
 }
@@ -494,7 +522,7 @@ void CXEnemy::Avoid()
 	if (mAnimationIndex == 15) {
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
-			int random = rand() % 4;
+			int random = rand() % 2;
 			//回避後ランダムで攻撃2状態へ移行する
 			if (random == 0) {
 				mState = EATTACK_2;

@@ -1,15 +1,14 @@
 #pragma once
-#include "CXCharacter.h"
+#include "CCharacter.h"
 #include "CCollider.h"
 
-class CTrap :public CXCharacter {
+class CTrap :public CCharacter {
 private:
 	static CTrap* mInstance;
 	CCollider mCollider;
+	CModel mModel;
 public:
 	CTrap();
-
-	void Init(CModelX* model);
 
 	void Update();
 

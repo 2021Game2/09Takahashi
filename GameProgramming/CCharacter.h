@@ -23,6 +23,7 @@ public:
 		EBULLETPLAYER,	//プレイヤー弾
 		EBULLETENEMY,	//敵弾
 		ETRAP,			//罠
+		EMAP,			//マップ
 	};
 	ETag mTag;
 	CModel *mpModel; //モデルのポインタ

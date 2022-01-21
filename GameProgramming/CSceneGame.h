@@ -13,6 +13,9 @@ class CSceneGame : public CScene {
 private:
 	//マップのインスタンス
 	CMap mMap;
+
+	CModel mMap2;
+
 	//キャラクタのインスタンス
 	CXPlayer mPlayer;
 	//敵のインスタンス

@@ -19,8 +19,8 @@ void CSceneRecord::Init()
 
 void CSceneRecord::Update()
 {
-	//Enterキーを押すとタイトルへ移行する
-	if (CKey::Once(VK_RETURN)) {
+	//左クリックorEnterキーでタイトルへ移行する
+	if (CKey::Once(VK_LBUTTON) || CKey::Once(VK_RETURN)) {
 		mScene = ETITLE;
 	}
 

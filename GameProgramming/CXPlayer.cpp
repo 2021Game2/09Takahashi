@@ -7,6 +7,7 @@
 #include "CInput.h"
 #include "CXEnemy.h"
 #include "CTrap.h"
+#include "CTrapManager.h"
 
 #define GRAVITY 0.9f			//重力
 #define HP_MAX 100				//体力最大値
@@ -26,7 +27,7 @@
 
 #define PORTION_QUANTITY 5		//回復薬の所持数
 #define HEAL_AMOUNT 30			//回復薬を使用したときの回復量
-#define TRAP_QUANTITY 2			//罠の所持数
+#define TRAP_QUANTITY 3			//罠の所持数
 
 #define GAUGE_WID_MAX 350.0f	//ゲージの幅の最大値
 
@@ -267,17 +268,6 @@ void CXPlayer::Update()
 
 	if (mHp > HP_MAX)mHp = HP_MAX;
 
-	//後で削除する
-	//////////////////////////////
-#ifdef _DEBUG
-	//リターンを押すと復活
-	if (mHp<=0&&CKey::Once(VK_RETURN)) {
-		mHp = HP_MAX;
-		mState = EIDLE;
-	}
-#endif
-	//////////////////////////////
-
 	//注視点
 	Camera.SetTarget(mPosition);
 
@@ -399,6 +389,21 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 							//プレイヤーのポジションを調整
 							mPosition -= adjust;
 						}
+					}
+				}
+			}
+		}
+		//相手が三角コライダ
+		if (o->mType == CCollider::ETRIANGLE)
+		{
+			//相手の親のタグがマップ
+			if (o->mpParent->mTag == EMAP)
+			{
+				//自分のコライダのタグが頭or体
+				if (m->mTag == CCollider::EHEAD || m->mTag == CCollider::EBODY) {
+					CVector adjust;
+					if (CCollider::CollisionTriangleSphere(o, m, &adjust)) {
+						mPosition += adjust;
 					}
 				}
 			}
@@ -640,7 +645,7 @@ void CXPlayer::Avoid()
 //死亡処理
 void CXPlayer::Death()
 {
-	ChangeAnimation(11, false, 60);	//倒れるアニメーション
+	ChangeAnimation(11, false, 50);	//倒れるアニメーション
 }
 
 //ノックバック処理
@@ -677,10 +682,7 @@ void CXPlayer::ItemUse()
 			//罠の所持数を減らす
 			mTrapQuantity--;
 			//罠生成
-			CTrap* trap = new CTrap;
-			trap->SetPos(mPosition);
-			trap->SetRot(mRotation);
-			trap->Update();
+			CTrapManager::GetInstance()->TrapGenerate(mPosition, mRotation);
 		}
 	break;
 

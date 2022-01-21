@@ -3,16 +3,17 @@
 
 class CSceneTitle :public CScene {
 private:
-	enum EMenu {
-		HEAD = 0,
-		EGAMESTART,	//ゲームスタート
-		ERECORD,	//レコード
-		EMANUAL,	//マニュアル
-		TAIL,
+	enum ESelect {
+		EBACKGROUND = 0,//背景
+		EGAMESTART,		//ゲームスタート
+		ERECORD,		//レコード
+		EMANUAL,		//マニュアル
+		
 	};
-	int mSelectMenu;
+	int mSelect;
 
-	void MenuSelect();
+	CTexture mTexture;
+
 public:
 	CSceneTitle();
 	void Init();

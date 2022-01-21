@@ -12,12 +12,19 @@
 //
 #include "CCollisionManager.h"
 //
+#include "CMap2.h"
+//
+#include "CTrap.h"
+//
+#include "CTrapManager.h"
+//
 //CMatrix Matrix;
 
 float CSceneGame::mClearTime = 0.0f; //クリアまでにかかった時間
 
 CSceneGame::~CSceneGame() {
-
+	CTrapManager::Release();
+	CMap2::Release();
 }
 
 void CSceneGame::Init() {
@@ -50,16 +57,24 @@ void CSceneGame::Init() {
 
 	//キャラクターにモデルを設定
 	mPlayer.Init(&CRes::sModelX);
+	mPlayer.mPosition = CVector(0.0f, 0.0f, 20.0f);
+	mPlayer.mRotation = CVector(0.0f, 180.0f, 0.0f);
 
 	//敵の初期設定
 	mEnemy.Init(&CRes::sKnight);
 	mEnemy.mAnimationFrameSize = 1024;
 	//敵の配置
-	mEnemy.mPosition = CVector(20.0f, 0.0f, 0.0f);
+	mEnemy.mPosition = CVector(0.0f, 0.0f, -10.0f);
 	//mEnemy.ChangeAnimation(2, true, 200);
 
 	//カメラ初期化
 	Camera.Init();
+
+	mMap2.Load("Colosseum.obj", "Colosseum.mtl");
+	new CMap2(&mMap2, CVector(0.0f, -5.0f, 0.0f),
+		CVector(), CVector(4.0f, 3.0f, 4.0f));
+
+	CTrapManager::Generate();
 }
 
 
@@ -98,9 +113,17 @@ void CSceneGame::Update() {
 	else {
 		//クリア時間を記録
 		mClearTime = (float)(end - start) / 1000;
-		//Enterキーを押すとリザルト画面に移行する
+		//Enterキーを押すとリザルトに移行する
 		if (CKey::Once(VK_RETURN)) {
 			mScene = ERESULT;
+		}
+	}
+
+	//プレイヤーが死亡状態のとき
+	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {
+		//Enterキーでタイトルに移行する
+		if (CKey::Once(VK_RETURN)) {
+			mScene = ETITLE;
 		}
 	}
 
@@ -113,11 +136,16 @@ void CSceneGame::Update() {
 	//タイム
 	sprintf(buf, "TIME:%06.2f", (float)(end - start) / 1000);
 	mFont.DrawString(buf, 50, 100, 10, 12);
-
-	if (CXEnemy::GetInstance()->DeathFlag() == true) {
-		mFont.DrawString("PUSH ENTER", 50, 50, 20, 20);
-	}
 #endif
+
+	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {
+		mFont.DrawString("GAMEOVER", 120, 300, 40, 40);
+		mFont.DrawString("PUSH ENTER", 30, 30, 20, 20);
+	}
+	else if (CXEnemy::GetInstance()->DeathFlag() == true) {
+		mFont.DrawString("CLEAR", 230, 300, 40, 40);
+		mFont.DrawString("PUSH ENTER", 30, 30, 20, 20);
+	}
 
 	//2Dの描画終了
 	CUtil::End2D();

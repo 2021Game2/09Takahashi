@@ -2,29 +2,25 @@
 #include "CXPlayer.h"
 #include "CXEnemy.h"
 #include "CRes.h"
+#include "CTrapManager.h"
 
 CTrap* CTrap::mInstance;
 
 CTrap::CTrap()
 	:mCollider(this, &mMatrix, CVector(0.0f, 0.0f, 0.0f), 1.0f)
 {
-	Init(&CRes::sModelX);
-
 	mTag = ETRAP;	//ã©
 	mCollider.mTag = CCollider::EBODY;	//–{‘Ì
-	mScale = CVector(0.3f, 0.3f, 0.3f);
+	mScale = CVector(7.0f, 7.0f, 7.0f);
+
+	mpModel = &CTrapManager::sTrap;
 
 	mInstance = this;
 }
 
-void CTrap::Init(CModelX* model)
-{
-	CXCharacter::Init(model);
-}
-
 void CTrap::Update()
 {
-	CXCharacter::Update();
+	CTransform::Update();
 }
 
 void CTrap::Collision(CCollider* m, CCollider* o)
@@ -41,7 +37,8 @@ void CTrap::Collision(CCollider* m, CCollider* o)
 					{
 						if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN && ((CXEnemy*)(o->mpParent))->mState != CXEnemy::EDEATH)
 						{
-							mEnabled = false;	//“G‚É“–‚½‚é‚ÆÁ‚¦‚é
+							//ã©‚ğíœ
+							mEnabled = false;
 						}
 					}
 				}
