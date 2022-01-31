@@ -6,6 +6,6 @@ CMap::CMap()
 	mScale = CVector(1.0f, 1.0f, 1.0f);
 	CTransform::Update();
 
-	mModel.Load("sky.obj", "sky.mtl");
+	mModel.Load("Resource\\sky.obj", "Resource\\sky.mtl");
 	mpModel = &mModel;
 }

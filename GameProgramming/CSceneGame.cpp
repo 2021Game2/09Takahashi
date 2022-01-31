@@ -34,10 +34,10 @@ void CSceneGame::Init() {
 	mClearTime = 0.0f;
 
 	//テキストフォントの読み込みと設定
-	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
+	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
 
 	CRes::sModelX.Load(MODEL_FILE);
-	CRes::sKnight.Load("knight\\knight_low.x");
+	CRes::sKnight.Load("Resource\\knight\\knight_low.x");
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//1:移動
 	CRes::sKnight.SeparateAnimationSet(0, 1530, 1830, "idle1");//2:待機
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//3:ダミー
@@ -52,7 +52,6 @@ void CSceneGame::Init() {
 	CRes::sKnight.SeparateAnimationSet(0, 90, 160, "knockback");//12:ノックバック
 	CRes::sKnight.SeparateAnimationSet(0, 1120, 1160, "stun");//13:スタン
 	CRes::sKnight.SeparateAnimationSet(0, 170, 220, "Dash");//14:ダッシュ
-
 	CRes::sKnight.SeparateAnimationSet(0, 380, 430, "Jump");//15:ジャンプ
 
 	//キャラクターにモデルを設定
@@ -70,7 +69,7 @@ void CSceneGame::Init() {
 	//カメラ初期化
 	Camera.Init();
 
-	mMap2.Load("Colosseum.obj", "Colosseum.mtl");
+	mMap2.Load("Resource\\Colosseum.obj", "Resource\\Colosseum.mtl");
 	new CMap2(&mMap2, CVector(0.0f, -5.0f, 0.0f),
 		CVector(), CVector(4.0f, 3.0f, 4.0f));
 

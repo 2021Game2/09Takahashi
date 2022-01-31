@@ -9,8 +9,8 @@
 //ÉJÉÅÉâÇÃäOïîïœêî
 CCamera Camera;
 
-#define WIN_X WINDOW_WIDTH/2
-#define WIN_Y WINDOW_HEIGHT/2
+#define WIN_CENTRAL_X WINDOW_WIDTH/2
+#define WIN_CENTRAL_Y WINDOW_HEIGHT/2
 
 void CCamera::Init()
 {
@@ -29,6 +29,9 @@ void CCamera::Init()
 
 CCamera::CCamera()
 	:mSkip(true)
+	,mAngleX(0.0f)
+	,mAngleY(0.0f)
+	,mDist(0.0f)
 {
 }
 
@@ -66,8 +69,8 @@ void CCamera::Update() {
 	}
 	mSkip = false;
 
-	int X = WIN_X;
-	int Y = WIN_Y;
+	int X = WIN_CENTRAL_X;
+	int Y = WIN_CENTRAL_Y;
 	CInput::SetMousePosW(X, Y);
 	oldMouseX = X;
 	oldMouseY = Y;

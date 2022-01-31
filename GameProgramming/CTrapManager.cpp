@@ -11,7 +11,7 @@ CTrapManager::CTrapManager()
 	:mMapTrap(false)
 	, mTrapQuantity(TRAP_QUANTITY)
 {
-	sTrap.Load("trap.obj", "trap.mtl");
+	sTrap.Load("Resource\\trap.obj", "Resource\\trap.mtl");
 }
 
 CTrapManager::~CTrapManager()

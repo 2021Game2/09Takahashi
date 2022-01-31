@@ -17,8 +17,8 @@ CSceneResult::CSceneResult()
 void CSceneResult::Init()
 {
 	mScene = ERESULT;
-	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
-	mBackGroundTexture.Load("Result_Back.png");
+	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
+	mBackGroundTexture.Load("Resource\\Result_Back.png");
 
 	mNewRecord = 6;
 

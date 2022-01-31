@@ -6,7 +6,7 @@
 #include "CCamera.h"
 #include <time.h>
 
-#define HP_MAX 750			//‘Ì—ÍÅ‘å’l
+#define HP_MAX 500			//‘Ì—ÍÅ‘å’l
 #define DAMAGE_BODY 10		//ƒ_ƒ[ƒW(‘Ì)
 #define DAMAGE_HEAD 20		//ƒ_ƒ[ƒW(“ª)
 #define ATTACK_DIS 5.0f		//UŒ‚‰Â”\‚É‚È‚é‹——£
@@ -50,9 +50,9 @@ CXEnemy::CXEnemy()
 
 	mInstance = this;
 
-	mTexture.Load("Gauge.png");
+	mTexture.Load("Resource\\Gauge.png");
 
-	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
+	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
 
 	srand((unsigned)time(NULL)); //—”—p
 }
@@ -179,12 +179,13 @@ void CXEnemy::Render2D()
 	float hpRate = (float)mHp / (float)HP_MAX;
 	//‘Ì—ÍƒQ[ƒW‚Ì•
 	float hpGaugeWid = GAUGE_WID_MAX * hpRate;
-
-	//ƒQ[ƒW”wŒi
-	mTexture.Draw(ret.mX - GAUGE_WID_MAX, ret.mX + GAUGE_WID_MAX, ret.mY + 30.0f, ret.mY + 45.0f, 210, 290, 63, 0);
-	//‘Ì—ÍƒQ[ƒW
-	mTexture.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX - GAUGE_WID_MAX) + hpGaugeWid * 2.0f, ret.mY + 30.0f, ret.mY + 45.0f, 0, 0, 0, 0);
-
+	
+	if (ret.mX > 0 && ret.mX < 800) {
+		//ƒQ[ƒW”wŒi
+		mTexture.Draw(ret.mX - GAUGE_WID_MAX, ret.mX + GAUGE_WID_MAX, ret.mY + 30.0f, ret.mY + 45.0f, 210, 290, 63, 0);
+		//‘Ì—ÍƒQ[ƒW
+		mTexture.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX - GAUGE_WID_MAX) + hpGaugeWid * 2.0f, ret.mY + 30.0f, ret.mY + 45.0f, 0, 0, 0, 0);
+	}
 #ifdef _DEBUG
 	char buf[64];
 	sprintf(buf, "EATTACKHIT:%d", mHit);

@@ -9,13 +9,13 @@
 CSceneTitle::CSceneTitle()
 	:mSelect(EBACKGROUND)
 {
-	mTexture.Load("Gauge.png");
+	mTexture.Load("Resource\\Gauge.png");
 }
 
 void CSceneTitle::Init()
 {
 	mScene = ETITLE;
-	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
+	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
 }
 
 void CSceneTitle::Update()

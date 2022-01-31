@@ -70,11 +70,11 @@ CXPlayer::CXPlayer()
 
 	mInstance = this;
 
-	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
+	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
 
-	mTexture.Load("Gauge.png");
-	mItemTexture.Load("Portion.png");
-	mItemTexture2.Load("Trap.png");
+	mTexture.Load("Resource\\Gauge.png");
+	mItemTexture.Load("Resource\\Portion.png");
+	mItemTexture2.Load("Resource\\Trap.png");
 }
 
 void CXPlayer::Init(CModelX* model)

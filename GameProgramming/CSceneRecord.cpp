@@ -13,8 +13,8 @@ CSceneRecord::CSceneRecord()
 void CSceneRecord::Init()
 {
 	mScene = ERECORD;
-	mFont.LoadTexture("FontG.png", 1, 4096 / 64);
-	mBackGroundTexture.Load("Result_Back.png");
+	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
+	mBackGroundTexture.Load("Resource\\Result_Back.png");
 }
 
 void CSceneRecord::Update()

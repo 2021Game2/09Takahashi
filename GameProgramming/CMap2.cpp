@@ -20,7 +20,7 @@ CMap2::CMap2(CModel* model, CVector position,
 	CTransform::Update();
 
 	CModel Cylinder;
-	Cylinder.Load("Cylinder.obj", "Cylinder.mtl");
+	Cylinder.Load("Resource\\Cylinder.obj", "Resource\\Cylinder.mtl");
 	mMatrixCol = CMatrix().Scale(1.0f, 1.0f, 1.0f) * mMatrix;
 	mColliderMesh.Set(this, &mMatrixCol, &Cylinder);
 
