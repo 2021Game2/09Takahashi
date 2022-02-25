@@ -20,6 +20,10 @@
 //
 //CMatrix Matrix;
 
+#define FONT "Resource\\FontG.png" //フォント
+#define MODEL_ENEMY "Resource\\knight\\knight_low.x" //敵モデル
+#define MODEL_MAP "Resource\\Colosseum.obj", "Resource\\Colosseum.mtl" //マップモデル
+
 float CSceneGame::mClearTime = 0.0f; //クリアまでにかかった時間
 
 CSceneGame::~CSceneGame() {
@@ -34,10 +38,10 @@ void CSceneGame::Init() {
 	mClearTime = 0.0f;
 
 	//テキストフォントの読み込みと設定
-	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
+	mFont.LoadTexture(FONT, 1, 4096 / 64);
 
 	CRes::sModelX.Load(MODEL_FILE);
-	CRes::sKnight.Load("Resource\\knight\\knight_low.x");
+	CRes::sKnight.Load(MODEL_ENEMY);
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//1:移動
 	CRes::sKnight.SeparateAnimationSet(0, 1530, 1830, "idle1");//2:待機
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//3:ダミー
@@ -69,13 +73,13 @@ void CSceneGame::Init() {
 	//カメラ初期化
 	Camera.Init();
 
-	mMap2.Load("Resource\\Colosseum.obj", "Resource\\Colosseum.mtl");
+	mMap2.Load(MODEL_MAP);
 	new CMap2(&mMap2, CVector(0.0f, -5.0f, 0.0f),
 		CVector(), CVector(4.0f, 3.0f, 4.0f));
 
 	CTrapManager::Generate();
 
-	ShowCursor(false);
+	ShowCursor(false); //カーソル非表示
 }
 
 
@@ -117,7 +121,7 @@ void CSceneGame::Update() {
 		//Enterキーを押すとリザルトに移行する
 		if (CKey::Once(VK_RETURN)) {
 			mScene = ERESULT;
-			ShowCursor(true);
+			ShowCursor(true); //カーソル表示
 		}
 	}
 
@@ -126,7 +130,7 @@ void CSceneGame::Update() {
 		//Enterキーでタイトルに移行する
 		if (CKey::Once(VK_RETURN)) {
 			mScene = ETITLE;
-			ShowCursor(true);
+			ShowCursor(true); //カーソル表示
 		}
 	}
 

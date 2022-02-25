@@ -27,7 +27,13 @@
 #define PORTION_QUANTITY 5		//回復薬の所持数
 #define HEAL_AMOUNT 30			//回復薬を使用したときの回復量
 
-#define GAUGE_WID_MAX 350.0f	//ゲージの幅の最大値
+#define GAUGE_WID_MAX 400.0f	//ゲージの幅の最大値
+#define GAUGE_LEFT 20			//ゲージ描画時の左端
+
+#define FONT "Resource\\FontG.png" //フォント
+#define IMAGE_GAUGE "Resource\\Gauge.png"		//ゲージ画像
+#define IMAGE_PORTION "Resource\\Portion.png"	//回復薬画像
+#define IMAGE_TRAP "Resource\\Trap.png"			//罠画像
 
 CXPlayer* CXPlayer::mInstance;
 
@@ -70,11 +76,11 @@ CXPlayer::CXPlayer()
 
 	mInstance = this;
 
-	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
+	mFont.LoadTexture(FONT, 1, 4096 / 64);
 
-	mTexture.Load("Resource\\Gauge.png");
-	mItemTexture.Load("Resource\\Portion.png");
-	mItemTexture2.Load("Resource\\Trap.png");
+	mImageGauge.Load(IMAGE_GAUGE);
+	mImagePortion.Load(IMAGE_PORTION);
+	mImageTrap.Load(IMAGE_TRAP);
 }
 
 void CXPlayer::Init(CModelX* model)
@@ -275,43 +281,33 @@ void CXPlayer::Render2D()
 {
 	//2D描画開始
 	CUtil::Start2D(0, 800, 0, 600);
-	/*
-	//体力が減ると幅が減少する、左揃え
-	mFont.DrawString("0", 400 - GAUGE_WID_MAX * (1.0f - hpRate), 575.0f, hpGaugeWid, 15);
-	//スタミナが減ると幅が減少する、左揃え
-	mFont.DrawString("1", 400 - GAUGE_WID_MAX * (1.0f - staminaRate), 535.0f, staminaGaugeWid, 15);
-	*/
 
-	//体力の割合
-	float hpRate = (float)mHp / (float)HP_MAX;
-	//体力ゲージの幅
-	float hpGaugeWid = GAUGE_WID_MAX * hpRate;
+	float HpRate = (float)mHp / (float)HP_MAX;	//体力最大値に対する、現在の体力の割合
+	float HpGaugeWid = GAUGE_WID_MAX * HpRate;	//体力ゲージの幅
 
-	//スタミナの割合
-	float staminaRate = (float)mStamina / (float)STAMINA_MAX;
-	//スタミナゲージの幅
-	float staminaGaugeWid = GAUGE_WID_MAX * staminaRate;
+	mImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + GAUGE_WID_MAX, 560, 590, 210, 290, 63, 0);	//体力ゲージ背景を表示
+	mImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + HpGaugeWid, 560, 590, 0, 0, 0, 0);;			//体力ゲージを表示
 
-	mTexture.Draw(20, GAUGE_WID_MAX, 560, 590, 210, 290, 63, 0);	//ゲージ背景
-	mTexture.Draw(20, hpGaugeWid, 560, 590, 0, 0, 0, 0);			//体力ゲージ
+	float StaminaRate = (float)mStamina / (float)STAMINA_MAX;	//スタミナ最大値に対する、現在のスタミナの割合
+	float StaminaGaugeWid = GAUGE_WID_MAX * StaminaRate;		//スタミナゲージの幅
 
-	mTexture.Draw(20, GAUGE_WID_MAX, 520, 550, 210, 290, 63, 0);	//ゲージ背景
-	mTexture.Draw(20, staminaGaugeWid, 520, 550, 110, 190, 63, 0);	//スタミナゲージ
+	mImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + GAUGE_WID_MAX, 520, 550, 210, 290, 63, 0);	//スタミナゲージ背景を表示
+	mImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + StaminaGaugeWid, 520, 550, 110, 190, 63, 0);	//スタミナゲージを表示
 
 	char buf[64];
-	mTexture.Draw(640, 760, 40, 160, 310, 390, 63, 0);	//アイテム背景
+	mImageGauge.Draw(640, 760, 40, 160, 310, 390, 63, 0);	//アイテム背景を表示
 	//選択中のアイテム
 	switch (mItemSelect) {	
 	case ETRAP: //罠
-		mItemTexture2.Draw(650, 750, 50, 150, 0, 255, 255, 0); //罠画像
-		sprintf(buf, "%d", CTrapManager::GetInstance()->mTrapQuantity);
+		mImageTrap.Draw(650, 750, 50, 150, 0, 255, 255, 0); //罠画像を表示
+		sprintf(buf, "%d", CTrapManager::GetInstance()->mTrapQuantity); //罠の所持数
 		break;
 	case EPORTION: //回復
-		mItemTexture.Draw(650, 750, 50, 150, 0, 255, 255, 0); //回復画像
-		sprintf(buf, "%d", mPortionQuantity);
+		mImagePortion.Draw(650, 750, 50, 150, 0, 255, 255, 0); //回復薬画像を表示
+		sprintf(buf, "%d", mPortionQuantity); //回復の所持数
 		break;
 	}
-	mFont.DrawString(buf, 740, 60, 15, 15);
+	mFont.DrawString(buf, 740, 60, 15, 15); //アイテムの所持数を表示
 
 #ifdef _DEBUG
 	//char buf[64];

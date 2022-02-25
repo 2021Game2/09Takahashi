@@ -6,16 +6,19 @@
 
 #include "CInput.h"
 
+#define FONT "Resource\\FontG.png" //フォント
+#define IMAGE_BUTTONBACK "Resource\\Gauge.png" //ボタン背景画像
+
 CSceneTitle::CSceneTitle()
 	:mSelect(EBACKGROUND)
 {
-	mTexture.Load("Resource\\Gauge.png");
+	mFont.LoadTexture(FONT, 1, 4096 / 64);
+	mImageButtonBack.Load(IMAGE_BUTTONBACK);
 }
 
 void CSceneTitle::Init()
 {
 	mScene = ETITLE;
-	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
 }
 
 void CSceneTitle::Update()
@@ -58,11 +61,11 @@ void CSceneTitle::Update()
 
 	switch (mSelect) {
 	case EGAMESTART:
-		mTexture.Draw(220, 580, 200, 240, 338, 338, 20, 20);
+		mImageButtonBack.Draw(220, 580, 200, 240, 338, 338, 20, 20);
 		break;
 
 	case CSceneTitle::ERECORD:
-		mTexture.Draw(280, 520, 100, 140, 338, 338, 20, 20);
+		mImageButtonBack.Draw(280, 520, 100, 140, 338, 338, 20, 20);
 		break;
 
 	default:

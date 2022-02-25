@@ -6,19 +6,22 @@
 
 #define DEF_TIME 600.00f //初期化用
 
+#define FONT "Resource\\FontG.png" //フォント
+#define IMAGE_BACKGROUND "Resource\\Result_Back.png" //背景画像
+
 float CSceneResult::record[6] = { DEF_TIME,DEF_TIME,DEF_TIME,DEF_TIME,DEF_TIME,DEF_TIME };	//クリア時間の記録用
 
 CSceneResult::CSceneResult()
 :mNewRecord(0)
 ,count(0)
 {
+	mFont.LoadTexture(FONT, 1, 4096 / 64);
+	mImageBackGround.Load(IMAGE_BACKGROUND);
 }
 
 void CSceneResult::Init()
 {
 	mScene = ERESULT;
-	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
-	mBackGroundTexture.Load("Resource\\Result_Back.png");
 
 	mNewRecord = 6;
 
@@ -31,7 +34,6 @@ void CSceneResult::Init()
 			tmp = record[i];
 			record[i] = record[i - 1];
 			record[i - 1] = tmp;
-
 			mNewRecord = i - 1;
 		}
 	}
@@ -49,7 +51,7 @@ void CSceneResult::Update()
 
 	CUtil::Start2D(0, 800, 0, 600);
 	char buf[64];
-	mBackGroundTexture.Draw(0, 800, 0, 600, 0, 599, 319, 0);
+	mImageBackGround.Draw(0, 800, 0, 600, 0, 599, 319, 0); //背景画像を表示
 
 	mFont.DrawString("RESULT", 20, 570, 15, 15);
 

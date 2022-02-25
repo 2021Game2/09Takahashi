@@ -3,7 +3,7 @@
 
 class CSceneRecord :public CScene {
 private:
-	CTexture mBackGroundTexture;
+	CTexture mImageBackGround; //”wŒi‰æ‘œ
 
 public:
 	CSceneRecord();

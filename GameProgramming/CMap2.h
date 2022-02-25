@@ -7,12 +7,12 @@ private:
 	CMatrix mMatrixCol;
 	
 	static CMap2* mInstance;
+
+	CColliderMesh mColliderMesh;
 public:
 	//コンストラクタ
 	CMap2(CModel* model, CVector position, CVector rotation, CVector scale);
 	~CMap2();
-
-	CColliderMesh mColliderMesh;
 
 	static CMap2* GetInstance();
 	static void Release();

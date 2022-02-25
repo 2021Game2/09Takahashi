@@ -9,10 +9,10 @@
 class CXPlayer : public CXCharacter
 {
 private:
-	CText mFont;
-	CTexture mTexture;
-	CTexture mItemTexture;
-	CTexture mItemTexture2;
+	CText mFont; //フォント
+	CTexture mImageGauge;	//ゲージ画像
+	CTexture mImagePortion;	//回復薬画像
+	CTexture mImageTrap;	//罠画像
 
 	//コライダの宣言
 	CCollider mColSphereBody;	//体

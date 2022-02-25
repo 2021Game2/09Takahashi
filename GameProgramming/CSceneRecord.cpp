@@ -6,15 +6,18 @@
 
 #include "CSceneResult.h"
 
+#define FONT "Resource\\FontG.png" //ƒtƒHƒ“ƒg
+#define IMAGE_BACKGROUND "Resource\\Result_Back.png" //”wŒi‰æ‘œ
+
 CSceneRecord::CSceneRecord()
 {
+	mFont.LoadTexture(FONT, 1, 4096 / 64);
+	mImageBackGround.Load(IMAGE_BACKGROUND);
 }
 
 void CSceneRecord::Init()
 {
 	mScene = ERECORD;
-	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
-	mBackGroundTexture.Load("Resource\\Result_Back.png");
 }
 
 void CSceneRecord::Update()
@@ -26,7 +29,7 @@ void CSceneRecord::Update()
 
 	CUtil::Start2D(0, 800, 0, 600);
 	char buf[64];
-	mBackGroundTexture.Draw(0, 800, 0, 600, 0, 599, 319, 0);
+	mImageBackGround.Draw(0, 800, 0, 600, 0, 599, 319, 0); //”wŒi‰æ‘œ‚ð•\Ž¦
 
 	mFont.DrawString("RECORD", 20, 570, 15, 15);
 

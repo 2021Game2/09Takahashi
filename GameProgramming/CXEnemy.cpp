@@ -19,6 +19,9 @@
 #define AVOID_DIS 6.0f		//回避可能になる距離
 #define GAUGE_WID_MAX 50.0f	//ゲージの幅の最大値
 
+#define FONT "Resource\\FontG.png" //フォント
+#define IMAGE_GAUGE "Resource\\Gauge.png" //ゲージ画像
+
 CXEnemy* CXEnemy::mInstance;
 
 CXEnemy::CXEnemy()
@@ -50,9 +53,9 @@ CXEnemy::CXEnemy()
 
 	mInstance = this;
 
-	mTexture.Load("Resource\\Gauge.png");
+	mFont.LoadTexture(FONT, 1, 4096 / 64);
 
-	mFont.LoadTexture("Resource\\FontG.png", 1, 4096 / 64);
+	mImageGauge.Load(IMAGE_GAUGE);
 
 	srand((unsigned)time(NULL)); //乱数用
 }
@@ -167,24 +170,19 @@ void CXEnemy::Render2D()
 	//2D描画開始
 	CUtil::Start2D(0, 800, 0, 600);
 
-	//体力が減ると幅が減少する、左揃え
-	//mFont.DrawString("0", ret.mX - GAUGE_WID_MAX * (1 - hpRate), ret.mY + 150.0f, hpGaugeWid, 10);
-
 	CVector ret;
-	//Camera.WorldToScreen(&ret, mPosition);
 	CVector tpos = mpCombinedMatrix[6].GetPos();
 	Camera.WorldToScreen(&ret, tpos);
 
-	//体力の割合
-	float hpRate = (float)mHp / (float)HP_MAX;
-	//体力ゲージの幅
-	float hpGaugeWid = GAUGE_WID_MAX * hpRate;
+	float HpRate = (float)mHp / (float)HP_MAX; //体力最大値に対する、現在の体力の割合
+	float HpGaugeWid = GAUGE_WID_MAX * HpRate; //体力ゲージの幅
 	
+	//画面外の時に表示しない
 	if (ret.mX > 0 && ret.mX < 800) {
 		//ゲージ背景
-		mTexture.Draw(ret.mX - GAUGE_WID_MAX, ret.mX + GAUGE_WID_MAX, ret.mY + 30.0f, ret.mY + 45.0f, 210, 290, 63, 0);
+		mImageGauge.Draw(ret.mX - GAUGE_WID_MAX, ret.mX + GAUGE_WID_MAX, ret.mY + 30.0f, ret.mY + 45.0f, 210, 290, 63, 0);
 		//体力ゲージ
-		mTexture.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX - GAUGE_WID_MAX) + hpGaugeWid * 2.0f, ret.mY + 30.0f, ret.mY + 45.0f, 0, 0, 0, 0);
+		mImageGauge.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX - GAUGE_WID_MAX) + HpGaugeWid * 2.0f, ret.mY + 30.0f, ret.mY + 45.0f, 0, 0, 0, 0);
 	}
 #ifdef _DEBUG
 	char buf[64];

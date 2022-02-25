@@ -9,8 +9,8 @@
 class CXEnemy : public CXCharacter
 {
 private:
-	CTexture mTexture;
-	CText mFont;
+	CText mFont; //フォント
+	CTexture mImageGauge; //ゲージ画像
 
 	CCollider mColSphereSword0;	//剣
 	CCollider mColSphereSword1;	//剣

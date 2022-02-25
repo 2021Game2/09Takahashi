@@ -5,7 +5,7 @@ class CSceneResult :public CScene {
 private:
 	int mNewRecord;	//V‹L˜^‚Ì‡ˆÊ‚ğ‹L˜^
 
-	CTexture mBackGroundTexture;
+	CTexture mImageBackGround; //”wŒi‰æ‘œ
 
 	int count;
 

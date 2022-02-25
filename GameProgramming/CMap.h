@@ -5,6 +5,7 @@
 
 class CMap : public CCharacter
 {
+private:
 	CModel mModel;
 public:
 	CMap();
