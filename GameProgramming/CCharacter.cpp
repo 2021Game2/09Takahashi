@@ -19,3 +19,10 @@ CCharacter::CCharacter()
 	CTaskManager::Get()->Add(this);
 }
 
+void CCharacter::ChangePriority(int priority)
+{
+	mPriority = priority;
+	CTaskManager::Get()->Remove(this);
+	CTaskManager::Get()->Add(this);
+}
+

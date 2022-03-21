@@ -89,11 +89,11 @@ void CSceneGame::Update() {
 
 	//衝突処理
 	CCollisionManager::Get()->Collision();
-
+	/*
 	Camera.Update();
 
 	Camera.Render();
-
+	*/
 	//タスクリスト削除
 	CTaskManager::Get()->Delete();
 	//タスク描画

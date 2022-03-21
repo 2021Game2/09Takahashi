@@ -3,12 +3,18 @@
 
 #include "CVector.h"
 
+#include "CCharacter.h"
+#include "CColliderLine.h"
+
 #define DEF_CAMERA_DIST 8.0f
 #define DEF_CAMERA_HEAD_ADJUST 3.0f
 /*
 カメラクラス
 */
-class CCamera {
+class CCamera :public CCharacter {
+private:
+	CColliderLine mColliderLine; //視点から注視点まで伸びる線コライダ
+
 public:
 	CCamera();
 	//視点
@@ -29,8 +35,8 @@ public:
 
 	//カメラの設定
 	//Set(視点, 注視点, 上方向)
-	void Set(const CVector &eye, const CVector &center,
-		const CVector &up);
+	void Set(const CVector& eye, const CVector& center,
+		const CVector& up);
 
 	void SetTarget(const CVector& target);
 
@@ -51,6 +57,9 @@ public:
 	bool WorldToScreen(CVector* pOut, const CVector& pos);
 
 	bool mSkip;
+	
+	//衝突判定
+	void Collision(CCollider* m, CCollider* o);
 };
 
 //カメラの外部参照

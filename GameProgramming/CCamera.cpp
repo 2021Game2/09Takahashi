@@ -29,10 +29,12 @@ void CCamera::Init()
 
 CCamera::CCamera()
 	:mSkip(true)
-	,mAngleX(0.0f)
-	,mAngleY(0.0f)
-	,mDist(0.0f)
+	, mAngleX(0.0f)
+	, mAngleY(0.0f)
+	, mDist(0.0f)
+	, mColliderLine(this, nullptr, CVector(0.0f, 0.0f, 0.0f), CVector(0.0f, 0.0f, 0.0f))
 {
+	ChangePriority(10);
 }
 
 void CCamera::Set(const CVector &eye, const CVector &center,
@@ -122,12 +124,15 @@ void CCamera::Update() {
 	mCenter = mTarget;
 	mCenter.mY += DEF_CAMERA_HEAD_ADJUST;//頭上補正
 	mEye = mPos;
+
+	//線コライダセット
+	mColliderLine.Set(this, nullptr, mEye, mCenter);
+
 	/*
 	oldMouseX = mouseX;
 	oldMouseY = mouseY;
 	*/
 	CInput::InputReset();
-
 }
 
 void CCamera::Render() {
@@ -165,4 +170,15 @@ bool CCamera::WorldToScreen(CVector* pOut, const CVector& pos)
 	pOut->mZ = Z; //screen_pos.mZ
 
 	return true;
+}
+
+void CCamera::Collision(CCollider* m, CCollider* o)
+{
+	if (o->mType == CCollider::ETRIANGLE) {
+		CVector adjust;
+		if (CCollider::CollisionTriangleLine(o, m, &adjust)) {
+			mEye += (adjust + adjust.Normalize() * 0.5f);
+			mColliderLine.Set(this, nullptr, mEye, mCenter);
+		}
+	}
 }

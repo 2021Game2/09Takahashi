@@ -36,6 +36,8 @@ public:
 	//Õ“Ëˆ—
 	virtual void Collision(CCollider *m, CCollider *o) {}
 
+	//—Dæ“x•ÏX
+	void ChangePriority(int priority);
 };
 
 #endif
