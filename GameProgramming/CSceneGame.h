@@ -5,6 +5,7 @@
 #include "CXEnemy.h"
 #include "CMap.h"
 #include <time.h>
+#include "CShadowMap.h"
 
 /*
 ゲームのシーン
@@ -24,6 +25,9 @@ private:
 	clock_t start, end;
 	bool mCountStart; //クリア時間計測開始用
 
+	//シャドウマップのインスタンス
+	CShadowMap mShadowMap;
+
 public:
 	~CSceneGame();
 	//初期化処理のオーバーライド
@@ -35,5 +39,7 @@ public:
 
 	static float mClearTime;	//クリアまでにかかった時間
 };
+
+void Render();
 
 #endif
