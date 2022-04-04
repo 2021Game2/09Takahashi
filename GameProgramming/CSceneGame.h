@@ -40,6 +40,7 @@ public:
 	static float mClearTime;	//ƒNƒŠƒA‚Ü‚Å‚É‚©‚©‚Á‚½ŠÔ
 };
 
+//ŠO•”ŠÖ”
 void Render();
 
 #endif

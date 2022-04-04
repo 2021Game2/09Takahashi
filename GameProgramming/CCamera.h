@@ -45,6 +45,9 @@ public:
 	//カメラ更新
 	void Update();
 	//カメラ適用
+	void Draw();
+
+	//処理をしないRender
 	void Render();
 
 	//ベクトル取得

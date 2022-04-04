@@ -5,6 +5,7 @@
 #include <math.h>
 #include "CCamera.h"
 #include <time.h>
+#include "CEffect.h"
 
 #define HP_MAX 500			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
@@ -21,6 +22,7 @@
 
 #define FONT "Resource\\FontG.png" //フォント
 #define IMAGE_GAUGE "Resource\\Gauge.png" //ゲージ画像
+#define IMAGE_EFFECT "Resource\\Hit_Effect.png" //エフェクト画像
 
 CXEnemy* CXEnemy::mInstance;
 
@@ -226,7 +228,8 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 							switch (m->mTag) {
 							case CCollider::EBODY:	//体
 								mHp -= DAMAGE_BODY;	//ダメージを受ける(体)	
-								((CXPlayer*)(o->mpParent))->mHit = false;
+								((CXPlayer*)(o->mpParent))->mHit = false; //プレイヤーのヒット判定を無効にする
+								new CEffect(m->mpParent->mPosition + CVector(0.0f, 1.0f, 0.0f), 1.0f, 1.0f, IMAGE_EFFECT, 3, 5, 2); //エフェクトを生成する
 								//スタン状態で無ければノックバック状態へ移行
 								if (mState != ESTUN&&mState!=EATTACK_1&&mState!=EATTACK_2) {
 									mState = EKNOCKBACK;
@@ -236,7 +239,8 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 
 							case CCollider::EHEAD:	//頭
 								mHp -= DAMAGE_HEAD;	//ダメージを受ける(頭)
-								((CXPlayer*)(o->mpParent))->mHit = false;
+								((CXPlayer*)(o->mpParent))->mHit = false; //プレイヤーのヒット判定を無効にする
+								new CEffect(m->mpParent->mPosition + CVector(0.0f, 3.0f, 0.0f), 1.0f, 1.0f, IMAGE_EFFECT, 3, 5, 2); //エフェクトを生成する
 								//スタン状態で無ければノックバック状態へ移行
 								if (mState != ESTUN && mState != EATTACK_1 && mState != EATTACK_2) {
 									mState = EKNOCKBACK;

@@ -135,13 +135,18 @@ void CCamera::Update() {
 	CInput::InputReset();
 }
 
-void CCamera::Render() {
+void CCamera::Draw() {
 	gluLookAt(mEye.mX, mEye.mY, mEye.mZ,
 		mCenter.mX, mCenter.mY, mCenter.mZ,
 		mUp.mX, mUp.mY, mUp.mZ);
 
 	//ƒJƒƒ‰s—ñŠi”[
 	glGetFloatv(GL_MODELVIEW_MATRIX, mMatrix.mF);
+}
+
+void CCamera::Render()
+{
+	//ˆ—‚È‚µ
 }
 
 CMatrix CCamera::GetMat() {

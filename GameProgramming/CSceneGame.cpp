@@ -103,6 +103,8 @@ void CSceneGame::Update() {
 	CTaskManager::Get()->Delete();
 	//タスク描画
 	//CTaskManager::Get()->Render();
+	//カメラ描画
+	Camera.Draw();
 	//シャドウマップ描画
 	mShadowMap.Render();
 	CTaskManager::Get()->Render2D();
