@@ -6,7 +6,7 @@
 #include "CCharacter.h"
 #include "CColliderLine.h"
 
-#define DEF_CAMERA_DIST 8.0f
+#define DEF_CAMERA_DIST 7.0f
 #define DEF_CAMERA_HEAD_ADJUST 3.0f
 /*
 ƒJƒƒ‰ƒNƒ‰ƒX

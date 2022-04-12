@@ -44,7 +44,7 @@ void CEffect::Update() {
 
 void CEffect::Render()
 {
-	glDisable(GL_DEPTH_TEST); //深度テスト無効
+	//glDisable(GL_DEPTH_TEST); //深度テスト無効
 	CBillBoard::Render(&sMaterial);
 	glEnable(GL_DEPTH_TEST); //深度テスト有効
 }

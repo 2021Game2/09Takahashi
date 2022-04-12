@@ -7,6 +7,7 @@
 #include "CInput.h"
 #include "CXEnemy.h"
 #include "CTrapManager.h"
+#include "CSound.h"
 
 #define GRAVITY 0.9f			//重力
 #define HP_MAX 100				//体力最大値
@@ -30,10 +31,14 @@
 #define GAUGE_WID_MAX 400.0f	//ゲージの幅の最大値
 #define GAUGE_LEFT 20			//ゲージ描画時の左端
 
-#define FONT "Resource\\FontG.png" //フォント
+#define FONT "Resource\\FontG.png"				//フォント
 #define IMAGE_GAUGE "Resource\\Gauge.png"		//ゲージ画像
 #define IMAGE_PORTION "Resource\\Portion.png"	//回復薬画像
 #define IMAGE_TRAP "Resource\\Trap.png"			//罠画像
+
+extern CSound SE_Player_Walk;	//プレイヤーの歩行時の効果音
+extern CSound SE_Player_Run;	//プレイヤーの走行時の効果音
+extern CSound SE_Player_Avoid;	//プレイヤーの回避時の効果音
 
 CXPlayer* CXPlayer::mInstance;
 
@@ -112,6 +117,7 @@ void CXPlayer::Update()
 		//WASDキーを押すと移動へ移行
 		else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
 			mState = EMOVE;
+			SE_Player_Walk.Repeat(); //効果音を再生する
 		}
 		//Eキーを押すとアイテム使用
 		else if (CKey::Once('E')) {
@@ -139,6 +145,7 @@ void CXPlayer::Update()
 		//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
 		else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
 			mState = EAVOID;
+			SE_Player_Avoid.Play(); //効果音を再生
 		}
 		//Eキーを押すとアイテム使用
 		else if (CKey::Once('E')) {
@@ -149,6 +156,7 @@ void CXPlayer::Update()
 			//SHIFTキーを押しているとダッシュへ移行
 			if (CKey::Push(VK_SHIFT)) {
 				mState = EDASH;
+				SE_Player_Run.Repeat(); //効果音を再生する
 			}
 			else {
 				Move();	//移動処理を呼ぶ
@@ -157,6 +165,10 @@ void CXPlayer::Update()
 		//待機状態へ移行
 		else {
 			mState = EIDLE;
+		}
+		//状態が移行したとき、効果音を停止する
+		if (mState != EMOVE) {
+			SE_Player_Walk.Stop();
 		}
 		break;
 
@@ -168,6 +180,7 @@ void CXPlayer::Update()
 		//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
 		else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
 			mState = EAVOID;
+			SE_Player_Avoid.Play(); //効果音を再生
 		}
 		//Eキーを押すとアイテム使用
 		else if (CKey::Once('E')) {
@@ -179,13 +192,18 @@ void CXPlayer::Update()
 			if (CKey::Push(VK_SHIFT)) {
 				Dash();	//ダッシュ処理を呼ぶ
 			}
-			else{
+			else {
 				mState = EMOVE;
+				SE_Player_Walk.Play(); //効果音を再生
 			}
 		}
 		//待機状態へ移行
 		else {
 			mState = EIDLE;
+		}
+		//状態が移行したとき、効果音を停止する
+		if (mState != EDASH) {
+			SE_Player_Run.Stop();
 		}
 		break;
 
@@ -197,15 +215,17 @@ void CXPlayer::Update()
 				//SHIFTキーを押しているとダッシュへ移行
 				if (CKey::Push(VK_SHIFT)) {
 					mState = EDASH;
+					SE_Player_Run.Play(); //効果音を再生
 				}
 				else {
 					mState = EMOVE;
+					SE_Player_Walk.Play(); //効果音を再生
 				}
 			}
 			//待機状態へ移行
 			else {
 				mState = EIDLE;
-			}	
+			}
 		}
 		break;
 
@@ -218,6 +238,10 @@ void CXPlayer::Update()
 		break;
 
 	case EKNOCKBACK: //ノックバック状態
+		//効果音を停止する
+		SE_Player_Walk.Stop();
+		SE_Player_Run.Stop();
+		SE_Player_Avoid.Stop();
 		KnockBack(); //ノックバック処理を呼ぶ
 		break;
 	}
@@ -409,6 +433,12 @@ CXPlayer* CXPlayer::GetInstance()
 	return mInstance;
 }
 
+//剣のコライダの座標を取得する
+CVector CXPlayer::GetSwordColPos()
+{
+	return mColSphereSword.mpMatrix->GetPos();	//剣のコライダの座標を返す
+}
+
 //待機処理
 void CXPlayer::Idle()
 {
@@ -419,7 +449,7 @@ void CXPlayer::Idle()
 //移動処理
 void CXPlayer::Move()
 {
-	ChangeAnimation(1, true, 60);
+	ChangeAnimation(1, true, 65);
 	//ダッシュ時にスピードを上書きしない用
 	if (mState == EMOVE) {
 		mSpeed = SPEED_DEFAULT;

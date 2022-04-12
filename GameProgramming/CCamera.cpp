@@ -132,7 +132,7 @@ void CCamera::Update() {
 	oldMouseX = mouseX;
 	oldMouseY = mouseY;
 	*/
-	CInput::InputReset();
+	//CInput::InputReset();
 }
 
 void CCamera::Draw() {

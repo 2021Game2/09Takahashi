@@ -18,13 +18,39 @@
 //
 #include "CTrapManager.h"
 //
+#include "CEffect.h"
+//
+#include "CSound.h"
+//
+#include "CInput.h"
+//
 //CMatrix Matrix;
 
+//画像系
 #define FONT "Resource\\FontG.png" //フォント
+#define EFFECT_ATTACK_HIT "Resource\\Effect_Attack_Hit.png"		//攻撃ヒット時のエフェクト画像
+#define EFFECT_PORTION_USE "Resource\\Effect_Portion_Use.png"	//ポーション使用時のエフェクト画像
+#define TEXWIDTH  8192	//テクスチャ幅
+#define TEXHEIGHT  6144	//テクスチャ高さ
+
+//モデル系
 #define MODEL_ENEMY "Resource\\knight\\knight_low.x" //敵モデル
 #define MODEL_MAP "Resource\\Colosseum.obj", "Resource\\Colosseum.mtl" //マップモデル
-#define TEXWIDTH  8192  //テクスチャ幅
-#define TEXHEIGHT  6144  //テクスチャ高さ
+
+//サウンド系
+#define SE_ATTACK_HIT "Resource\\SE_Attack_Hit.wav"		//攻撃ヒット時の効果音
+#define SE_PLAYER_WALK "Resource\\SE_Player_Walk.wav"	//プレイヤーの歩行時の効果音
+#define SE_PLAYER_RUN "Resource\\SE_Player_Run.wav"		//プレイヤーの走行時の効果音
+#define SE_PLAYER_AVOID "Resource\\SE_Player_Avoid.wav"	//プレイヤーの回避時の効果音
+#define SE_KNIGHT_WALK "Resource\\SE_Knight_Walk.wav"	//敵(ナイト)の歩行時の効果音
+#define SE_KNIGHT_RUN "Resource\\SE_Knight_Run.wav"		//敵(ナイト)の走行時の効果音
+
+CSound SE_Attack_Hit;	//攻撃ヒット時の効果音
+CSound SE_Player_Walk;	//プレイヤーの歩行時の効果音
+CSound SE_Player_Run;	//プレイヤーの走行時の効果音
+CSound SE_Player_Avoid;	//プレイヤーの回避時の効果音
+CSound SE_Knight_Walk;	//敵(ナイト)の歩行時の効果音
+CSound SE_Knight_Run;	//敵(ナイト)の走行時の効果音
 
 float CSceneGame::mClearTime = 0.0f; //クリアまでにかかった時間
 
@@ -75,6 +101,7 @@ void CSceneGame::Init() {
 	//カメラ初期化
 	Camera.Init();
 
+	//マップモデルの読み込み、生成
 	mMap2.Load(MODEL_MAP);
 	new CMap2(&mMap2, CVector(0.0f, -5.0f, 0.0f),
 		CVector(), CVector(4.0f, 3.0f, 4.0f));
@@ -83,9 +110,26 @@ void CSceneGame::Init() {
 
 	ShowCursor(false); //カーソル非表示
 
+	//影の設定
 	float shadowColor[] = { 0.4f, 0.4f, 0.4f, 0.2f };  //影の色
 	float lightPos[] = { 50.0f, 160.0f, 50.0f };  //光源の位置
 	mShadowMap.Init(TEXWIDTH, TEXHEIGHT, Render, shadowColor, lightPos);
+
+	//エフェクト画像読み込み
+	if (CEffect::sMaterial.mTexture.mId == 0) {
+		CEffect::sMaterial.mTexture.Load(EFFECT_ATTACK_HIT);
+		CEffect::sMaterial.mDiffuse[0] = CEffect::sMaterial.mDiffuse[1] =
+			CEffect::sMaterial.mDiffuse[2] = CEffect::sMaterial.mDiffuse[3] = 1.0f;
+	}
+
+	//効果音読み込み
+	SE_Attack_Hit.Load(SE_ATTACK_HIT);		//攻撃ヒット時の効果音
+	SE_Player_Walk.Load(SE_PLAYER_WALK);	//プレイヤーの歩行時の効果音
+	SE_Player_Run.Load(SE_PLAYER_RUN);		//プレイヤーの走行時の効果音
+	SE_Player_Avoid.Load(SE_PLAYER_AVOID);	//プレイヤーの回避時の効果音
+	SE_Knight_Walk.Load(SE_KNIGHT_WALK);	//敵(ナイト)の歩行時の効果音
+	SE_Knight_Run.Load(SE_KNIGHT_RUN);		//敵(ナイト)の走行時の効果音
+
 }
 
 void CSceneGame::Update() {
@@ -107,6 +151,7 @@ void CSceneGame::Update() {
 	Camera.Draw();
 	//シャドウマップ描画
 	mShadowMap.Render();
+	//タスク2D描画
 	CTaskManager::Get()->Render2D();
 
 #ifdef _DEBUG
@@ -165,6 +210,9 @@ void CSceneGame::Update() {
 
 	//2Dの描画終了
 	CUtil::End2D();
+
+	//リセット
+	CInput::InputReset();
 
 	return;
 }

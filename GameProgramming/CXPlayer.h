@@ -107,6 +107,8 @@ public:
 
 	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
 	bool mAttackFlag_Once; //攻撃した瞬間だけtrueを返す
+
+	CVector GetSwordColPos();	//剣のコライダの座標を取得する
 };
 
 #endif
