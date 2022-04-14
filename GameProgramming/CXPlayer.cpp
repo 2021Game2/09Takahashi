@@ -8,6 +8,7 @@
 #include "CXEnemy.h"
 #include "CTrapManager.h"
 #include "CSound.h"
+#include "CEffect2.h"
 
 #define GRAVITY 0.9f			//重力
 #define HP_MAX 100				//体力最大値
@@ -26,7 +27,7 @@
 #define COMBO_MAX 4				//攻撃を連続で派生させられる上限
 
 #define PORTION_QUANTITY 5		//回復薬の所持数
-#define HEAL_AMOUNT 30			//回復薬を使用したときの回復量
+#define HEAL_AMOUNT HP_MAX*0.3f	//回復薬を使用したときの回復量
 
 #define GAUGE_WID_MAX 400.0f	//ゲージの幅の最大値
 #define GAUGE_LEFT 20			//ゲージ描画時の左端
@@ -39,6 +40,9 @@
 extern CSound SE_Player_Walk;	//プレイヤーの歩行時の効果音
 extern CSound SE_Player_Run;	//プレイヤーの走行時の効果音
 extern CSound SE_Player_Avoid;	//プレイヤーの回避時の効果音
+extern CSound SE_Attack_Hit_2;	//攻撃ヒット時の効果音2
+extern CSound SE_Portion_Use;	//回復アイテム使用時の効果音
+extern CSound SE_Trap_Use;		//罠アイテム使用時の効果音
 
 CXPlayer* CXPlayer::mInstance;
 
@@ -380,6 +384,7 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 									mHp -= DAMAGE;		//ダメージを受ける
 									((CXEnemy*)(o->mpParent))->mHit = false; //敵の攻撃のヒット判定を終了させる
 									mState = EKNOCKBACK; //ノックバック状態へ移行
+									SE_Attack_Hit_2.Play(); //攻撃ヒット時の効果音再生
 									mHit = false; //自分の攻撃のヒット判定を無効にする
 									mAttackFlag_1 = false;
 									mAttackFlag_2 = false;
@@ -700,17 +705,26 @@ void CXPlayer::ItemUse()
 {
 	switch (mItemSelect) {
 	case ETRAP:	//罠
-		//罠生成
-		CTrapManager::GetInstance()->TrapGenerate(mPosition, mRotation);
+		//罠アイテムが使用可能な時
+		if (CTrapManager::GetInstance()->TrapAvailable()) {
+			//罠生成
+			CTrapManager::GetInstance()->TrapGenerate(mPosition, mRotation);
+			//罠アイテム使用時の効果音を再生する
+			SE_Trap_Use.Play();
+		}
 		break;
 
 	case EPORTION: //回復薬
 		//回復薬の所持数が0より多いとき、現在の体力が体力最大値を下回っているとき
-		if (mPortionQuantity > 0 && mHp < HP_MAX) {
+		if (mPortionQuantity > 0 /* && mHp < HP_MAX*/) {
 			//回復薬の所持数を減らす
-			mPortionQuantity--;
+			//mPortionQuantity--;
 			//体力を回復させる
 			mHp += HEAL_AMOUNT;
+			//回復アイテム使用時のエフェクトを生成する
+			new CEffect2(mPosition, 2.0f, 2.0f, "", 2, 5, 3);
+			//回復アイテム使用時の効果音再生
+			SE_Portion_Use.Play();
 		}
 		break;
 	}

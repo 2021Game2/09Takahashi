@@ -24,7 +24,7 @@
 #define FONT "Resource\\FontG.png" //フォント
 #define IMAGE_GAUGE "Resource\\Gauge.png" //ゲージ画像
 
-extern CSound SE_Attack_Hit;	//攻撃ヒット時の効果音
+extern CSound SE_Attack_Hit_1;	//攻撃ヒット時の効果音
 extern CSound SE_Knight_Walk;	//敵(ナイト)の歩行時の効果音
 extern CSound SE_Knight_Run;	//敵(ナイト)の走行時の効果音
 
@@ -234,7 +234,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 								mHp -= DAMAGE_BODY;	//ダメージを受ける(体)	
 								((CXPlayer*)(o->mpParent))->mHit = false; //プレイヤーのヒット判定を無効にする
 								new CEffect(((CXPlayer*)(o->mpParent))->GetSwordColPos(), 1.0f, 1.0f, "", 3, 5, 2); //エフェクトを生成する
-								SE_Attack_Hit.Play(); //効果音を再生する
+								SE_Attack_Hit_1.Play(); //効果音を再生する
 								//スタン状態で無ければノックバック状態へ移行
 								if (mState != ESTUN&&mState!=EATTACK_1&&mState!=EATTACK_2) {
 									mState = EKNOCKBACK;
@@ -246,7 +246,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 								mHp -= DAMAGE_HEAD;	//ダメージを受ける(頭)
 								((CXPlayer*)(o->mpParent))->mHit = false; //プレイヤーのヒット判定を無効にする
 								new CEffect(((CXPlayer*)(o->mpParent))->GetSwordColPos(), 1.5f, 1.5f, "", 3, 5, 2); //エフェクトを生成する
-								SE_Attack_Hit.Play(); //効果音を再生する
+								SE_Attack_Hit_1.Play(); //効果音を再生する
 								//スタン状態で無ければノックバック状態へ移行
 								if (mState != ESTUN && mState != EATTACK_1 && mState != EATTACK_2) {
 									mState = EKNOCKBACK;

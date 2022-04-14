@@ -61,3 +61,9 @@ void CTrapManager::TrapGenerate(CVector pos, CVector rot)
 		mTrapList.push_back(trap);
 	}
 }
+
+bool CTrapManager::TrapAvailable()
+{
+	//罠の所持数が0を上回っているとき、マップ上にトラップが置かれていないときtrueを返す
+	return (mTrapQuantity > 0 && mMapTrap == false);
+}

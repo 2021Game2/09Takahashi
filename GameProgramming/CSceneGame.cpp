@@ -20,6 +20,8 @@
 //
 #include "CEffect.h"
 //
+#include "CEffect2.h"
+//
 #include "CSound.h"
 //
 #include "CInput.h"
@@ -29,7 +31,7 @@
 //画像系
 #define FONT "Resource\\FontG.png" //フォント
 #define EFFECT_ATTACK_HIT "Resource\\Effect_Attack_Hit.png"		//攻撃ヒット時のエフェクト画像
-#define EFFECT_PORTION_USE "Resource\\Effect_Portion_Use.png"	//ポーション使用時のエフェクト画像
+#define EFFECT_PORTION_USE "Resource\\Effect_Portion_Use.png"	//回復アイテム使用時のエフェクト画像
 #define TEXWIDTH  8192	//テクスチャ幅
 #define TEXHEIGHT  6144	//テクスチャ高さ
 
@@ -38,19 +40,27 @@
 #define MODEL_MAP "Resource\\Colosseum.obj", "Resource\\Colosseum.mtl" //マップモデル
 
 //サウンド系
-#define SE_ATTACK_HIT "Resource\\SE_Attack_Hit.wav"		//攻撃ヒット時の効果音
 #define SE_PLAYER_WALK "Resource\\SE_Player_Walk.wav"	//プレイヤーの歩行時の効果音
 #define SE_PLAYER_RUN "Resource\\SE_Player_Run.wav"		//プレイヤーの走行時の効果音
 #define SE_PLAYER_AVOID "Resource\\SE_Player_Avoid.wav"	//プレイヤーの回避時の効果音
 #define SE_KNIGHT_WALK "Resource\\SE_Knight_Walk.wav"	//敵(ナイト)の歩行時の効果音
 #define SE_KNIGHT_RUN "Resource\\SE_Knight_Run.wav"		//敵(ナイト)の走行時の効果音
+#define SE_ATTACK_HIT_1 "Resource\\SE_Attack_Hit_1.wav"	//攻撃ヒット時の効果音1
+#define SE_ATTACK_HIT_2 "Resource\\SE_Attack_Hit_2.wav"	//攻撃ヒット時の効果音2
+#define SE_PORTION_USE "Resource\\SE_Portion_Use.wav"	//回復アイテム使用時の効果音
+#define SE_TRAP_USE "Resource\\SE_Trap_Use.wav"			//罠アイテム使用時の効果音
+#define SE_TRAP_ACTIVE "Resource\\SE_Trap_Active.wav"	//罠アイテム作動時の効果音
 
-CSound SE_Attack_Hit;	//攻撃ヒット時の効果音
 CSound SE_Player_Walk;	//プレイヤーの歩行時の効果音
 CSound SE_Player_Run;	//プレイヤーの走行時の効果音
 CSound SE_Player_Avoid;	//プレイヤーの回避時の効果音
 CSound SE_Knight_Walk;	//敵(ナイト)の歩行時の効果音
 CSound SE_Knight_Run;	//敵(ナイト)の走行時の効果音
+CSound SE_Attack_Hit_1;	//攻撃ヒット時の効果音1
+CSound SE_Attack_Hit_2;	//攻撃ヒット時の効果音2
+CSound SE_Portion_Use;	//回復アイテム使用時の効果音
+CSound SE_Trap_Use;		//罠アイテム使用時の効果音
+CSound SE_Trap_Active;	//罠アイテム作動時の効果音
 
 float CSceneGame::mClearTime = 0.0f; //クリアまでにかかった時間
 
@@ -117,19 +127,27 @@ void CSceneGame::Init() {
 
 	//エフェクト画像読み込み
 	if (CEffect::sMaterial.mTexture.mId == 0) {
-		CEffect::sMaterial.mTexture.Load(EFFECT_ATTACK_HIT);
+		CEffect::sMaterial.mTexture.Load(EFFECT_ATTACK_HIT); //攻撃ヒット時のエフェクト
 		CEffect::sMaterial.mDiffuse[0] = CEffect::sMaterial.mDiffuse[1] =
 			CEffect::sMaterial.mDiffuse[2] = CEffect::sMaterial.mDiffuse[3] = 1.0f;
 	}
+	if (CEffect2::sMaterial.mTexture.mId == 0) {
+		CEffect2::sMaterial.mTexture.Load(EFFECT_PORTION_USE); //回復アイテム使用時のエフェクト
+		CEffect2::sMaterial.mDiffuse[0] = CEffect2::sMaterial.mDiffuse[1] =
+			CEffect2::sMaterial.mDiffuse[2] = CEffect2::sMaterial.mDiffuse[3] = 1.0f;
+	}
 
 	//効果音読み込み
-	SE_Attack_Hit.Load(SE_ATTACK_HIT);		//攻撃ヒット時の効果音
 	SE_Player_Walk.Load(SE_PLAYER_WALK);	//プレイヤーの歩行時の効果音
 	SE_Player_Run.Load(SE_PLAYER_RUN);		//プレイヤーの走行時の効果音
 	SE_Player_Avoid.Load(SE_PLAYER_AVOID);	//プレイヤーの回避時の効果音
 	SE_Knight_Walk.Load(SE_KNIGHT_WALK);	//敵(ナイト)の歩行時の効果音
 	SE_Knight_Run.Load(SE_KNIGHT_RUN);		//敵(ナイト)の走行時の効果音
-
+	SE_Attack_Hit_1.Load(SE_ATTACK_HIT_1);	//攻撃ヒット時の効果1
+	SE_Attack_Hit_2.Load(SE_ATTACK_HIT_2);	//攻撃ヒット時の効果2
+	SE_Portion_Use.Load(SE_PORTION_USE);	//回復アイテム使用時の効果音
+	SE_Trap_Use.Load(SE_TRAP_USE);			//罠アイテム使用時の効果音
+	SE_Trap_Active.Load(SE_TRAP_ACTIVE);	//罠アイテム作動時の効果音
 }
 
 void CSceneGame::Update() {
@@ -197,6 +215,17 @@ void CSceneGame::Update() {
 	//タイム
 	sprintf(buf, "TIME:%06.2f", (float)(end - start) / 1000);
 	mFont.DrawString(buf, 50, 100, 10, 12);
+
+	//効果音のテスト
+	if (CKey::Once('1')) {
+		SE_Attack_Hit_1.Play();
+	}
+	else if (CKey::Once('2')) {
+		SE_Attack_Hit_2.Play();
+	}
+	else if (CKey::Once('3')) {
+		SE_Trap_Active.Play();
+	}
 #endif
 
 	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {

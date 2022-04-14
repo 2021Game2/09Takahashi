@@ -3,6 +3,9 @@
 #include "CXEnemy.h"
 #include "CRes.h"
 #include "CTrapManager.h"
+#include "CSound.h"
+
+extern CSound SE_Trap_Active;	//罠アイテム作動時の効果音
 
 CTrap* CTrap::mInstance;
 
@@ -44,6 +47,8 @@ void CTrap::Collision(CCollider* m, CCollider* o)
 						{
 							mEnemyCol = true;
 							CTrapManager::GetInstance()->mMapTrap = false;
+							//罠アイテム作動時の効果音を再生する
+							SE_Trap_Active.Play();
 						}
 					}
 				}

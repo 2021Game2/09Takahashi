@@ -22,5 +22,8 @@ public:
 	void TrapGenerate(CVector pos, CVector rot); //罠生成
 
 	int mTrapQuantity;		//罠の所持数
+
 	bool mMapTrap;			//マップ上に罠があるとtrue
+
+	bool TrapAvailable(); //罠が使用可能な時trueを返す
 };
