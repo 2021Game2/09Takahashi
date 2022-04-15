@@ -62,7 +62,8 @@ public:
 	bool mSkip;
 	
 	//Õ“Ë”»’è
-	void Collision(CCollider* m, CCollider* o);
+	void CCamera::Collision(CCollider* m, CCollider* o);
+	void CCamera::TaskCollision();
 };
 
 //ƒJƒƒ‰‚ÌŠO•”QÆ

@@ -9,6 +9,7 @@
 #include "CTrapManager.h"
 #include "CSound.h"
 #include "CEffect2.h"
+#include "CCollisionManager.h"
 
 #define GRAVITY 0.9f			//重力
 #define HP_MAX 100				//体力最大値
@@ -433,6 +434,13 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 	}
 }
 
+void CXPlayer::TaskCollision()
+{
+	CCollisionManager::Get()->Collision(&mColSphereBody, COLLISIONRANGE);
+	CCollisionManager::Get()->Collision(&mColSphereHead, COLLISIONRANGE);
+	CCollisionManager::Get()->Collision(&mColSphereSword, COLLISIONRANGE);
+}
+
 CXPlayer* CXPlayer::GetInstance()
 {
 	return mInstance;
@@ -716,9 +724,9 @@ void CXPlayer::ItemUse()
 
 	case EPORTION: //回復薬
 		//回復薬の所持数が0より多いとき、現在の体力が体力最大値を下回っているとき
-		if (mPortionQuantity > 0 /* && mHp < HP_MAX*/) {
+		if (mPortionQuantity > 0  && mHp < HP_MAX) {
 			//回復薬の所持数を減らす
-			//mPortionQuantity--;
+			mPortionQuantity--;
 			//体力を回復させる
 			mHp += HEAL_AMOUNT;
 			//回復アイテム使用時のエフェクトを生成する

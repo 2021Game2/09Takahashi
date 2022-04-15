@@ -155,7 +155,8 @@ void CSceneGame::Update() {
 	CTaskManager::Get()->Update();
 
 	//Õ“Ëˆ—
-	CCollisionManager::Get()->Collision();
+	//CCollisionManager::Get()->Collision();
+	CTaskManager::Get()->TaskCollision();
 	/*
 	Camera.Update();
 

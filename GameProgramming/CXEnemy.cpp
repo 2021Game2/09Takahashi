@@ -7,6 +7,7 @@
 #include <time.h>
 #include "CEffect.h"
 #include "CSound.h"
+#include "CCollisionManager.h"
 
 #define HP_MAX 500			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
@@ -306,6 +307,15 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 			}
 		}
 	}
+}
+
+void CXEnemy::TaskCollision()
+{
+	CCollisionManager::Get()->Collision(&mColSphereBody, COLLISIONRANGE);
+	CCollisionManager::Get()->Collision(&mColSphereHead, COLLISIONRANGE);
+	CCollisionManager::Get()->Collision(&mColSphereSword0, COLLISIONRANGE);
+	CCollisionManager::Get()->Collision(&mColSphereSword1, COLLISIONRANGE);
+	CCollisionManager::Get()->Collision(&mColSphereSword2, COLLISIONRANGE);
 }
 
 //待機処理

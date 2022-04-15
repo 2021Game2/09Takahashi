@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "CInput.h"
 #include "main.h"
+#include "CCollisionManager.h"
 
 //ƒJƒƒ‰‚ÌŠO•”•Ï”
 CCamera Camera;
@@ -186,4 +187,9 @@ void CCamera::Collision(CCollider* m, CCollider* o)
 			mColliderLine.Set(this, nullptr, mEye, mCenter);
 		}
 	}
+}
+
+void CCamera::TaskCollision()
+{
+	CCollisionManager::Get()->Collision(&mColliderLine, COLLISIONRANGE);
 }

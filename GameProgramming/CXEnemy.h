@@ -55,7 +55,8 @@ public:
 
 	//衝突処理
 	//m:自分のコライダ o:相手のコライダ
-	void Collision(CCollider* m, CCollider* o);
+	void CXEnemy::Collision(CCollider* m, CCollider* o);
+	void CXEnemy::TaskCollision();
 
 	void Update();
 	void Render2D();

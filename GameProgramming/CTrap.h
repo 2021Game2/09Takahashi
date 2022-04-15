@@ -13,7 +13,8 @@ public:
 
 	void Update();
 
-	void Collision(CCollider* m, CCollider* o);
+	void CTrap::Collision(CCollider* m, CCollider* o);
+	void CTrap::TaskCollision();
 
 	static CTrap* mInstance;
 	static CTrap* GetInstance();

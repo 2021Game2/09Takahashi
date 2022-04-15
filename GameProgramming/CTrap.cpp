@@ -4,6 +4,7 @@
 #include "CRes.h"
 #include "CTrapManager.h"
 #include "CSound.h"
+#include "CCollisionManager.h"
 
 extern CSound SE_Trap_Active;	//ã©ƒAƒCƒeƒ€ì“®Žž‚ÌŒø‰Ê‰¹
 
@@ -55,6 +56,11 @@ void CTrap::Collision(CCollider* m, CCollider* o)
 			}
 		}
 	}
+}
+
+void CTrap::TaskCollision()
+{
+	CCollisionManager::Get()->Collision(&mCollider, COLLISIONRANGE);
 }
 
 CTrap* CTrap::GetInstance()
