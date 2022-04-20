@@ -8,8 +8,9 @@
 #include "CEffect.h"
 #include "CSound.h"
 #include "CCollisionManager.h"
+#include "CRes.h"
 
-#define HP_MAX 500			//体力最大値
+#define HP_MAX 1			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
 #define ATTACK_DIS 5.0f		//攻撃可能になる距離
@@ -24,12 +25,13 @@
 
 #define FONT "Resource\\FontG.png" //フォント
 #define IMAGE_GAUGE "Resource\\Gauge.png" //ゲージ画像
+#define IMAGE_TARGET "Resource\\Image_Target.png" //ターゲット画像
 
 extern CSound SE_Attack_Hit_1;	//攻撃ヒット時の効果音
 extern CSound SE_Knight_Walk;	//敵(ナイト)の歩行時の効果音
 extern CSound SE_Knight_Run;	//敵(ナイト)の走行時の効果音
 
-CXEnemy* CXEnemy::mInstance;
+//CXEnemy* CXEnemy::mInstance;
 
 CXEnemy::CXEnemy()
 	: mColSphereBody(this, nullptr, CVector(0.5f, -1.0f, 0.0f), 1.2f)
@@ -47,7 +49,10 @@ CXEnemy::CXEnemy()
 	, mDot(0.0f)
 	, mStunTime(0)
 	,mHit(false)
+	,mIsTarget(false)
 {
+	Init(&CRes::sKnight);
+	
 	mTag = EENEMY;	//敵
 
 	mColSphereBody.mTag = CCollider::EBODY;		//本体
@@ -58,11 +63,13 @@ CXEnemy::CXEnemy()
 
 	mState = EIDLE;	//待機
 
-	mInstance = this;
+	//mInstance = this;
 
 	mFont.LoadTexture(FONT, 1, 4096 / 64);
 
 	mImageGauge.Load(IMAGE_GAUGE);
+
+	mImageTarget.Load(IMAGE_TARGET);
 
 	srand((unsigned)time(NULL)); //乱数用
 }
@@ -190,6 +197,11 @@ void CXEnemy::Render2D()
 		mImageGauge.Draw(ret.mX - GAUGE_WID_MAX, ret.mX + GAUGE_WID_MAX, ret.mY + 30.0f, ret.mY + 45.0f, 210, 290, 63, 0);
 		//体力ゲージ
 		mImageGauge.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX - GAUGE_WID_MAX) + HpGaugeWid * 2.0f, ret.mY + 30.0f, ret.mY + 45.0f, 0, 0, 0, 0);
+		//プレイヤーの攻撃対象になっているとき
+		if (mIsTarget) {
+			//ターゲット画像表示
+			mImageTarget.Draw(ret.mX - 30.0f, ret.mX + 30.0f, ret.mY - 30.0f, ret.mY + 30.0f, 0, 255, 255, 0);
+		}
 	}
 #ifdef _DEBUG
 	char buf[64];
@@ -200,10 +212,12 @@ void CXEnemy::Render2D()
 	CUtil::End2D();
 }
 
+/*
 CXEnemy* CXEnemy::GetInstance()
 {
 	return mInstance;
 }
+*/
 
 void CXEnemy::Collision(CCollider* m, CCollider* o)
 {
@@ -277,6 +291,28 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 							mState = ESTUN;
 							mStunTime = STUN_TIME; //スタン時間を入れる
 							mHit = false;
+						}
+					}
+				}
+			}
+			//敵どうしのすり抜け防止
+			//相手の親が敵のとき
+			if (o->mpParent->mTag == EENEMY) {
+				//敵(相手)が死亡状態のときリターンする
+				if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EDEATH)return;
+				//敵のボディに当たっているとき
+				if (m->mTag == CCollider::EBODY && o->mTag == CCollider::EBODY) {
+					CVector adjust;
+					if (CCollider::CollisionAdjust(m, o, &adjust)) {
+						//敵(自分)がスタン状態のとき
+						if (mState == CXEnemy::ESTUN) {
+							//敵(相手)のポジションを調整
+							CXEnemy* Enemy = (CXEnemy*)o->mpParent;
+							Enemy->SetPos(Enemy->GetPos() + adjust);
+						}
+						else {
+							//敵(自分)のポジションを調整
+							mPosition -= adjust;
 						}
 					}
 				}

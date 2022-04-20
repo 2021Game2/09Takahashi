@@ -25,8 +25,11 @@
 #include "CSound.h"
 //
 #include "CInput.h"
+#include "CEnemyManager.h"
 //
 //CMatrix Matrix;
+
+#define ENEMY_GENERATE_NUM 2 //敵の生成数
 
 //画像系
 #define FONT "Resource\\FontG.png" //フォント
@@ -67,6 +70,7 @@ float CSceneGame::mClearTime = 0.0f; //クリアまでにかかった時間
 CSceneGame::~CSceneGame() {
 	CTrapManager::Release();
 	CMap2::Release();
+	CEnemyManager::Release();
 }
 
 void CSceneGame::Init() {
@@ -79,6 +83,7 @@ void CSceneGame::Init() {
 	mFont.LoadTexture(FONT, 1, 4096 / 64);
 
 	CRes::sModelX.Load(MODEL_FILE);
+	/*
 	CRes::sKnight.Load(MODEL_ENEMY);
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//1:移動
 	CRes::sKnight.SeparateAnimationSet(0, 1530, 1830, "idle1");//2:待機
@@ -95,18 +100,22 @@ void CSceneGame::Init() {
 	CRes::sKnight.SeparateAnimationSet(0, 1120, 1160, "stun");//13:スタン
 	CRes::sKnight.SeparateAnimationSet(0, 170, 220, "Dash");//14:ダッシュ
 	CRes::sKnight.SeparateAnimationSet(0, 380, 430, "Jump");//15:ジャンプ
-
+	*/
 	//キャラクターにモデルを設定
 	mPlayer.Init(&CRes::sModelX);
 	mPlayer.mPosition = CVector(0.0f, 0.0f, 20.0f);
 	mPlayer.mRotation = CVector(0.0f, 180.0f, 0.0f);
 
+	/*
 	//敵の初期設定
 	mEnemy.Init(&CRes::sKnight);
 	mEnemy.mAnimationFrameSize = 1024;
 	//敵の配置
 	mEnemy.mPosition = CVector(0.0f, 0.0f, -10.0f);
 	//mEnemy.ChangeAnimation(2, true, 200);
+	*/
+	CEnemyManager::Generate();
+	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM); //敵生成
 
 	//カメラ初期化
 	Camera.Init();
@@ -152,14 +161,14 @@ void CSceneGame::Init() {
 
 void CSceneGame::Update() {
 	//更新
-	CTaskManager::Get()->Update();
+	CEnemyManager::GetInstance()->Update(); //敵管理更新
+	CTaskManager::Get()->Update(); //タスク更新
 
 	//衝突処理
 	//CCollisionManager::Get()->Collision();
 	CTaskManager::Get()->TaskCollision();
 	/*
 	Camera.Update();
-
 	Camera.Render();
 	*/
 	//タスクリスト削除
@@ -183,12 +192,8 @@ void CSceneGame::Update() {
 		start = clock();
 		mCountStart = true;
 	}
-
-	//敵が死亡状態になると時間計測終了
-	if (CXEnemy::GetInstance()->DeathFlag() != true) {
-		end = clock();
-	}
-	else {
+	//全ての敵が死亡状態になるまで時間を計測する
+	if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
 		//クリア時間を記録
 		mClearTime = (float)(end - start) / 1000;
 		//Enterキーを押すとリザルトに移行する
@@ -197,10 +202,12 @@ void CSceneGame::Update() {
 			ShowCursor(true); //カーソル表示
 		}
 	}
-
-	//プレイヤーが死亡状態のとき
+	else {
+		end = clock();
+	}
+	
+	//プレイヤーが死亡状態のとき、Enterキーでタイトルに移行する
 	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {
-		//Enterキーでタイトルに移行する
 		if (CKey::Once(VK_RETURN)) {
 			mScene = ETITLE;
 			ShowCursor(true); //カーソル表示
@@ -229,11 +236,13 @@ void CSceneGame::Update() {
 	}
 #endif
 
+	//プレイヤーが死亡状態になるとGAMEOVERと表示する
 	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {
 		mFont.DrawString("GAMEOVER", 120, 300, 40, 40);
 		mFont.DrawString("PUSH ENTER", 30, 30, 20, 20);
 	}
-	else if (CXEnemy::GetInstance()->DeathFlag() == true) {
+	//敵が全て死亡状態になるとGAMECLEARと表示する
+	else if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
 		mFont.DrawString("CLEAR", 230, 300, 40, 40);
 		mFont.DrawString("PUSH ENTER", 30, 30, 20, 20);
 	}

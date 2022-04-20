@@ -2,7 +2,7 @@
 #define CSCENEGAME_H
 #include "CScene.h"
 #include "CXPlayer.h"
-#include "CXEnemy.h"
+//#include "CXEnemy.h"
 #include "CMap.h"
 #include <time.h>
 #include "CShadowMap.h"
@@ -20,7 +20,7 @@ private:
 	//キャラクタのインスタンス
 	CXPlayer mPlayer;
 	//敵のインスタンス
-	CXEnemy mEnemy;
+	//CXEnemy mEnemy;
 
 	clock_t start, end;
 	bool mCountStart; //クリア時間計測開始用

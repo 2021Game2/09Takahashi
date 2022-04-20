@@ -5,11 +5,12 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "CInput.h"
-#include "CXEnemy.h"
+//#include "CXEnemy.h"
 #include "CTrapManager.h"
 #include "CSound.h"
 #include "CEffect2.h"
 #include "CCollisionManager.h"
+#include "CEnemyManager.h"
 
 #define GRAVITY 0.9f			//重力
 #define HP_MAX 100				//体力最大値
@@ -298,6 +299,7 @@ void CXPlayer::Update()
 		mHp = 0;
 	}
 
+	//体力が体力最大値を超えないようにする
 	if (mHp > HP_MAX)mHp = HP_MAX;
 
 	//注視点
@@ -400,6 +402,8 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 				//すり抜け防止
 				//プレイヤーのボディと敵のボディが当たっているとき
 				if (m->mTag == CCollider::EBODY && o->mTag == CCollider::EBODY) {
+					//敵が死亡状態のときリターンする
+					if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EDEATH)return;
 					CVector adjust;
 					if (CCollider::CollisionAdjust(m, o, &adjust)) {
 						//敵がスタン状態ではないとき、プレイヤーが攻撃2状態ではないとき
@@ -566,7 +570,10 @@ void CXPlayer::Attack_1()
 		}
 	}
 
-	mMoveDir = CXEnemy::GetInstance()->mPosition - mPosition;
+	CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy();
+	if (tEnemy) {
+		mMoveDir = tEnemy->mPosition - mPosition;
+	}
 	mMoveDir = mMoveDir.Normalize();
 }
 
@@ -604,7 +611,10 @@ void CXPlayer::Attack_2()
 
 	//移動量正規化　これをしないと斜め移動が早くなってしまうので注意
 	//ジャンプ時などはY軸を正規化しないよう注意
-	mMoveDir = CXEnemy::GetInstance()->mPosition - mPosition;
+	CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy();
+	if (tEnemy) {
+		mMoveDir = tEnemy->mPosition - mPosition;
+	}
 	mMoveDir = mMoveDir.Normalize();
 
 	mMove2 = mMoveDir * mAttack2Speed;
@@ -690,7 +700,10 @@ void CXPlayer::KnockBack()
 	ChangeAnimation(2, false, 20);
 
 	//ノックバック方向
-	mMoveDir = CXEnemy::GetInstance()->mPosition - mPosition;
+	CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy();
+	if (tEnemy) {
+		mMoveDir = tEnemy->mPosition - mPosition;
+	}
 	mMoveDir = mMoveDir.Normalize();
 
 	//ノックバック量

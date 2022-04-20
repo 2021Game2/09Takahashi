@@ -11,6 +11,7 @@ class CXEnemy : public CXCharacter
 private:
 	CText mFont; //フォント
 	CTexture mImageGauge; //ゲージ画像
+	CTexture mImageTarget;
 
 	CCollider mColSphereSword0;	//剣
 	CCollider mColSphereSword1;	//剣
@@ -30,7 +31,7 @@ private:
 	CVector mRot;
 	float mDot;
 
-	static  CXEnemy* mInstance;
+	//static  CXEnemy* mInstance;
 
 	void Idle();		//待機処理
 	void AutoMove();	//移動処理
@@ -76,13 +77,15 @@ public:
 	};
 	EEnemyState mState;	//状態
 
-	static CXEnemy* GetInstance();
+	//static CXEnemy* GetInstance();
 
 	void SetPos(CVector hpos);	//位置を設定
 	CVector GetPos();			//位置を取得
 	bool DeathFlag();			//死亡時trueを返す
 
 	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
+
+	bool mIsTarget; //プレイヤーの攻撃時の対象になっている時trueを返す
 };
 
 #endif

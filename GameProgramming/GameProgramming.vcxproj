@@ -98,6 +98,7 @@
     <ClCompile Include="CEffect2.cpp" />
     <ClCompile Include="CEnemy.cpp" />
     <ClCompile Include="CEnemy2.cpp" />
+    <ClCompile Include="CEnemyManager.cpp" />
     <ClCompile Include="CInput.cpp" />
     <ClCompile Include="CKey.cpp" />
     <ClCompile Include="CMap.cpp" />
@@ -145,6 +146,7 @@
     <ClInclude Include="CEffect2.h" />
     <ClInclude Include="CEnemy.h" />
     <ClInclude Include="CEnemy2.h" />
+    <ClInclude Include="CEnemyManager.h" />
     <ClInclude Include="CInput.h" />
     <ClInclude Include="CKey.h" />
     <ClInclude Include="CMap.h" />
