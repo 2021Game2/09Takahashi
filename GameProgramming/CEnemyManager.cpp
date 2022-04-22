@@ -61,9 +61,8 @@ void CEnemyManager::EnemyGenerate(int num)
 	for (int i = 0; i < num; i++) {
 		CVector tPos;
 		tPos.Set(0, 0, 0);
-		//		tPos.mY += -3.0f + (float)(rand() % 6);
-		tPos.mX += -30.0f + (float)(rand() % 60);
-		tPos.mZ += -30.0f + (float)(rand() % 60);
+		tPos.mX += -15.0f + (float)(rand() % 30);
+		tPos.mZ += -15.0f + (float)(rand() % 30);
 
 		CXEnemy* tmp = new CXEnemy;
 		tmp->SetPos(tPos);

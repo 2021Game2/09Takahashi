@@ -1,6 +1,15 @@
 #include "CTriangle.h"
 #include "glut.h"
 
+CTriangle::CTriangle()
+	:mMaterialIdx(0)
+{
+}
+
+CTriangle::~CTriangle()
+{
+}
+
 //頂点座標設定
 //SetVertex(頂点1, 頂点2, 頂点3)
 void CTriangle::SetVertex(const CVector &v0, const CVector &v1, const CVector &v2) {

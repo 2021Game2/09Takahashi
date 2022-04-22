@@ -34,23 +34,24 @@ void CTrap::Update()
 
 void CTrap::Collision(CCollider* m, CCollider* o)
 {
-	if (m->mType == CCollider::ESPHERE)
+	//自分と相手が球コライダの時
+	if (m->mType == CCollider::ESPHERE && o->mType == CCollider::ESPHERE)
 	{
-		if (o->mType == CCollider::ESPHERE)
+		//相手の親のタグが敵の時
+		if (o->mpParent->mTag == EENEMY)
 		{
-			if (o->mpParent->mTag == EENEMY)
+			//コライダのタグがボディの時
+			if (o->mTag == CCollider::EBODY)
 			{
-				if (o->mTag == CCollider::EBODY)
+				//球コライダ同士の衝突判定
+				if (CCollider::Collision(m, o))
 				{
-					if (CCollider::Collision(m, o))
+					//敵の状態がスタン状態では無く、死亡状態で無ければ通る
+					if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN && ((CXEnemy*)(o->mpParent))->mState != CXEnemy::EDEATH)
 					{
-						if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN && ((CXEnemy*)(o->mpParent))->mState != CXEnemy::EDEATH)
-						{
-							mEnemyCol = true;
-							CTrapManager::GetInstance()->mMapTrap = false;
-							//罠アイテム作動時の効果音を再生する
-							SE_Trap_Active.Play();
-						}
+						mEnemyCol = true; //敵に当たったことを返す
+						CTrapManager::GetInstance()->mMapTrap = false; //マップ上に罠がない判定にする
+						SE_Trap_Active.Play(); //罠アイテム作動時の効果音を再生する
 					}
 				}
 			}

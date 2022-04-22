@@ -21,6 +21,8 @@ class CMaterial;	//クラスの宣言
 */
 class CAnimationKey {
 public:
+	CAnimationKey();
+	~CAnimationKey();
 	//時間
 	float mTime;
 	//行列
@@ -65,7 +67,7 @@ public:
 	~CAnimationSet() {
 		SAFE_DELETE_ARRAY(mpName);
 		//アニメーション要素の削除
-		for (int i = 0; i < mAnimation.size(); i++) {
+		for (size_t i = 0; i < mAnimation.size(); i++) {
 			delete mAnimation[i];
 		}
 	}
@@ -146,7 +148,7 @@ public:
 		SAFE_DELETE_ARRAY(mpAnimateNormal);
 		SAFE_DELETE_ARRAY(mpTextureCoords);
 		//スキンウェイトの削除
-		for (int i = 0; i < mSkinWeights.size(); i++) {
+		for (size_t i = 0; i < mSkinWeights.size(); i++) {
 			delete mSkinWeights[i];
 		}
 	}
@@ -207,25 +209,8 @@ public:
 	std::vector<CAnimationSet*> mAnimationSet;
 	std::vector<CMaterial*> mMaterial;	//マテリアルの配列
 
-	CModelX()
-		: mpPointer(nullptr)
-		, mpSkinningMatrix(nullptr)
-	{}
-
-	~CModelX() {
-		if (mFrame.size() > 0)
-		{
-			delete mFrame[0];
-		}
-		for (int i = 0; i < mAnimationSet.size(); i++) {
-			delete mAnimationSet[i];
-		}
-		//マテリアルの解放
-		for (int i = 0; i < mMaterial.size(); i++) {
-			delete mMaterial[i];
-		}
-		SAFE_DELETE_ARRAY(mpSkinningMatrix);
-	}
+	CModelX();
+	~CModelX();
 
 	void Load(char* file);
 

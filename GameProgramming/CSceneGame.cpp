@@ -25,9 +25,10 @@
 #include "CSound.h"
 //
 #include "CInput.h"
+//
 #include "CEnemyManager.h"
 //
-//CMatrix Matrix;
+
 
 #define ENEMY_GENERATE_NUM 2 //敵の生成数
 
@@ -35,6 +36,8 @@
 #define FONT "Resource\\FontG.png" //フォント
 #define EFFECT_ATTACK_HIT "Resource\\Effect_Attack_Hit.png"		//攻撃ヒット時のエフェクト画像
 #define EFFECT_PORTION_USE "Resource\\Effect_Portion_Use.png"	//回復アイテム使用時のエフェクト画像
+#define IMAGE_PLAYER_RUN "Resource\\Image_Player_Run.png"		//プレイヤーの走り方説明用画像
+#define IMAGE_MOUSE "Resource\\Image_Mouse.png"					//マウス操作説明用画像
 #define TEXWIDTH  8192	//テクスチャ幅
 #define TEXHEIGHT  6144	//テクスチャ高さ
 
@@ -67,6 +70,13 @@ CSound SE_Trap_Active;	//罠アイテム作動時の効果音
 
 float CSceneGame::mClearTime = 0.0f; //クリアまでにかかった時間
 
+CSceneGame::CSceneGame()
+	:mStartTime(0)
+	, mEndTime(0)
+	, mCountStart(false)
+{
+}
+
 CSceneGame::~CSceneGame() {
 	CTrapManager::Release();
 	CMap2::Release();
@@ -82,40 +92,20 @@ void CSceneGame::Init() {
 	//テキストフォントの読み込みと設定
 	mFont.LoadTexture(FONT, 1, 4096 / 64);
 
+	//画像読み込み
+	mImagePlayerRun.Load(IMAGE_PLAYER_RUN); //プレイヤーの走り方説明用画像
+	mImageMouse.Load(IMAGE_MOUSE);		//マウス操作説明用画像
+
 	CRes::sModelX.Load(MODEL_FILE);
-	/*
-	CRes::sKnight.Load(MODEL_ENEMY);
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//1:移動
-	CRes::sKnight.SeparateAnimationSet(0, 1530, 1830, "idle1");//2:待機
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//3:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//4:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//5:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//6:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 440, 520, "attack1_1");//7:Attack1
-	CRes::sKnight.SeparateAnimationSet(0, 520, 615, "attack2");//8:Attack2
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//9:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//10:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 1160, 1260, "death1");//11:ダウン
-	CRes::sKnight.SeparateAnimationSet(0, 90, 160, "knockback");//12:ノックバック
-	CRes::sKnight.SeparateAnimationSet(0, 1120, 1160, "stun");//13:スタン
-	CRes::sKnight.SeparateAnimationSet(0, 170, 220, "Dash");//14:ダッシュ
-	CRes::sKnight.SeparateAnimationSet(0, 380, 430, "Jump");//15:ジャンプ
-	*/
+	
 	//キャラクターにモデルを設定
 	mPlayer.Init(&CRes::sModelX);
 	mPlayer.mPosition = CVector(0.0f, 0.0f, 20.0f);
 	mPlayer.mRotation = CVector(0.0f, 180.0f, 0.0f);
 
-	/*
-	//敵の初期設定
-	mEnemy.Init(&CRes::sKnight);
-	mEnemy.mAnimationFrameSize = 1024;
-	//敵の配置
-	mEnemy.mPosition = CVector(0.0f, 0.0f, -10.0f);
-	//mEnemy.ChangeAnimation(2, true, 200);
-	*/
+	//敵管理生成
 	CEnemyManager::Generate();
-	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM); //敵生成
+	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM); //敵を生成
 
 	//カメラ初期化
 	Camera.Init();
@@ -165,20 +155,17 @@ void CSceneGame::Update() {
 	CTaskManager::Get()->Update(); //タスク更新
 
 	//衝突処理
-	//CCollisionManager::Get()->Collision();
 	CTaskManager::Get()->TaskCollision();
-	/*
-	Camera.Update();
-	Camera.Render();
-	*/
+
 	//タスクリスト削除
 	CTaskManager::Get()->Delete();
-	//タスク描画
-	//CTaskManager::Get()->Render();
+
 	//カメラ描画
 	Camera.Draw();
+
 	//シャドウマップ描画
 	mShadowMap.Render();
+
 	//タスク2D描画
 	CTaskManager::Get()->Render2D();
 
@@ -189,13 +176,13 @@ void CSceneGame::Update() {
 
 	//時間計測開始
 	if (mCountStart == false) {
-		start = clock();
+		mStartTime = clock();
 		mCountStart = true;
 	}
 	//全ての敵が死亡状態になるまで時間を計測する
 	if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
 		//クリア時間を記録
-		mClearTime = (float)(end - start) / 1000;
+		mClearTime = (float)(mEndTime - mStartTime) / 1000;
 		//Enterキーを押すとリザルトに移行する
 		if (CKey::Once(VK_RETURN)) {
 			mScene = ERESULT;
@@ -203,7 +190,7 @@ void CSceneGame::Update() {
 		}
 	}
 	else {
-		end = clock();
+		mEndTime = clock();
 	}
 	
 	//プレイヤーが死亡状態のとき、Enterキーでタイトルに移行する
@@ -221,7 +208,7 @@ void CSceneGame::Update() {
 	//確認用、後で削除
 	char buf[64];
 	//タイム
-	sprintf(buf, "TIME:%06.2f", (float)(end - start) / 1000);
+	sprintf(buf, "TIME:%06.2f", (float)(mEndTime - mStartTime) / 1000);
 	mFont.DrawString(buf, 50, 100, 10, 12);
 
 	//効果音のテスト
@@ -235,6 +222,11 @@ void CSceneGame::Update() {
 		SE_Trap_Active.Play();
 	}
 #endif
+
+	mImagePlayerRun.Draw(20, 240, 20, 70, 0, 508, 92, 0);	//プレイヤーの走り方説明画像表示
+
+	mImageMouse.Draw(585, 645, 70, 130, 0, 255, 255, 0);	//右クリック用
+	mImageMouse.Draw(735, 795, 70, 130, 0, 255, 511, 256);	//ホイール用
 
 	//プレイヤーが死亡状態になるとGAMEOVERと表示する
 	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {

@@ -55,7 +55,7 @@ void CXCharacter::ChangeAnimation(int index, bool loop, float framesize) {
  matrix：移動、回転、拡大縮小の行列
 */
 void CXCharacter::Update(CMatrix& matrix) {
-	for (int i = 0; i < mpModel->mAnimationSet.size(); i++)
+	for (size_t i = 0; i < mpModel->mAnimationSet.size(); i++)
 	{
 		mpModel->mAnimationSet[i]->mWeight = 0.0f;
 	}
@@ -86,7 +86,7 @@ void CXCharacter::Update(CMatrix& matrix) {
 	//フレームの合成行列を計算する
 	mpModel->mFrame[0]->AnimateCombined(&matrix);
 	// 合成行列の退避
-	for (int i = 0; i < mpModel->mFrame.size(); i++) {
+	for (size_t i = 0; i < mpModel->mFrame.size(); i++) {
 		mpCombinedMatrix[i] =
 			mpModel->mFrame[i]->mCombinedMatrix;
 	}

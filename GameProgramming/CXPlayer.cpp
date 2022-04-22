@@ -125,8 +125,8 @@ void CXPlayer::Update()
 			mState = EMOVE;
 			SE_Player_Walk.Repeat(); //効果音を再生する
 		}
-		//Eキーを押すとアイテム使用
-		else if (CKey::Once('E')) {
+		//右クリックでアイテム使用
+		else if (CKey::Once(VK_RBUTTON)) {
 			mState = EITEMUSE;
 		}
 		break;
@@ -153,8 +153,8 @@ void CXPlayer::Update()
 			mState = EAVOID;
 			SE_Player_Avoid.Play(); //効果音を再生
 		}
-		//Eキーを押すとアイテム使用
-		else if (CKey::Once('E')) {
+		//右クリックでアイテム使用
+		else if (CKey::Once(VK_LBUTTON)) {
 			mState = EITEMUSE;
 		}
 		//WASDキーを押すと移動
@@ -188,8 +188,8 @@ void CXPlayer::Update()
 			mState = EAVOID;
 			SE_Player_Avoid.Play(); //効果音を再生
 		}
-		//Eキーを押すとアイテム使用
-		else if (CKey::Once('E')) {
+		//右クリックでアイテム使用
+		else if (CKey::Once(VK_LBUTTON)) {
 			mState = EITEMUSE;
 		}
 		//WASDキーを押すと移動
@@ -326,19 +326,19 @@ void CXPlayer::Render2D()
 	mImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + StaminaGaugeWid, 520, 550, 110, 190, 63, 0);	//スタミナゲージを表示
 
 	char buf[64];
-	mImageGauge.Draw(640, 760, 40, 160, 310, 390, 63, 0);	//アイテム背景を表示
+	mImageGauge.Draw(630, 750, 40, 160, 310, 390, 63, 0);	//アイテム背景を表示
 	//選択中のアイテム
 	switch (mItemSelect) {	
 	case ETRAP: //罠
-		mImageTrap.Draw(650, 750, 50, 150, 0, 255, 255, 0); //罠画像を表示
+		mImageTrap.Draw(640, 740, 50, 150, 0, 255, 255, 0); //罠画像を表示
 		sprintf(buf, "%d", CTrapManager::GetInstance()->mTrapQuantity); //罠の所持数
 		break;
 	case EPORTION: //回復
-		mImagePortion.Draw(650, 750, 50, 150, 0, 255, 255, 0); //回復薬画像を表示
+		mImagePortion.Draw(640, 740, 50, 150, 0, 255, 255, 0); //回復薬画像を表示
 		sprintf(buf, "%d", mPortionQuantity); //回復の所持数
 		break;
 	}
-	mFont.DrawString(buf, 740, 60, 15, 15); //アイテムの所持数を表示
+	mFont.DrawString(buf, 730, 60, 15, 15); //アイテムの所持数を表示
 
 #ifdef _DEBUG
 	//char buf[64];
@@ -359,79 +359,78 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 	//死亡状態の時はreturnする
 	if (mState == EDEATH) return;
 
-	//自分が球コライダ
-	if (m->mType == CCollider::ESPHERE)
+	//自分と相手が球コライダの時
+	if (m->mType == CCollider::ESPHERE && o->mType == CCollider::ESPHERE)
 	{
-		//相手が球コライダ
-		if (o->mType == CCollider::ESPHERE)
+		//相手の親のタグが敵
+		if (o->mpParent->mTag == EENEMY)
 		{
-			//相手の親のタグが敵
-			if (o->mpParent->mTag == EENEMY)
+			//敵が死亡状態のときリターンする
+			if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EDEATH)return;
+			//相手のコライダのタグが剣
+			if (o->mTag == CCollider::ESWORD)
 			{
-				//相手のコライダのタグが剣
-				if (o->mTag == CCollider::ESWORD)
+				//プレイヤーが無敵状態ではないとき
+				if (mInvincibleFlag == false)
 				{
-					//無敵状態ではないとき
-					if (mInvincibleFlag == false)
-					{
-						//衝突判定
-						if (CCollider::Collision(m, o)) {
-							//キャスト変換
-							//敵の攻撃のヒット判定が有効なとき
-							if (((CXEnemy*)(o->mpParent))->mHit == true)
-							{
-								//攻撃を受けた箇所
-								switch (m->mTag) {
-								case CCollider::EHEAD:	//頭
-								case CCollider::EBODY:	//体
-									mHp -= DAMAGE;		//ダメージを受ける
-									((CXEnemy*)(o->mpParent))->mHit = false; //敵の攻撃のヒット判定を終了させる
-									mState = EKNOCKBACK; //ノックバック状態へ移行
-									SE_Attack_Hit_2.Play(); //攻撃ヒット時の効果音再生
-									mHit = false; //自分の攻撃のヒット判定を無効にする
-									mAttackFlag_1 = false;
-									mAttackFlag_2 = false;
-									mAttackFlag_3 = false;
-									mMove2 = CVector(0.0f, 0.0f, 0.0f);
-									break;
-								}
+					//球コライダ同士の衝突判定
+					if (CCollider::Collision(m, o)) {
+						//キャスト変換
+						//敵の攻撃のヒット判定が有効なとき
+						if (((CXEnemy*)(o->mpParent))->mHit == true)
+						{
+							//攻撃を受けた箇所
+							switch (m->mTag) {
+							case CCollider::EHEAD:	//頭
+							case CCollider::EBODY:	//体
+								mHp -= DAMAGE;		//ダメージを受ける
+								((CXEnemy*)(o->mpParent))->mHit = false; //敵の攻撃のヒット判定を終了させる
+								mState = EKNOCKBACK;	//ノックバック状態へ移行
+								mHit = false;			//自分の攻撃のヒット判定を無効にする
+								mAttackFlag_1 = false;
+								mAttackFlag_2 = false;
+								mAttackFlag_3 = false;
+								mMove2 = CVector(0.0f, 0.0f, 0.0f);
+								SE_Attack_Hit_2.Play();	//攻撃ヒット時の効果音再生
+								break;
 							}
 						}
 					}
 				}
-				//すり抜け防止
-				//プレイヤーのボディと敵のボディが当たっているとき
-				if (m->mTag == CCollider::EBODY && o->mTag == CCollider::EBODY) {
-					//敵が死亡状態のときリターンする
-					if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EDEATH)return;
-					CVector adjust;
-					if (CCollider::CollisionAdjust(m, o, &adjust)) {
-						//敵がスタン状態ではないとき、プレイヤーが攻撃2状態ではないとき
-						if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN && mState != EATTACK_2) {
-							//敵のポジションを調整
-							CXEnemy* Enemy = (CXEnemy*)o->mpParent;
-							Enemy->SetPos(Enemy->GetPos() + adjust);
-						}
-						else {
-							//プレイヤーのポジションを調整
-							mPosition -= adjust;
-						}
+			}
+			//プレイヤーと敵のすり抜け防止処理
+			//自分と相手のコライダのタグが体のとき
+			if (m->mTag == CCollider::EBODY && o->mTag == CCollider::EBODY) {
+				CVector adjust; //調整用
+				//球コライダ同士の衝突判定(Y座標を調整しない)
+				if (CCollider::CollisionAdjust(m, o, &adjust)) {
+					//敵がスタン状態ではないとき、プレイヤーが攻撃2状態ではないとき
+					if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN && mState != EATTACK_2) {
+						//敵のポジションを調整
+						CXEnemy* Enemy = (CXEnemy*)o->mpParent;
+						Enemy->SetPos(Enemy->GetPos() + adjust);
+					}
+					else {
+						//プレイヤーのポジションを調整
+						mPosition -= adjust;
 					}
 				}
 			}
 		}
-		//相手が三角コライダ
-		if (o->mType == CCollider::ETRIANGLE)
+	}
+
+	//自分が球コライダで相手が三角コライダの時
+	if (m->mType == CCollider::ESPHERE && o->mType == CCollider::ETRIANGLE)
+	{
+		//相手の親のタグがマップ
+		if (o->mpParent->mTag == EMAP)
 		{
-			//相手の親のタグがマップ
-			if (o->mpParent->mTag == EMAP)
-			{
-				//自分のコライダのタグが頭or体
-				if (m->mTag == CCollider::EHEAD || m->mTag == CCollider::EBODY) {
-					CVector adjust;
-					if (CCollider::CollisionTriangleSphere(o, m, &adjust)) {
-						mPosition += adjust;
-					}
+			//自分のコライダのタグが頭or体
+			if (m->mTag == CCollider::EHEAD || m->mTag == CCollider::EBODY) {
+				CVector adjust; //調整用
+				//三角コライダと球コライダの衝突判定
+				if (CCollider::CollisionTriangleSphere(o, m, &adjust)) {
+					mPosition += adjust; //ポジションを調整する
 				}
 			}
 		}

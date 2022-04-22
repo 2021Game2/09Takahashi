@@ -31,8 +31,6 @@ private:
 	CVector mRot;
 	float mDot;
 
-	//static  CXEnemy* mInstance;
-
 	void Idle();		//‘Ò‹@ˆ—
 	void AutoMove();	//ˆÚ“®ˆ—
 	void Chase();		//’ÇÕˆ—
@@ -76,8 +74,6 @@ public:
 		EAVOID,		//‰ñ”ğ
 	};
 	EEnemyState mState;	//ó‘Ô
-
-	//static CXEnemy* GetInstance();
 
 	void SetPos(CVector hpos);	//ˆÊ’u‚ğİ’è
 	CVector GetPos();			//ˆÊ’u‚ğæ“¾

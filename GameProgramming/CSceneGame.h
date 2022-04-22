@@ -2,7 +2,6 @@
 #define CSCENEGAME_H
 #include "CScene.h"
 #include "CXPlayer.h"
-//#include "CXEnemy.h"
 #include "CMap.h"
 #include <time.h>
 #include "CShadowMap.h"
@@ -19,16 +18,18 @@ private:
 
 	//キャラクタのインスタンス
 	CXPlayer mPlayer;
-	//敵のインスタンス
-	//CXEnemy mEnemy;
 
-	clock_t start, end;
+	clock_t mStartTime, mEndTime; //計測開始時刻、計測終了時刻
 	bool mCountStart; //クリア時間計測開始用
 
 	//シャドウマップのインスタンス
 	CShadowMap mShadowMap;
 
+	CTexture mImagePlayerRun;	//プレイヤーの走り方説明用画像
+	CTexture mImageMouse;		//マウス操作説明用画像
+
 public:
+	CSceneGame();
 	~CSceneGame();
 	//初期化処理のオーバーライド
 	void Init();
