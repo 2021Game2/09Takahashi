@@ -25,8 +25,10 @@ private:
 	//シャドウマップのインスタンス
 	CShadowMap mShadowMap;
 
-	CTexture mImagePlayerRun;	//プレイヤーの走り方説明用画像
-	CTexture mImageMouse;		//マウス操作説明用画像
+	CTexture mImagePlayerRun;		//プレイヤーの走り方説明用画像
+	CTexture mImagePlayerAttack;	//プレイヤーの攻撃方法説明用画像
+	CTexture mImagePlayerAvoid;		//プレイヤーの回避方法説明用画像
+	CTexture mImageMouse;			//マウス操作説明用画像
 
 public:
 	CSceneGame();

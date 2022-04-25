@@ -1,6 +1,6 @@
 #ifndef CINPUT_H
 #define CINPUT_H
-
+#include<Windows.h>
 #include "GLFW/glfw3.h"
 /*
 “ü—ÍƒNƒ‰ƒX

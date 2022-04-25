@@ -37,6 +37,8 @@
 #define EFFECT_ATTACK_HIT "Resource\\Effect_Attack_Hit.png"		//攻撃ヒット時のエフェクト画像
 #define EFFECT_PORTION_USE "Resource\\Effect_Portion_Use.png"	//回復アイテム使用時のエフェクト画像
 #define IMAGE_PLAYER_RUN "Resource\\Image_Player_Run.png"		//プレイヤーの走り方説明用画像
+#define IMAGE_PLAYER_ATTACK "Resource\\Image_Player_Attack.png" //プレイヤーの攻撃方法説明用画像
+#define IMAGE_PLAYER_AVOID "Resource\\Image_Player_Avoid.png"	//プレイヤーの回避方法説明用画像
 #define IMAGE_MOUSE "Resource\\Image_Mouse.png"					//マウス操作説明用画像
 #define TEXWIDTH  8192	//テクスチャ幅
 #define TEXHEIGHT  6144	//テクスチャ高さ
@@ -93,8 +95,10 @@ void CSceneGame::Init() {
 	mFont.LoadTexture(FONT, 1, 4096 / 64);
 
 	//画像読み込み
-	mImagePlayerRun.Load(IMAGE_PLAYER_RUN); //プレイヤーの走り方説明用画像
-	mImageMouse.Load(IMAGE_MOUSE);		//マウス操作説明用画像
+	mImagePlayerRun.Load(IMAGE_PLAYER_RUN);			//プレイヤーの走り方説明用画像
+	mImagePlayerAttack.Load(IMAGE_PLAYER_ATTACK);	//プレイヤーの攻撃方法説明用画像
+	mImagePlayerAvoid.Load(IMAGE_PLAYER_AVOID);		//プレイヤーの回避方法説明用画像
+	mImageMouse.Load(IMAGE_MOUSE);					//マウス操作説明用画像
 
 	CRes::sModelX.Load(MODEL_FILE);
 	
@@ -223,20 +227,22 @@ void CSceneGame::Update() {
 	}
 #endif
 
-	mImagePlayerRun.Draw(20, 240, 20, 70, 0, 508, 92, 0);	//プレイヤーの走り方説明画像表示
+	mImagePlayerRun.Draw(110, 190, 20, 100, 0, 255, 255, 0);	//プレイヤーの走り方説明画像表示
+	mImagePlayerAttack.Draw(20, 100, 20, 100, 0, 255, 255, 0);	//プレイヤーの攻撃方法説明画像表示
+	mImagePlayerAvoid.Draw(200, 280, 20, 100, 0, 255, 255, 0);	//プレイヤーの回避方法説明画像表示
 
 	mImageMouse.Draw(585, 645, 70, 130, 0, 255, 255, 0);	//右クリック用
 	mImageMouse.Draw(735, 795, 70, 130, 0, 255, 511, 256);	//ホイール用
 
 	//プレイヤーが死亡状態になるとGAMEOVERと表示する
 	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {
-		mFont.DrawString("GAMEOVER", 120, 300, 40, 40);
-		mFont.DrawString("PUSH ENTER", 30, 30, 20, 20);
+		mFont.DrawString("GAMEOVER", 120, 350, 40, 40);
+		mFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
 	}
 	//敵が全て死亡状態になるとGAMECLEARと表示する
 	else if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
-		mFont.DrawString("CLEAR", 230, 300, 40, 40);
-		mFont.DrawString("PUSH ENTER", 30, 30, 20, 20);
+		mFont.DrawString("CLEAR", 230, 350, 40, 40);
+		mFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
 	}
 
 	//2Dの描画終了
