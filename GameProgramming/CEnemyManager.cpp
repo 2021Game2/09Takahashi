@@ -5,11 +5,14 @@
 
 #define MODEL_ENEMY "Resource\\knight\\knight_low.x" //“Gƒ‚ƒfƒ‹
 
+#define ATTACK_NUM_MAX 1 //“¯‚ÉUŒ‚‚Å‚«‚é“G‚Ì”
+
 CEnemyManager* CEnemyManager::mInstance;
 
 CEnemyManager::CEnemyManager()
 	:mNearTarget(nullptr)
 	,mEnemyDeathNum(0)
+	,mEnemyAttackNum(0)
 {
 	CRes::sKnight.Load(MODEL_ENEMY);
 	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//1:ˆÚ“®
@@ -61,8 +64,8 @@ void CEnemyManager::EnemyGenerate(int num)
 	for (int i = 0; i < num; i++) {
 		CVector tPos;
 		tPos.Set(0, 0, 0);
-		tPos.mX += -15.0f + (float)(rand() % 30);
-		tPos.mZ += -15.0f + (float)(rand() % 30);
+		tPos.mX += -15.0f + (float)(rand() % 30) - (float)i;
+		tPos.mZ += -15.0f + (float)(rand() % 30) - (float)i;
 
 		CXEnemy* tmp = new CXEnemy;
 		tmp->SetPos(tPos);
@@ -79,37 +82,32 @@ CXEnemy* CEnemyManager::GetNearEnemy()
 void CEnemyManager::Update()
 {
 	AIUpdate();
-
-	/*
-	for (size_t i = 0; i < mEnemyList.size(); i++) {
-		mEnemyList[i]->Update();
-	}
-	*/
 }
 
 void CEnemyManager::Render()
 {
-	/*
-	for (size_t i = 0; i < mEnemyList.size(); i++) {
-		mEnemyList[i]->Render();
-	}
-	*/
 }
 
 void CEnemyManager::AIUpdate()
 {
-	int DeathCount = 0;
+	//ƒŠƒZƒbƒg
+	mEnemyDeathNum = 0;
+	mEnemyAttackNum = 0;
 	float len1 = 10000.0f;
 
 	for (size_t i = 0; i < mEnemyList.size(); i++) {
 		if (i == 0) {
 			mNearTarget = mEnemyList[i];
 		}
+		mEnemyList[i]->mIsTarget = false;
 		//€–Só‘Ô‚¾‚Á‚½
 		if (mEnemyList[i]->mState == CXEnemy::EDEATH) {
-			DeathCount++; //ƒJƒEƒ“ƒg‰ÁZ
+			mEnemyDeathNum++; //ƒJƒEƒ“ƒg‰ÁZ
+			continue; //“Ç‚İ”ò‚Î‚µ
 		}
-		mEnemyList[i]->mIsTarget = false;
+		//UŒ‚ó‘Ô‚¾‚Á‚½‚Æ‚«UŒ‚ó‘Ô‚Ì“G‚Ì”‚ğ‰ÁZ
+		if (mEnemyList[i]->mIsAttack())mEnemyAttackNum++;
+		//ƒvƒŒƒCƒ„[‚Æ‚Ì‹——£‚ªˆê”Ô‹ß‚¢“G‚ğ‹‚ß‚é
 		CVector pos = mEnemyList[i]->mPosition - CXPlayer::GetInstance()->mPosition;
 		float len2 = pos.Length();
 		if (len1 > len2) {
@@ -118,13 +116,19 @@ void CEnemyManager::AIUpdate()
 		}
 	}
 
-	mNearTarget->mIsTarget = true;
-	mEnemyDeathNum = DeathCount;
+	if (mIsEnemyAllDeath() == false) {
+		mNearTarget->mIsTarget = true; //ƒvƒŒƒCƒ„[‚Éˆê”Ô‹ß‚¢“G‚ÌUŒ‚‘ÎÛƒtƒ‰ƒO‚ğtrue‚É‚·‚é
+	}
 }
 
 bool CEnemyManager::mIsEnemyAllDeath()
 {
 	return(mEnemyList.size() == mEnemyDeathNum);
+}
+
+bool CEnemyManager::mIsEnemyAttack()
+{
+	return (mEnemyAttackNum < ATTACK_NUM_MAX);
 }
 
 

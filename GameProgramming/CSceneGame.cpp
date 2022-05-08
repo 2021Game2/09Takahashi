@@ -29,8 +29,7 @@
 #include "CEnemyManager.h"
 //
 
-
-#define ENEMY_GENERATE_NUM 2 //敵の生成数
+#define ENEMY_GENERATE_NUM 3 //敵の生成数
 
 //画像系
 #define FONT "Resource\\FontG.png" //フォント
@@ -208,31 +207,12 @@ void CSceneGame::Update() {
 	//2D描画開始
 	CUtil::Start2D(0, 800, 0, 600);
 
-#ifdef _DEBUG
-	//確認用、後で削除
-	char buf[64];
-	//タイム
-	sprintf(buf, "TIME:%06.2f", (float)(mEndTime - mStartTime) / 1000);
-	mFont.DrawString(buf, 50, 100, 10, 12);
-
-	//効果音のテスト
-	if (CKey::Once('1')) {
-		SE_Attack_Hit_1.Play();
-	}
-	else if (CKey::Once('2')) {
-		SE_Attack_Hit_2.Play();
-	}
-	else if (CKey::Once('3')) {
-		SE_Trap_Active.Play();
-	}
-#endif
-
-	mImagePlayerRun.Draw(110, 190, 20, 100, 0, 255, 255, 0);	//プレイヤーの走り方説明画像表示
-	mImagePlayerAttack.Draw(20, 100, 20, 100, 0, 255, 255, 0);	//プレイヤーの攻撃方法説明画像表示
-	mImagePlayerAvoid.Draw(200, 280, 20, 100, 0, 255, 255, 0);	//プレイヤーの回避方法説明画像表示
-
-	mImageMouse.Draw(585, 645, 70, 130, 0, 255, 255, 0);	//右クリック用
-	mImageMouse.Draw(735, 795, 70, 130, 0, 255, 511, 256);	//ホイール用
+	//操作方法の画像表示
+	mImagePlayerRun.Draw(110, 190, 20, 100, 0, 255, 255, 0);	//プレイヤーの走り方
+	mImagePlayerAttack.Draw(20, 100, 20, 100, 0, 255, 255, 0);	//プレイヤーの攻撃方法
+	mImagePlayerAvoid.Draw(200, 280, 20, 100, 0, 255, 255, 0);	//プレイヤーの回避方法
+	mImageMouse.Draw(590, 630, 70, 110, 0, 255, 255, 0);	//右クリック用
+	mImageMouse.Draw(750, 790, 70, 110, 0, 255, 511, 256);	//ホイール用
 
 	//プレイヤーが死亡状態になるとGAMEOVERと表示する
 	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {

@@ -15,7 +15,7 @@
 #define GRAVITY 0.9f			//重力
 #define HP_MAX 100				//体力最大値
 #define STAMINA_MAX 100			//スタミナ最大値
-#define AVOID_STAMINA 30		//回避時のスタミナの減少量
+#define AVOID_STAMINA STAMINA_MAX*0.3f //回避時のスタミナの減少量、スタミナ最大値の3割消費する
 #define AVOID_TIME 30			//回避時間
 #define AVOID_FIRSTSPEED 0.5f	//回避時の初速
 #define SPEED_DEFAULT 0.15f		//スピード(通常時)
@@ -23,21 +23,23 @@
 #define SPEED_DASH_LOW 0.05f	//スピード(ダッシュ時、スタミナ切れ)
 #define INVINCIBLETIME_AVOID 30	//無敵時間(回避時)
 #define INVINCIBLETIME_DAMAGE 60//無敵時間(ダメージ発生時)
+#define KNOCKBACK_AMOUNT 0.1f	//ノックバック時の移動量
 #define DAMAGE 20				//ダメージ
 #define ATTACK2_FIRSTSPEED 0.6f	//攻撃2使用時の初速
 #define GRACETIME 15			//派生攻撃の受付時間
 #define COMBO_MAX 4				//攻撃を連続で派生させられる上限
 
 #define PORTION_QUANTITY 5		//回復薬の所持数
-#define HEAL_AMOUNT HP_MAX*0.3f	//回復薬を使用したときの回復量
+#define HEAL_AMOUNT HP_MAX*0.3f	//回復薬を使用したときの回復量、体力最大値の3割回復する
 
 #define GAUGE_WID_MAX 400.0f	//ゲージの幅の最大値
 #define GAUGE_LEFT 20			//ゲージ描画時の左端
 
 #define FONT "Resource\\FontG.png"				//フォント
 #define IMAGE_GAUGE "Resource\\Gauge.png"		//ゲージ画像
-#define IMAGE_PORTION "Resource\\Portion.png"	//回復薬画像
-#define IMAGE_TRAP "Resource\\Trap.png"			//罠画像
+#define IMAGE_PORTION "Resource\\Image_Portion.png"	//回復薬画像
+#define IMAGE_TRAP "Resource\\Image_Trap.png"		//罠画像
+#define IMAGE_NIXSIGN "Resource\\Image_Nixsign.png"	//禁止マーク画像
 
 extern CSound SE_Player_Walk;	//プレイヤーの歩行時の効果音
 extern CSound SE_Player_Run;	//プレイヤーの走行時の効果音
@@ -76,6 +78,8 @@ CXPlayer::CXPlayer()
 	, mAttackFlag_Once(false)
 	,mCombo(0)
 	,mPortionQuantity(PORTION_QUANTITY)
+	,mKnockBackDir(0.0f,0.0f,0.0f)
+	,mAttackDir(0.0f,0.0f,0.0f)
 {
 	//タグにプレイヤーを設定します
 	mTag = EPLAYER;
@@ -89,9 +93,11 @@ CXPlayer::CXPlayer()
 
 	mFont.LoadTexture(FONT, 1, 4096 / 64);
 
+	//画像読み込み
 	mImageGauge.Load(IMAGE_GAUGE);
 	mImagePortion.Load(IMAGE_PORTION);
 	mImageTrap.Load(IMAGE_TRAP);
+	mImageNixsign.Load(IMAGE_NIXSIGN);
 }
 
 void CXPlayer::Init(CModelX* model)
@@ -125,8 +131,8 @@ void CXPlayer::Update()
 			mState = EMOVE;
 			SE_Player_Walk.Repeat(); //効果音を再生する
 		}
-		//右クリックでアイテム使用
-		else if (CKey::Once(VK_RBUTTON)) {
+		//右クリックでアイテム使用可能な時アイテムを使用する
+		else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
 			mState = EITEMUSE;
 		}
 		break;
@@ -153,8 +159,8 @@ void CXPlayer::Update()
 			mState = EAVOID;
 			SE_Player_Avoid.Play(); //効果音を再生
 		}
-		//右クリックでアイテム使用
-		else if (CKey::Once(VK_LBUTTON)) {
+		//右クリックでアイテム使用可能な時アイテムを使用する
+		else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
 			mState = EITEMUSE;
 		}
 		//WASDキーを押すと移動
@@ -188,8 +194,8 @@ void CXPlayer::Update()
 			mState = EAVOID;
 			SE_Player_Avoid.Play(); //効果音を再生
 		}
-		//右クリックでアイテム使用
-		else if (CKey::Once(VK_LBUTTON)) {
+		//右クリックでアイテム使用可能な時アイテムを使用する
+		else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
 			mState = EITEMUSE;
 		}
 		//WASDキーを押すと移動
@@ -269,7 +275,8 @@ void CXPlayer::Update()
 	//座標移動
 	mPosition += mMove2;
 
-	mMove2 = mMove2 * GRAVITY;
+	//減速させる
+	mMove2 = mMove2 * GRAVITY; 
 
 	//普通に3次元ベクトル計算で算出したほうが正確だが計算量を懸念する場合は擬似計算で軽量化
 	//擬似ベクトル計算
@@ -326,29 +333,24 @@ void CXPlayer::Render2D()
 	mImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + StaminaGaugeWid, 520, 550, 110, 190, 63, 0);	//スタミナゲージを表示
 
 	char buf[64];
-	mImageGauge.Draw(630, 750, 40, 160, 310, 390, 63, 0);	//アイテム背景を表示
+	mImageGauge.Draw(630, 750, 30, 150, 310, 390, 63, 0);	//アイテム背景を表示
 	//選択中のアイテム
 	switch (mItemSelect) {	
 	case ETRAP: //罠
-		mImageTrap.Draw(640, 740, 50, 150, 0, 255, 255, 0); //罠画像を表示
+		mImageTrap.Draw(640, 740, 40, 140, 0, 255, 255, 0); //罠画像を表示
 		sprintf(buf, "%d", CTrapManager::GetInstance()->mTrapQuantity); //罠の所持数
 		break;
 	case EPORTION: //回復
-		mImagePortion.Draw(640, 740, 50, 150, 0, 255, 255, 0); //回復薬画像を表示
+		mImagePortion.Draw(640, 740, 40, 140, 0, 255, 255, 0); //回復薬画像を表示
 		sprintf(buf, "%d", mPortionQuantity); //回復の所持数
 		break;
 	}
-	mFont.DrawString(buf, 730, 60, 15, 15); //アイテムの所持数を表示
+	//アイテムが使用不可能な時
+	if (mIsItemUse() == false) {
+		mImageNixsign.Draw(640, 740, 40, 140, 255, 0, 255, 0); //禁止マーク画像を表示
+	}
 
-#ifdef _DEBUG
-	//char buf[64];
-
-	sprintf(buf, "COMBO:%d", mCombo);
-	mFont.DrawString(buf, 50, 250, 10, 12);
-
-	sprintf(buf, "INVICIBLETIME:%d", mInvincibleTime);
-	mFont.DrawString(buf, 50, 150, 10, 12);
-#endif
+	mFont.DrawString(buf, 730, 50, 15, 15); //アイテムの所持数を表示
 
 	//2Dの描画終了
 	CUtil::End2D();
@@ -373,12 +375,12 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 				//プレイヤーが無敵状態ではないとき
 				if (mInvincibleFlag == false)
 				{
-					//球コライダ同士の衝突判定
-					if (CCollider::Collision(m, o)) {
-						//キャスト変換
-						//敵の攻撃のヒット判定が有効なとき
-						if (((CXEnemy*)(o->mpParent))->mHit == true)
-						{
+					//キャスト変換
+					//敵の攻撃のヒット判定が有効なとき
+					if (((CXEnemy*)(o->mpParent))->mHit == true)
+					{
+						//球コライダ同士の衝突判定
+						if (CCollider::Collision(m, o)) {
 							//攻撃を受けた箇所
 							switch (m->mTag) {
 							case CCollider::EHEAD:	//頭
@@ -386,6 +388,8 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 								mHp -= DAMAGE;		//ダメージを受ける
 								((CXEnemy*)(o->mpParent))->mHit = false; //敵の攻撃のヒット判定を終了させる
 								mState = EKNOCKBACK;	//ノックバック状態へ移行
+								mKnockBackDir = ((CXEnemy*)(o->mpParent))->mPosition - mPosition; //ノックバックする方向を求める
+								mInvincibleFlag = true;	//無敵フラグを有効にする
 								mHit = false;			//自分の攻撃のヒット判定を無効にする
 								mAttackFlag_1 = false;
 								mAttackFlag_2 = false;
@@ -524,12 +528,17 @@ void CXPlayer::Dash()
 //攻撃1処理
 void CXPlayer::Attack_1()
 {
+	//攻撃発生時一度だけ通る
 	if (mAttackFlag_1 == false) {
 		ChangeAnimation(3, true, 20);
 		mAttackFlag_1 = true;
 		mGraceTime = 0;
 		mAttackFlag_Once = true;
 		mCombo++;
+		CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
+		if (tEnemy) {
+			mAttackDir = tEnemy->mPosition - mPosition; //攻撃時の向きを求める
+		}
 	}
 
 	if (mGraceTime > 0) {
@@ -569,16 +578,13 @@ void CXPlayer::Attack_1()
 		}
 	}
 
-	CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy();
-	if (tEnemy) {
-		mMoveDir = tEnemy->mPosition - mPosition;
-	}
-	mMoveDir = mMoveDir.Normalize();
+	mMoveDir = mAttackDir.Normalize(); //攻撃時の向きを正規化して代入する
 }
 
 //攻撃2処理
 void CXPlayer::Attack_2()
 {
+	//攻撃発生時一度だけ通る
 	if (mAttackFlag_2 == false) {
 		ChangeAnimation(7, true, 30);
 		mAttackFlag_2 = true;
@@ -604,17 +610,15 @@ void CXPlayer::Attack_2()
 		{
 			mState = EIDLE;
 			mAttackFlag_2 = false;
-			//mHit = false;
 		}
 	}
 
-	//移動量正規化　これをしないと斜め移動が早くなってしまうので注意
-	//ジャンプ時などはY軸を正規化しないよう注意
-	CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy();
+	CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
 	if (tEnemy) {
-		mMoveDir = tEnemy->mPosition - mPosition;
+		mAttackDir = tEnemy->mPosition - mPosition; //向きを求める
 	}
-	mMoveDir = mMoveDir.Normalize();
+
+	mMoveDir = mAttackDir.Normalize(); //攻撃時の向きを正規化して代入する
 
 	mMove2 = mMoveDir * mAttack2Speed;
 	mAttack2Speed = mAttack2Speed * GRAVITY;
@@ -623,11 +627,16 @@ void CXPlayer::Attack_2()
 //攻撃3処理
 void CXPlayer::Attack_3()
 {
+	//攻撃時一度だけ通る
 	if (mAttackFlag_3 == false) {
 		ChangeAnimation(5, true, 15);
 		mAttackFlag_3 = true;
 		mAttackFlag_Once = true;
 		mCombo++;
+		CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
+		if (tEnemy) {
+			mAttackDir = tEnemy->mPosition - mPosition; //攻撃時の向きを求める
+		}
 	}
 
 	if (mAnimationIndex == 5)
@@ -659,9 +668,10 @@ void CXPlayer::Attack_3()
 		{
 			mState = EIDLE;
 			mAttackFlag_3 = false;
-			//mHit = false;
 		}
 	}
+
+	mMoveDir = mAttackDir.Normalize(); //攻撃時の向きを正規化して代入する
 }
 
 //回避処理
@@ -698,25 +708,48 @@ void CXPlayer::KnockBack()
 {
 	ChangeAnimation(2, false, 20);
 
-	//ノックバック方向
-	CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy();
-	if (tEnemy) {
-		mMoveDir = tEnemy->mPosition - mPosition;
-	}
-	mMoveDir = mMoveDir.Normalize();
+	//ノックバック方向正規化
+	mKnockBackDir = mKnockBackDir.Normalize();
 
-	//ノックバック量
-	float KnockBackAmount = 0.1f;
+	//攻撃を当ててきた敵の方を向かせるために代入する
+	mMoveDir = mKnockBackDir;
 
 	//ノックバックさせる
-	mPosition -= mMoveDir * KnockBackAmount;
+	mPosition -= mKnockBackDir * KNOCKBACK_AMOUNT;
 
 	if (mAnimationIndex == 2)
 	{
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
-			mState = EIDLE;
+			mState = EIDLE;	//待機状態へ移行
+			mInvincibleFlag = false; //無敵フラグを無効にする
 		}
+	}
+}
+
+//アイテムが使用可能か判断する
+bool CXPlayer::mIsItemUse()
+{
+	switch (mItemSelect) {
+	case ETRAP:	//罠
+		//罠アイテムが使用可能な時
+		if (CTrapManager::GetInstance()->TrapAvailable()) {
+			return true;
+		}
+		else {
+			return false;
+		}
+		break;
+
+	case EPORTION: //回復薬
+		//回復薬の所持数が0より多いとき、現在の体力が体力最大値を下回っているとき
+		if (mPortionQuantity > 0 && mHp < HP_MAX) {
+			return true;
+		}
+		else {
+			return false;
+		}
+		break;
 	}
 }
 
@@ -726,26 +759,21 @@ void CXPlayer::ItemUse()
 	switch (mItemSelect) {
 	case ETRAP:	//罠
 		//罠アイテムが使用可能な時
-		if (CTrapManager::GetInstance()->TrapAvailable()) {
 			//罠生成
-			CTrapManager::GetInstance()->TrapGenerate(mPosition, mRotation);
-			//罠アイテム使用時の効果音を再生する
-			SE_Trap_Use.Play();
-		}
+		CTrapManager::GetInstance()->TrapGenerate(mPosition, mRotation);
+		//罠アイテム使用時の効果音を再生する
+		SE_Trap_Use.Play();
 		break;
 
 	case EPORTION: //回復薬
-		//回復薬の所持数が0より多いとき、現在の体力が体力最大値を下回っているとき
-		if (mPortionQuantity > 0  && mHp < HP_MAX) {
 			//回復薬の所持数を減らす
-			mPortionQuantity--;
-			//体力を回復させる
-			mHp += HEAL_AMOUNT;
-			//回復アイテム使用時のエフェクトを生成する
-			new CEffect2(mPosition, 2.0f, 2.0f, "", 2, 5, 3);
-			//回復アイテム使用時の効果音再生
-			SE_Portion_Use.Play();
-		}
+		mPortionQuantity--;
+		//体力を回復させる
+		mHp += HEAL_AMOUNT;
+		//回復アイテム使用時のエフェクトを生成する
+		new CEffect2(mPosition, 2.0f, 2.0f, "", 2, 5, 3);
+		//回復アイテム使用時の効果音再生
+		SE_Portion_Use.Play();
 		break;
 	}
 	//待機状態へ移行

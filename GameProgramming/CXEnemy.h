@@ -31,6 +31,8 @@ private:
 	CVector mRot;
 	float mDot;
 
+	bool mIsInvincible;	//無敵フラグ、プレイヤーの攻撃がヒットするとtrueを返す
+
 	void Idle();		//待機処理
 	void AutoMove();	//移動処理
 	void Chase();		//追跡処理
@@ -82,6 +84,8 @@ public:
 	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
 
 	bool mIsTarget; //プレイヤーの攻撃時の対象になっている時trueを返す
+
+	bool mIsAttack(); //攻撃状態の時にtrueを返す
 };
 
 #endif

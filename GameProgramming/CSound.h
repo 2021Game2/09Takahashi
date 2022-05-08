@@ -30,6 +30,12 @@ public:
 	CSound()
 		: mpSourceVoice(0)
 		, g_hmmio(0)
+		,buf()
+		,g_datachunkinfo()
+		,g_mmioinfo()
+		,g_riffchunkinfo()
+		,g_wfx()
+		,mBufinfo()
 	{
 		file[0] = 0;
 		if (mNum == 0) {

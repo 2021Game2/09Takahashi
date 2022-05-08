@@ -2,7 +2,7 @@
 #include "CTaskManager.h"
 
 #define MODEL_TRAP "Resource\\trap.obj", "Resource\\trap.mtl" //ã©ƒ‚ƒfƒ‹
-#define TRAP_QUANTITY 2			//ã©‚ÌŠ”
+#define TRAP_QUANTITY 2	//ã©‚ÌŠ”
 
 CTrapManager* CTrapManager::mInstance;
 

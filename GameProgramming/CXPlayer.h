@@ -13,6 +13,7 @@ private:
 	CTexture mImageGauge;	//ゲージ画像
 	CTexture mImagePortion;	//回復薬画像
 	CTexture mImageTrap;	//罠画像
+	CTexture mImageNixsign; //禁止マーク画像
 
 	//コライダの宣言
 	CCollider mColSphereBody;	//体
@@ -42,8 +43,10 @@ private:
 	int mGraceTime;			//派生攻撃の受付時間
 	int mCombo;				//派生攻撃を連続で行った回数
 
-	CVector mMoveDir;	
+	CVector mMoveDir;		//移動する方向、モデルの回転にも使用している、毎フレームリセットされる
 	CVector mMove2;
+	CVector mKnockBackDir;	//ノックバックする方向を保持する
+	CVector mAttackDir;		//攻撃時の方向を保持する
 
 	CVector mMoveSide;
 	CVector mMoveFront;
@@ -60,6 +63,7 @@ private:
 	};
 	int mItemSelect;		//選択中のアイテム
 	int mPortionQuantity;	//回復薬の所持数
+	bool mIsItemUse();		//アイテムが使用可能な時にtrueを返す
 
 	void Idle();		//待機処理
 	void Move();		//移動処理

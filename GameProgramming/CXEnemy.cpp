@@ -9,8 +9,9 @@
 #include "CSound.h"
 #include "CCollisionManager.h"
 #include "CRes.h"
+#include "CEnemyManager.h"
 
-#define HP_MAX 1			//体力最大値
+#define HP_MAX 150			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
 #define ATTACK_DIS 5.0f		//攻撃可能になる距離
@@ -48,6 +49,7 @@ CXEnemy::CXEnemy()
 	, mStunTime(0)
 	,mHit(false)
 	,mIsTarget(false)
+	,mIsInvincible(false)
 {
 	Init(&CRes::sKnight);
 	
@@ -60,8 +62,6 @@ CXEnemy::CXEnemy()
 	mColSphereSword2.mTag = CCollider::ESWORD;	//剣
 
 	mState = EIDLE;	//待機
-
-	//mInstance = this;
 
 	mFont.LoadTexture(FONT, 1, 4096 / 64);
 
@@ -87,6 +87,11 @@ void CXEnemy::Init(CModelX* model)
 
 void CXEnemy::Update()
 {
+	//プレイヤーの攻撃判定が無効になると敵の無敵判定を解除する
+	if (CXPlayer::GetInstance()->mHit == false) {
+		mIsInvincible = false;
+	}
+
 	//プレイヤー方向のベクトルを求める
 	mPlayerPoint = CXPlayer::GetInstance()->mPosition - mPosition;
 	//プレイヤーまでの距離を求める
@@ -193,11 +198,6 @@ void CXEnemy::Render2D()
 			mImageTarget.Draw(ret.mX - 30.0f, ret.mX + 30.0f, ret.mY - 30.0f, ret.mY + 30.0f, 0, 255, 255, 0);
 		}
 	}
-#ifdef _DEBUG
-	char buf[64];
-	sprintf(buf, "EATTACKHIT:%d", mHit);
-	mFont.DrawString(buf, 50, 200, 10, 12);
-#endif
 	//2Dの描画終了
 	CUtil::End2D();
 }
@@ -216,18 +216,18 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 			//相手のコライダのタグが剣
 			if (o->mTag == CCollider::ESWORD)
 			{
-				//球コライダ同士の衝突判定
-				if (CCollider::Collision(m, o))
+				//キャスト変換
+				//プレイヤーの攻撃のヒット判定が有効なとき、無敵フラグが有効でないとき
+				if (((CXPlayer*)(o->mpParent))->mHit == true && mIsInvincible == false)
 				{
-					//キャスト変換
-					//プレイヤーの攻撃のヒット判定が有効なとき
-					if (((CXPlayer*)(o->mpParent))->mHit == true)
+					//球コライダ同士の衝突判定
+					if (CCollider::Collision(m, o))
 					{
 						//攻撃を受けた箇所
 						switch (m->mTag) {
 						case CCollider::EBODY:	//体
 							mHp -= DAMAGE_BODY;	//ダメージを受ける(体)	
-							((CXPlayer*)(o->mpParent))->mHit = false; //プレイヤーのヒット判定を無効にする
+							mIsInvincible = true; //無敵フラグを有効にする
 							new CEffect(((CXPlayer*)(o->mpParent))->GetSwordColPos(), 1.0f, 1.0f, "", 3, 5, 2); //エフェクトを生成する
 							SE_Attack_Hit_1.Play(); //効果音を再生する
 							//スタン状態で無ければノックバック状態へ移行
@@ -239,7 +239,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 
 						case CCollider::EHEAD:	//頭
 							mHp -= DAMAGE_HEAD;	//ダメージを受ける(頭)
-							((CXPlayer*)(o->mpParent))->mHit = false; //プレイヤーのヒット判定を無効にする
+							mIsInvincible = true; //無敵フラグを有効にする
 							new CEffect(((CXPlayer*)(o->mpParent))->GetSwordColPos(), 1.5f, 1.5f, "", 3, 5, 2); //エフェクトを生成する
 							SE_Attack_Hit_1.Play(); //効果音を再生する
 							//スタン状態で無ければノックバック状態へ移行
@@ -318,7 +318,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 						//壁に向かって歩き続けないように目標地点を更新
 						mPoint = mPosition;
 						mPoint.mX += -15.0f + (float)(rand() % 30);
-						mPoint.mZ += 15.0f - (float)(rand() % 15);
+						mPoint.mZ += -15.0f + (float)(rand() % 30);
 					}
 				}
 			}
@@ -412,35 +412,38 @@ void CXEnemy::Chase()
 	//プレイヤーが攻撃をしたとき、ランダムで回避状態へ移行
 	if (CXPlayer::GetInstance()->mAttackFlag_Once == true) {
 		if (mPlayerDis <= AVOID_DIS) {
-			random = rand() % 3;
+			random = rand() % 9;
 			if (random == 0) {
 				mState = EAVOID;
 			}
 		}
 	}
 
-	//プレイヤーとの距離が攻撃可能な距離のとき、ランダムで攻撃状態へ移行
-	if (mPlayerDis <= ATTACK_DIS) {
-		//攻撃するか判定
-		random = rand() % 240;
-		if (random == 0){
-			//攻撃の種類を決める
-			random = rand() % 2;
-			switch (random) {
-			case 0:
-				mState = EATTACK_1; //攻撃1状態へ移行
-				break;
-			case 1:
-				mState = EATTACK_2; //攻撃2状態へ移行
-				break;
+	//攻撃可能なとき
+	if (CEnemyManager::GetInstance()->mIsEnemyAttack()) {
+		//プレイヤーとの距離が攻撃可能な距離のとき、ランダムで攻撃状態へ移行
+		if (mPlayerDis <= ATTACK_DIS) {
+			//攻撃するか判定
+			random = rand() % 240;
+			if (random == 0) {
+				//攻撃の種類を決める
+				random = rand() % 2;
+				switch (random) {
+				case 0:
+					mState = EATTACK_1; //攻撃1状態へ移行
+					break;
+				case 1:
+					mState = EATTACK_2; //攻撃2状態へ移行
+					break;
+				}
 			}
 		}
-	}
 
-	//追跡状態中にランダムで攻撃2状態へ移行
-	random = rand() % 360;
-	if (random == 0) {
-		mState = EATTACK_2;
+		//追跡状態中にランダムで攻撃2状態へ移行
+		random = rand() % 360;
+		if (random == 0) {
+			mState = EATTACK_2;
+		}
 	}
 }
 
@@ -559,9 +562,15 @@ void CXEnemy::Avoid()
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			int random = rand() % 2;
-			//回避後ランダムで攻撃2状態へ移行する
+			//回避後ランダムで攻撃可能な場合攻撃2状態へ移行する
 			if (random == 0) {
-				mState = EATTACK_2;
+				//攻撃可能なとき
+				if (CEnemyManager::GetInstance()->mIsEnemyAttack()) {
+					mState = EATTACK_2;
+				}
+				else {
+					mState = EIDLE;
+				}
 			}
 			else {
 				mState = EIDLE; //待機状態へ移行
@@ -586,4 +595,9 @@ CVector CXEnemy::GetPos()
 bool CXEnemy::DeathFlag()
 {
 	return (mState == EDEATH);
+}
+
+bool CXEnemy::mIsAttack()
+{
+	return (mState == EATTACK_1 || mState == EATTACK_2);
 }

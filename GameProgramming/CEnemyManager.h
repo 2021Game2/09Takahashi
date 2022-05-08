@@ -1,6 +1,7 @@
 #pragma once
 #include "CXEnemy.h"
 
+//“G‚ğŠÇ—‚·‚éƒNƒ‰ƒX
 class CEnemyManager 
 {
 private:
@@ -11,6 +12,8 @@ private:
 	CXEnemy* mNearTarget; //ˆê”Ô‹ß‚¢“G‚ğŠi”[
 
 	int mEnemyDeathNum; //€–Só‘Ô‚Ì“G‚Ì”
+
+	int mEnemyAttackNum; //UŒ‚ó‘Ô‚Ì“G‚Ì”
 public:
 	CEnemyManager();
 	~CEnemyManager();
@@ -25,7 +28,9 @@ public:
 	void Update();
 	void Render();
 
-	void AIUpdate();
+	void AIUpdate(); //AIXV
 
 	bool mIsEnemyAllDeath(); //“G‚ª‘S‚Ä€–Só‘Ô‚É‚È‚é‚Ætrue‚ğ•Ô‚·
+
+	bool mIsEnemyAttack(); //“G‚ªUŒ‚‰Â”\‚È‚Æ‚«true‚ğ•Ô‚·
 };
