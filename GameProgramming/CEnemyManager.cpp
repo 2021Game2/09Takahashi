@@ -28,8 +28,8 @@ CEnemyManager::CEnemyManager()
 	CRes::sKnight.SeparateAnimationSet(0, 1160, 1260, "death1");//11:ダウン
 	CRes::sKnight.SeparateAnimationSet(0, 90, 160, "knockback");//12:ノックバック
 	CRes::sKnight.SeparateAnimationSet(0, 1120, 1160, "stun");//13:スタン
-	CRes::sKnight.SeparateAnimationSet(0, 170, 220, "Dash");//14:ダッシュ
-	CRes::sKnight.SeparateAnimationSet(0, 380, 430, "Jump");//15:ジャンプ
+	CRes::sKnight.SeparateAnimationSet(0, 170, 220, "dash");//14:ダッシュ
+	CRes::sKnight.SeparateAnimationSet(0, 380, 430, "jump");//15:ジャンプ
 
 	srand((unsigned)time(NULL)); //乱数用
 }

@@ -534,6 +534,8 @@ void CXPlayer::Attack_1()
 
 	if (mAnimationIndex == 3)
 	{
+		//攻撃方向に移動させる
+		mPosition += mAttackDir.Normalize() * 0.04f;
 		//ヒット判定発生
 		if (mAnimationFrame == 5) {
 			mHit = true;
@@ -628,6 +630,8 @@ void CXPlayer::Attack_3()
 
 	if (mAnimationIndex == 5)
 	{
+		//攻撃方向に移動させる
+		mPosition += mAttackDir.Normalize() * 0.03f;
 		//ヒット判定発生
 		if (mAnimationFrame == 0) {
 			mHit = true;

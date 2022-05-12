@@ -14,14 +14,14 @@
 #define HP_MAX 150			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
-#define ATTACK_DIS 5.0f		//攻撃可能になる距離
+#define ATTACK_DIS 4.0f		//攻撃可能になる距離
 #define SPEED_MOVE 0.05f	//通常移動のスピード
 #define SPEED_CHASE 0.1f	//追跡中の移動速度
 #define SPEED_ATTACK_2 0.2f //攻撃2状態の移動速度
-#define CHASE_DIS_MAX 20.0f	//追跡可能な最大距離
+#define CHASE_DIS_MAX 15.0f	//追跡可能な最大距離
 #define SEARCH_DIS 15.0f	//追跡を開始する距離
 #define STUN_TIME 420		//罠にかかった時のスタン時間
-#define AVOID_DIS 6.0f		//回避可能になる距離
+#define AVOID_DIS 4.0f		//回避可能になる距離
 #define GAUGE_WID_MAX 50.0f	//ゲージの幅の最大値
 
 #define FONT "Resource\\FontG.png" //フォント
@@ -47,12 +47,12 @@ CXEnemy::CXEnemy()
 	, mSpeed(0.0f)
 	, mDot(0.0f)
 	, mStunTime(0)
-	,mHit(false)
-	,mIsTarget(false)
-	,mIsInvincible(false)
+	, mHit(false)
+	, mIsTarget(false)
+	, mIsInvincible(false)
 {
 	Init(&CRes::sKnight);
-	
+
 	mTag = EENEMY;	//敵
 
 	mColSphereBody.mTag = CCollider::EBODY;		//本体
@@ -108,6 +108,10 @@ void CXEnemy::Update()
 
 	case ECHASE: //追跡状態
 		Chase(); //追跡処理を呼ぶ
+		break;
+
+	case EATTACK_IDLE: //攻撃待機状態
+		Attack_Idle(); //攻撃待機処理を呼ぶ
 		break;
 
 	case EATTACK_1:	//攻撃1状態
@@ -403,30 +407,58 @@ void CXEnemy::Chase()
 	//mMoveDirにプレイヤー方向のベクトルを入れる
 	mMoveDir = mPlayerPoint.Normalize();
 
-	//プレイヤーとの距離が追跡可能な距離を超えると待機状態へ移行
-	if (mPlayerDis >= CHASE_DIS_MAX) {
-		mState = EIDLE;
+	//プレイヤーが攻撃可能な距離にいるとき
+	if (mPlayerDis <= ATTACK_DIS) {
+		mState = EATTACK_IDLE; //攻撃待機状態へ移行
 	}
 
-	int random = 0; 
-	//プレイヤーが攻撃をしたとき、ランダムで回避状態へ移行
+	//プレイヤーが追跡可能な距離にいないとき
+	if (mPlayerDis >= CHASE_DIS_MAX) {
+		mState = EIDLE; //待機状態へ移行
+	}
+
+	int random = 0;
+	//攻撃可能なとき
+	if (CEnemyManager::GetInstance()->mIsEnemyAttack()) {
+		//追跡状態中にランダムで攻撃2状態へ移行
+		random = rand() % 360;
+		if (random == 0) {
+			mState = EATTACK_2;
+		}
+	}
+}
+
+//攻撃待機処理
+void CXEnemy::Attack_Idle()
+{
+	//待機アニメーション
+	ChangeAnimation(2, true, 200);
+
+	//mMoveDirにプレイヤー方向のベクトルを入れる
+	mMoveDir = mPlayerPoint.Normalize();
+
+	int random = 0;
+
+	//プレイヤーが攻撃をしたとき
 	if (CXPlayer::GetInstance()->mAttackFlag_Once == true) {
+		//プレイヤーとの距離が回避可能な距離のとき
 		if (mPlayerDis <= AVOID_DIS) {
-			random = rand() % 9;
+			//ランダムで回避を行うかどうか判定する
+			random = rand() % 6;
 			if (random == 0) {
-				mState = EAVOID;
+				mState = EAVOID; //回避状態へ移行
 			}
 		}
 	}
 
 	//攻撃可能なとき
 	if (CEnemyManager::GetInstance()->mIsEnemyAttack()) {
-		//プレイヤーとの距離が攻撃可能な距離のとき、ランダムで攻撃状態へ移行
+		//プレイヤーが攻撃可能な距離にいるとき
 		if (mPlayerDis <= ATTACK_DIS) {
-			//攻撃するか判定
-			random = rand() % 240;
+			//ランダムで攻撃を行うかどうかを判定する
+			random = rand() % 180;
 			if (random == 0) {
-				//攻撃の種類を決める
+				//ランダムで攻撃の種類を決める
 				random = rand() % 2;
 				switch (random) {
 				case 0:
@@ -438,11 +470,20 @@ void CXEnemy::Chase()
 				}
 			}
 		}
+	}
 
-		//追跡状態中にランダムで攻撃2状態へ移行
-		random = rand() % 360;
+	//プレイヤーが攻撃可能な距離にいないとき
+	if (mPlayerDis >= ATTACK_DIS) {
+		//ランダムで状態を移行するかどうか判断する
+		random = rand() % 120;
 		if (random == 0) {
-			mState = EATTACK_2;
+			//プレイヤーが追跡可能な距離にいるとき
+			if (mPlayerDis <= CHASE_DIS_MAX) {
+				mState = ECHASE; //追跡状態へ移行
+			}
+			else {
+				mState = EIDLE; //待機状態へ移行
+			}
 		}
 	}
 }

@@ -36,6 +36,7 @@ private:
 	void Idle();		//待機処理
 	void AutoMove();	//移動処理
 	void Chase();		//追跡処理
+	void Attack_Idle();	//攻撃待機処理
 	void Attack_1();	//攻撃1処理
 	void Attack_2();	//攻撃2処理
 	void KnockBack();	//ノックバック処理
@@ -65,15 +66,16 @@ public:
 	//敵の状態
 	enum EEnemyState
 	{
-		EIDLE,		//待機
-		EAUTOMOVE,	//移動
-		ECHASE,		//追跡
-		EATTACK_1,	//攻撃1
-		EATTACK_2,	//攻撃2
-		EKNOCKBACK,	//ノックバック
-		EDEATH,		//死亡
-		ESTUN,		//スタン
-		EAVOID,		//回避
+		EIDLE,			//待機
+		EAUTOMOVE,		//移動
+		ECHASE,			//追跡
+		EATTACK_IDLE,	//攻撃待機
+		EATTACK_1,		//攻撃1
+		EATTACK_2,		//攻撃2
+		EKNOCKBACK,		//ノックバック
+		EDEATH,			//死亡
+		ESTUN,			//スタン
+		EAVOID,			//回避
 	};
 	EEnemyState mState;	//状態
 
