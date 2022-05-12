@@ -3,17 +3,22 @@
 #include "CUtil.h"
 #include "CKey.h"
 #include <stdio.h>
-
 #include "CInput.h"
+#include "CSound.h"
 
 #define FONT "Resource\\FontG.png" //フォント
 #define IMAGE_BUTTONBACK "Resource\\Gauge.png" //ボタン背景画像
+#define SE_TRANSITION_RECORD "Resource\\SE_Transition_Record.wav" //シーンがレコードに遷移する時の効果音
+
+CSound SE_Transition_Record; //シーンがレコードに遷移する時の効果音
 
 CSceneTitle::CSceneTitle()
 	:mSelect(EBACKGROUND)
 {
 	mFont.LoadTexture(FONT, 1, 4096 / 64);
 	mImageButtonBack.Load(IMAGE_BUTTONBACK);
+	//効果音読み込み
+	SE_Transition_Record.Load(SE_TRANSITION_RECORD); //シーンがレコードに遷移する時の効果音
 }
 
 void CSceneTitle::Init()
@@ -43,10 +48,14 @@ void CSceneTitle::Update()
 		switch (mSelect) {
 		case EGAMESTART:
 			mScene = EGAME;
+			/*
+			ゲームスタート時の効果音を追加する
+			*/
 			break;
 
 		case CSceneTitle::ERECORD:
 			mScene = CScene::ERECORD;
+			SE_Transition_Record.Play(); //効果音を再生する
 			break;
 
 		default:

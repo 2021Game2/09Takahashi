@@ -5,7 +5,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "CInput.h"
-//#include "CXEnemy.h"
 #include "CTrapManager.h"
 #include "CSound.h"
 #include "CEffect2.h"
@@ -60,11 +59,11 @@ CXPlayer::CXPlayer()
 	, mAvoidTime(0)
 	, mAvoidSpeed(0.0f)
 	, mSpeed(SPEED_DEFAULT)
-	, mMoveKeep(0.0f, 0.0f, 0.0f)
+	, mMoveDirKeep(0.0f, 0.0f, 0.0f)
 	, mInvincibleFlag(false)
 	, mInvincibleTime(0)
 	, mMoveDir(0.0f, 0.0f, 0.0f)
-	, mMove2(0.0f, 0.0f, 0.0f)
+	, mMove(0.0f, 0.0f, 0.0f)
 	, mSideVec(0.0f, 0.0f, 0.0f)
 	, mFrontVec(0.0f, 0.0f, 0.0f)
 	, mTurnspeed(0.0f)
@@ -76,10 +75,10 @@ CXPlayer::CXPlayer()
 	, mHit(false)
 	, mItemSelect(HEAD + 1)
 	, mAttackFlag_Once(false)
-	,mCombo(0)
-	,mPortionQuantity(PORTION_QUANTITY)
-	,mKnockBackDir(0.0f,0.0f,0.0f)
-	,mAttackDir(0.0f,0.0f,0.0f)
+	, mCombo(0)
+	, mPortionQuantity(PORTION_QUANTITY)
+	, mKnockBackDir(0.0f, 0.0f, 0.0f)
+	, mAttackDir(0.0f, 0.0f, 0.0f)
 {
 	//タグにプレイヤーを設定します
 	mTag = EPLAYER;
@@ -221,6 +220,7 @@ void CXPlayer::Update()
 
 	case EAVOID:	//回避状態
 		Avoid();	//回避処理を呼ぶ
+		//回避状態が終了したとき
 		if (mAvoid == false) {
 			//回避終了時WASDキーが押されていると移動
 			if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
@@ -263,20 +263,11 @@ void CXPlayer::Update()
 		mStamina++;
 	}
 
-	//無敵時間のカウントダウン
-	if (mInvincibleTime > 0) {
-		mInvincibleTime--;
-	}
-	//無敵時間切れ
-	else {
-		mInvincibleFlag = false;	//無敵状態終了
-	}
-
 	//座標移動
-	mPosition += mMove2;
+	mPosition += mMove;
 
 	//減速させる
-	mMove2 = mMove2 * GRAVITY; 
+	mMove = mMove * GRAVITY; 
 
 	//普通に3次元ベクトル計算で算出したほうが正確だが計算量を懸念する場合は擬似計算で軽量化
 	//擬似ベクトル計算
@@ -298,16 +289,12 @@ void CXPlayer::Update()
 
 	//リセット
 	mMoveDir = CVector(0.0f, 0.0f, 0.0f);
-	mSpeed = 0.0f;
 
 	//体力が0になると死亡
 	if (mHp <= 0) {
 		mState = EDEATH;	//死亡状態へ移行
 		mHp = 0;
 	}
-
-	//体力が体力最大値を超えないようにする
-	if (mHp > HP_MAX)mHp = HP_MAX;
 
 	//注視点
 	Camera.SetTarget(mPosition);
@@ -394,7 +381,7 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 								mAttackFlag_1 = false;
 								mAttackFlag_2 = false;
 								mAttackFlag_3 = false;
-								mMove2 = CVector(0.0f, 0.0f, 0.0f);
+								mMove = CVector(0.0f, 0.0f, 0.0f);
 								SE_Attack_Hit_2.Play();	//攻撃ヒット時の効果音再生
 								break;
 							}
@@ -505,8 +492,8 @@ void CXPlayer::Move()
 	//移動量正規化　これをしないと斜め移動が早くなってしまうので注意
 	//ジャンプ時などはY軸を正規化しないよう注意
 	mMoveDir = mMoveDir.Normalize();
-	mMoveKeep = mMoveDir;	//MoveDir保存
-	mMove2 = mMoveDir * mSpeed;
+	mMoveDirKeep = mMoveDir;	//MoveDir保存
+	mMove = mMoveDir * mSpeed;
 }
 
 //ダッシュ処理
@@ -620,7 +607,7 @@ void CXPlayer::Attack_2()
 
 	mMoveDir = mAttackDir.Normalize(); //攻撃時の向きを正規化して代入する
 
-	mMove2 = mMoveDir * mAttack2Speed;
+	mMove = mMoveDir * mAttack2Speed;
 	mAttack2Speed = mAttack2Speed * GRAVITY;
 }
 
@@ -677,24 +664,32 @@ void CXPlayer::Attack_3()
 //回避処理
 void CXPlayer::Avoid()
 {
+	//回避時一度だけ通る
 	if (mAvoid == false) {
 		mAvoid = true;							//回避中
 		mStamina -= AVOID_STAMINA;				//スタミナ減少	
 		mAvoidTime = AVOID_TIME;				//回避時間
-		mAvoidSpeed = AVOID_FIRSTSPEED;			//初速
+		mAvoidSpeed = AVOID_FIRSTSPEED;			//初速設定
 		mInvincibleFlag = true;					//無敵状態
 		mInvincibleTime = INVINCIBLETIME_AVOID;	//無敵時間
 	}
 
-	mMove2 = mMoveKeep * mAvoidSpeed;
-	mAvoidSpeed = mAvoidSpeed * GRAVITY;	//スピードを下げていく
+	//無敵時間をカウントダウン
+	mInvincibleTime--;
+	//無敵時間が0になったとき
+	if (mInvincibleTime == 0) {
+		mInvincibleFlag = false; //無敵状態を終了する
+	}
 
-	//回避時間カウントダウン
+	//回避時間をカウントダウン
 	mAvoidTime--;
-	//回避時間切れ
-	if (mAvoidTime <= 0) {
+	//回避時間0になった時
+	if (mAvoidTime == 0) {
 		mAvoid = false;	//回避終了
 	}
+
+	mMove = mMoveDirKeep * mAvoidSpeed;
+	mAvoidSpeed = mAvoidSpeed * GRAVITY;	//スピードを下げていく
 }
 
 //死亡処理
@@ -722,7 +717,7 @@ void CXPlayer::KnockBack()
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			mState = EIDLE;	//待機状態へ移行
-			mInvincibleFlag = false; //無敵フラグを無効にする
+			mInvincibleFlag = false; //無敵状態を終了する
 		}
 	}
 }
@@ -736,9 +731,6 @@ bool CXPlayer::mIsItemUse()
 		if (CTrapManager::GetInstance()->TrapAvailable()) {
 			return true;
 		}
-		else {
-			return false;
-		}
 		break;
 
 	case EPORTION: //回復薬
@@ -746,11 +738,9 @@ bool CXPlayer::mIsItemUse()
 		if (mPortionQuantity > 0 && mHp < HP_MAX) {
 			return true;
 		}
-		else {
-			return false;
-		}
 		break;
 	}
+	return false;
 }
 
 //アイテム使用処理
@@ -758,18 +748,19 @@ void CXPlayer::ItemUse()
 {
 	switch (mItemSelect) {
 	case ETRAP:	//罠
-		//罠アイテムが使用可能な時
-			//罠生成
+		//罠生成
 		CTrapManager::GetInstance()->TrapGenerate(mPosition, mRotation);
 		//罠アイテム使用時の効果音を再生する
 		SE_Trap_Use.Play();
 		break;
 
 	case EPORTION: //回復薬
-			//回復薬の所持数を減らす
+		//回復薬の所持数を減らす
 		mPortionQuantity--;
 		//体力を回復させる
 		mHp += HEAL_AMOUNT;
+		//現在の体力が体力最大値を超えないようにする
+		if (mHp > HP_MAX)mHp = HP_MAX;
 		//回復アイテム使用時のエフェクトを生成する
 		new CEffect2(mPosition, 2.0f, 2.0f, "", 2, 5, 3);
 		//回復アイテム使用時の効果音再生

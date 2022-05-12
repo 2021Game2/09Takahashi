@@ -26,8 +26,6 @@ private:
 	int mStamina;	//スタミナ
 	float mSpeed;	//スピード
 
-	CVector mMoveKeep;		//Moveを保存する
-
 	bool mAvoid;			//回避状態の時にtrueを返す
 	int mAvoidTime;			//回避時間
 	float mAvoidSpeed;		//回避中のスピード
@@ -38,13 +36,14 @@ private:
 	bool mAttackFlag_1;		//攻撃1状態の時trueを返す
 	bool mAttackFlag_2;		//攻撃2状態の時trueを返す
 	float mAttack2Speed;	//攻撃2の時のスピード
-	bool mAttackFlag_3;		//攻撃3状態の時trueを返す
+	bool mAttackFlag_3;		//攻撃3状態の時trueを返すz
 
 	int mGraceTime;			//派生攻撃の受付時間
 	int mCombo;				//派生攻撃を連続で行った回数
 
+	CVector mMove;			//方向と速度をかけ合わせたベクトル
 	CVector mMoveDir;		//移動する方向、モデルの回転にも使用している、毎フレームリセットされる
-	CVector mMove2;
+	CVector mMoveDirKeep;	//移動時の方向を保存する
 	CVector mKnockBackDir;	//ノックバックする方向を保持する
 	CVector mAttackDir;		//攻撃時の方向を保持する
 

@@ -3,16 +3,20 @@
 #include "CUtil.h"
 #include <stdio.h>
 #include <corecrt_math.h>
-
 #include "CSceneResult.h"
+#include "CSound.h"
 
 #define FONT "Resource\\FontG.png" //フォント
 #define IMAGE_BACKGROUND "Resource\\Result_Back.png" //背景画像
+#define SE_TRANSITION_TITLE "Resource\\SE_Transition_Title.wav" //シーンがタイトルに遷移する時の効果音
+
+CSound SE_Transition_Title; //シーンがタイトルに遷移する時の効果音
 
 CSceneRecord::CSceneRecord()
 {
 	mFont.LoadTexture(FONT, 1, 4096 / 64);
 	mImageBackGround.Load(IMAGE_BACKGROUND);
+	SE_Transition_Title.Load(SE_TRANSITION_TITLE); //シーンがタイトルに遷移する時の効果音
 }
 
 void CSceneRecord::Init()
@@ -25,6 +29,7 @@ void CSceneRecord::Update()
 	//左クリックorEnterキーでタイトルへ移行する
 	if (CKey::Once(VK_LBUTTON) || CKey::Once(VK_RETURN)) {
 		mScene = ETITLE;
+		SE_Transition_Title.Play(); //効果音を再生する
 	}
 
 	CUtil::Start2D(0, 800, 0, 600);
