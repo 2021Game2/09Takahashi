@@ -25,11 +25,13 @@ private:
 	CVector mPlayerPoint;	//追跡時の目標地点
 	float mPlayerDis;		//プレイヤーまでの距離
 
+	int mChaseRestartCount;	//プレイヤーが離れたときに、追跡再開するまでのカウント
+
 	CVector mMoveDir;		//移動する方向
 	float mSpeed;			//移動する速度
 
-	CVector mRot;
-	float mDot;
+	CVector mRot;			//回転
+	float mDot;				//内積
 
 	bool mIsInvincible;	//無敵フラグ、プレイヤーの攻撃がヒットするとtrueを返す
 
@@ -81,13 +83,13 @@ public:
 
 	void SetPos(CVector hpos);	//位置を設定
 	CVector GetPos();			//位置を取得
-	bool DeathFlag();			//死亡時trueを返す
 
 	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
 
 	bool mIsTarget; //プレイヤーの攻撃時の対象になっている時trueを返す
 
-	bool mIsAttack(); //攻撃状態の時にtrueを返す
+	bool mIsAttack();	//攻撃状態の時にtrueを返す
+	bool mIsDeath();	//死亡状態の時にtrueを返す
 };
 
 #endif

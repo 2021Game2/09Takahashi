@@ -1,8 +1,12 @@
 #pragma once
 #include "CXEnemy.h"
 
+#define ENEMY_GENERATE_NUM 3 //“G‚Ì¶¬”
+
+#define ENEMY_START_POS CVector(10.0f, 0.0f, 0.0f),CVector(-10.0f, 0.0f, 0.0f),CVector(0.0f, 0.0f, -10.0f) //“G‚Ì‰ŠúÀ•W
+
 //“G‚ğŠÇ—‚·‚éƒNƒ‰ƒX
-class CEnemyManager 
+class CEnemyManager
 {
 private:
 	static CEnemyManager* mInstance; //ƒCƒ“ƒXƒ^ƒ“ƒX
@@ -14,6 +18,8 @@ private:
 	int mEnemyDeathNum; //€–Só‘Ô‚Ì“G‚Ì”
 
 	int mEnemyAttackNum; //UŒ‚ó‘Ô‚Ì“G‚Ì”
+
+	CVector mEnemyStartPos[ENEMY_GENERATE_NUM] = { ENEMY_START_POS }; //“G‚Ì‰ŠúÀ•W
 public:
 	CEnemyManager();
 	~CEnemyManager();

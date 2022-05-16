@@ -540,7 +540,7 @@ void CXPlayer::Attack_1()
 		if (mAnimationFrame == 5) {
 			mHit = true;
 		}
-		if (mAnimationFrame >= mAnimationFrameSize)
+		if (mIsAnimationEnd())
 		{
 			mHit = false; //ƒqƒbƒg”»’èI—¹
 			ChangeAnimation(4, false, 30);
@@ -560,7 +560,7 @@ void CXPlayer::Attack_1()
 				mAttackFlag_1 = false;
 			}
 		}
-		if (mAnimationFrame >= mAnimationFrameSize)
+		if (mIsAnimationEnd())
 		{
 			mState = EIDLE;
 			mAttackFlag_1 = false;

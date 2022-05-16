@@ -5,6 +5,7 @@
 #include <math.h>
 #include "CCamera.h"
 #include <time.h>
+#include <windows.h>
 #include "CEffect.h"
 #include "CSound.h"
 #include "CCollisionManager.h"
@@ -23,6 +24,7 @@
 #define STUN_TIME 420		//罠にかかった時のスタン時間
 #define AVOID_DIS 4.0f		//回避可能になる距離
 #define GAUGE_WID_MAX 50.0f	//ゲージの幅の最大値
+#define CHASE_RESTART_TIME 60 //追跡を再開するまでの時間
 
 #define FONT "Resource\\FontG.png" //フォント
 #define IMAGE_GAUGE "Resource\\Gauge.png" //ゲージ画像
@@ -50,6 +52,7 @@ CXEnemy::CXEnemy()
 	, mHit(false)
 	, mIsTarget(false)
 	, mIsInvincible(false)
+	, mChaseRestartCount(0)
 {
 	Init(&CRes::sKnight);
 
@@ -69,7 +72,7 @@ CXEnemy::CXEnemy()
 
 	mImageTarget.Load(IMAGE_TARGET);
 
-	srand((unsigned)time(NULL)); //乱数用
+	srand(timeGetTime()); //乱数用
 }
 
 void CXEnemy::Init(CModelX* model)
@@ -421,7 +424,7 @@ void CXEnemy::Chase()
 	//攻撃可能なとき
 	if (CEnemyManager::GetInstance()->mIsEnemyAttack()) {
 		//追跡状態中にランダムで攻撃2状態へ移行
-		random = rand() % 360;
+		random = rand() % 480;
 		if (random == 0) {
 			mState = EATTACK_2;
 		}
@@ -439,10 +442,10 @@ void CXEnemy::Attack_Idle()
 
 	int random = 0;
 
-	//プレイヤーが攻撃をしたとき
-	if (CXPlayer::GetInstance()->mAttackFlag_Once == true) {
-		//プレイヤーとの距離が回避可能な距離のとき
-		if (mPlayerDis <= AVOID_DIS) {
+	//プレイヤーとの距離が回避可能な距離のとき
+	if (mPlayerDis <= AVOID_DIS) {
+		//プレイヤーが攻撃をしたとき
+		if (CXPlayer::GetInstance()->mAttackFlag_Once == true) {
 			//ランダムで回避を行うかどうか判定する
 			random = rand() % 6;
 			if (random == 0) {
@@ -451,10 +454,11 @@ void CXEnemy::Attack_Idle()
 		}
 	}
 
-	//攻撃可能なとき
-	if (CEnemyManager::GetInstance()->mIsEnemyAttack()) {
-		//プレイヤーが攻撃可能な距離にいるとき
-		if (mPlayerDis <= ATTACK_DIS) {
+	//プレイヤーが攻撃可能な距離にいるとき
+	if (mPlayerDis <= ATTACK_DIS) {
+		mChaseRestartCount = 0; //カウントをリセットする
+		//攻撃可能なとき
+		if (CEnemyManager::GetInstance()->mIsEnemyAttack()) {
 			//ランダムで攻撃を行うかどうかを判定する
 			random = rand() % 180;
 			if (random == 0) {
@@ -471,12 +475,11 @@ void CXEnemy::Attack_Idle()
 			}
 		}
 	}
-
 	//プレイヤーが攻撃可能な距離にいないとき
-	if (mPlayerDis >= ATTACK_DIS) {
-		//ランダムで状態を移行するかどうか判断する
-		random = rand() % 120;
-		if (random == 0) {
+	else {
+		mChaseRestartCount++; //カウントを加算する
+		//カウントが追跡を再開する時間になると状態を移行する
+		if (mChaseRestartCount == CHASE_RESTART_TIME) {
 			//プレイヤーが追跡可能な距離にいるとき
 			if (mPlayerDis <= CHASE_DIS_MAX) {
 				mState = ECHASE; //追跡状態へ移行
@@ -508,7 +511,7 @@ void CXEnemy::Attack_1()
 		}
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
-			mState = EIDLE;
+			mState = EIDLE; //待機状態へ移行
 		}
 	}
 }
@@ -603,18 +606,22 @@ void CXEnemy::Avoid()
 		if (mAnimationFrame >= mAnimationFrameSize)
 		{
 			int random = rand() % 2;
-			//回避後ランダムで攻撃可能な場合攻撃2状態へ移行する
-			if (random == 0) {
+			//回避後ランダムで攻撃2状態へ移行するかどうか判断
+			switch (random) {
+			case 0:
 				//攻撃可能なとき
 				if (CEnemyManager::GetInstance()->mIsEnemyAttack()) {
-					mState = EATTACK_2;
+					mState = EATTACK_2; //攻撃2状態へ移行
 				}
+				//攻撃可能ではないとき
 				else {
-					mState = EIDLE;
+					mState = EIDLE; //待機状態へ移行
 				}
-			}
-			else {
+				break;
+
+			case 1:
 				mState = EIDLE; //待機状態へ移行
+				break;
 			}
 		}
 	}
@@ -633,11 +640,12 @@ CVector CXEnemy::GetPos()
 }
 
 //死亡時trueを返す
-bool CXEnemy::DeathFlag()
+bool CXEnemy::mIsDeath()
 {
 	return (mState == EDEATH);
 }
 
+//攻撃時trueを返す
 bool CXEnemy::mIsAttack()
 {
 	return (mState == EATTACK_1 || mState == EATTACK_2);

@@ -1,4 +1,10 @@
 #include "CXCharacter.h"
+
+bool CXCharacter::mIsAnimationEnd()
+{
+	return (mAnimationFrame >= mAnimationFrameSize);
+}
+
 CXCharacter::CXCharacter()
 	:mpCombinedMatrix(nullptr)
 {

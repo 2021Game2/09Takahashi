@@ -36,7 +36,7 @@ private:
 	bool mAttackFlag_1;		//UŒ‚1ó‘Ô‚Ìtrue‚ğ•Ô‚·
 	bool mAttackFlag_2;		//UŒ‚2ó‘Ô‚Ìtrue‚ğ•Ô‚·
 	float mAttack2Speed;	//UŒ‚2‚Ì‚ÌƒXƒs[ƒh
-	bool mAttackFlag_3;		//UŒ‚3ó‘Ô‚Ìtrue‚ğ•Ô‚·z
+	bool mAttackFlag_3;		//UŒ‚3ó‘Ô‚Ìtrue‚ğ•Ô‚·
 
 	int mGraceTime;			//”h¶UŒ‚‚Ìó•tŠÔ
 	int mCombo;				//”h¶UŒ‚‚ğ˜A‘±‚Ås‚Á‚½‰ñ”

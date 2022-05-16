@@ -29,8 +29,6 @@
 #include "CEnemyManager.h"
 //
 
-#define ENEMY_GENERATE_NUM 3 //敵の生成数
-
 //画像系
 #define FONT "Resource\\FontG.png" //フォント
 #define EFFECT_ATTACK_HIT "Resource\\Effect_Attack_Hit.png"		//攻撃ヒット時のエフェクト画像
@@ -108,7 +106,6 @@ void CSceneGame::Init() {
 
 	//敵管理生成
 	CEnemyManager::Generate();
-	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM); //敵を生成
 
 	//カメラ初期化
 	Camera.Init();

@@ -1,7 +1,6 @@
 #include "CEnemyManager.h"
 #include "CRes.h"
 #include "CXPlayer.h"
-#include <time.h>
 
 #define MODEL_ENEMY "Resource\\knight\\knight_low.x" //敵モデル
 
@@ -31,7 +30,7 @@ CEnemyManager::CEnemyManager()
 	CRes::sKnight.SeparateAnimationSet(0, 170, 220, "dash");//14:ダッシュ
 	CRes::sKnight.SeparateAnimationSet(0, 380, 430, "jump");//15:ジャンプ
 
-	srand((unsigned)time(NULL)); //乱数用
+	EnemyGenerate(ENEMY_GENERATE_NUM); //敵を生成する
 }
 
 CEnemyManager::~CEnemyManager()
@@ -64,8 +63,8 @@ void CEnemyManager::EnemyGenerate(int num)
 	for (int i = 0; i < num; i++) {
 		CVector tPos;
 		tPos.Set(0, 0, 0);
-		tPos.mX += -15.0f + (float)(rand() % 30) - (float)i;
-		tPos.mZ += -15.0f + (float)(rand() % 30) - (float)i;
+		tPos.mX = mEnemyStartPos[i].mX;
+		tPos.mZ = mEnemyStartPos[i].mZ;
 
 		CXEnemy* tmp = new CXEnemy;
 		tmp->SetPos(tPos);
@@ -101,7 +100,7 @@ void CEnemyManager::AIUpdate()
 		}
 		mEnemyList[i]->mIsTarget = false;
 		//死亡状態だった時
-		if (mEnemyList[i]->mState == CXEnemy::EDEATH) {
+		if (mEnemyList[i]->mIsDeath()) {
 			mEnemyDeathNum++; //カウント加算
 			continue; //読み飛ばし
 		}
