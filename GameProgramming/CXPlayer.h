@@ -5,10 +5,13 @@
 #include "CCollider.h"
 #include "CText.h"
 #include "CTexture.h"
+#include "CXEnemy.h"
 
 class CXPlayer : public CXCharacter
 {
 private:
+	CXEnemy* mpTargetEnemy;	//攻撃対象の敵を入れる
+
 	CText mFont; //フォント
 	CTexture mImageGauge;	//ゲージ画像
 	CTexture mImagePortion;	//回復薬画像
@@ -39,7 +42,7 @@ private:
 	bool mAttackFlag_3;		//攻撃3状態の時trueを返す
 
 	int mGraceTime;			//派生攻撃の受付時間
-	int mCombo;				//派生攻撃を連続で行った回数
+	int mComboCount;		//派生攻撃を連続で行った回数
 
 	CVector mMove;			//方向と速度をかけ合わせたベクトル
 	CVector mMoveDir;		//移動する方向、モデルの回転にも使用している、毎フレームリセットされる

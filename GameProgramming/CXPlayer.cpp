@@ -75,10 +75,11 @@ CXPlayer::CXPlayer()
 	, mHit(false)
 	, mItemSelect(HEAD + 1)
 	, mAttackFlag_Once(false)
-	, mCombo(0)
+	, mComboCount(0)
 	, mPortionQuantity(PORTION_QUANTITY)
 	, mKnockBackDir(0.0f, 0.0f, 0.0f)
 	, mAttackDir(0.0f, 0.0f, 0.0f)
+	,mpTargetEnemy(nullptr)
 {
 	//タグにプレイヤーを設定します
 	mTag = EPLAYER;
@@ -136,11 +137,11 @@ void CXPlayer::Update()
 		}
 		break;
 
-	case EATTACK_1:	//攻撃1状態
+	case EATTACK_1:	//攻撃1状態の時
 		Attack_1();	//攻撃1の処理を呼ぶ
 		break;
 
-	case EATTACK_2:	//攻撃2状態
+	case EATTACK_2:	//攻撃2状態の時
 		Attack_2();	//攻撃2の処理を呼ぶ
 		break;
 
@@ -449,8 +450,8 @@ CVector CXPlayer::GetSwordColPos()
 //待機処理
 void CXPlayer::Idle()
 {
-	ChangeAnimation(0, true, 60);	//待機モーション
-	mCombo = 0;
+	ChangeAnimation(0, true, 60); //待機モーション
+	mComboCount = 0; //コンボ数をリセット
 }
 
 //移動処理
@@ -521,10 +522,14 @@ void CXPlayer::Attack_1()
 		mAttackFlag_1 = true;
 		mGraceTime = 0;
 		mAttackFlag_Once = true;
-		mCombo++;
-		CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
-		if (tEnemy) {
-			mAttackDir = tEnemy->mPosition - mPosition; //攻撃時の向きを求める
+		mComboCount++; //コンボ数加算
+		mpTargetEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
+		if (mpTargetEnemy) {
+			mAttackDir = mpTargetEnemy->mPosition - mPosition; //攻撃時の向きを求める
+			mMoveDirKeep = mAttackDir.Normalize();
+		}
+		else {
+			mAttackDir = mMoveDirKeep.Normalize();
 		}
 	}
 
@@ -540,6 +545,7 @@ void CXPlayer::Attack_1()
 		if (mAnimationFrame == 5) {
 			mHit = true;
 		}
+		//アニメーション終了時
 		if (mIsAnimationEnd())
 		{
 			mHit = false; //ヒット判定終了
@@ -549,20 +555,24 @@ void CXPlayer::Attack_1()
 	}
 	else if (mAnimationIndex == 4)
 	{
+		//アニメーションの再生フレーム数が派生攻撃の受付時間内のとき
 		if (mAnimationFrame < GRACETIME) {
+			//左クリックをしているとき
 			if (CKey::Once(VK_LBUTTON)) {
-				if (mCombo < COMBO_MAX) {
-					mState = EATTACK_3;
+				//コンボ数がコンボの上限回数に達していないとき
+				if (mComboCount < COMBO_MAX) {
+					mState = EATTACK_3; //攻撃3状態へ移行
 				}
 				else {
-					mState = EATTACK_2;
+					mState = EATTACK_2; //攻撃2状態へ移行
 				}
 				mAttackFlag_1 = false;
 			}
 		}
+		//アニメーション終了時
 		if (mIsAnimationEnd())
 		{
-			mState = EIDLE;
+			mState = EIDLE; //待機状態へ移行
 			mAttackFlag_1 = false;
 		}
 	}
@@ -579,15 +589,25 @@ void CXPlayer::Attack_2()
 		mAttackFlag_2 = true;
 		mAttack2Speed = ATTACK2_FIRSTSPEED;
 		mAttackFlag_Once = true;
+		mpTargetEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
 	}
 
 	if (mAnimationIndex == 7)
 	{
+		//敵を追尾させる
+		if (mpTargetEnemy) {
+			mAttackDir = mpTargetEnemy->mPosition - mPosition; //向きを求める
+			mMoveDirKeep = mAttackDir.Normalize();
+		}
+		else {
+			mAttackDir = mMoveDirKeep.Normalize();
+		}
 		//ヒット判定発生
 		if (mAnimationFrame == 8) {
 			mHit = true;
 		}
-		if (mAnimationFrame >= mAnimationFrameSize)
+		//アニメーション終了時
+		if (mIsAnimationEnd())
 		{
 			mHit = false; //ヒット判定終了
 			ChangeAnimation(8, false, 30);
@@ -595,16 +615,12 @@ void CXPlayer::Attack_2()
 	}
 	else if (mAnimationIndex == 8)
 	{
-		if (mAnimationFrame >= mAnimationFrameSize)
+		//アニメーション終了時
+		if (mIsAnimationEnd())
 		{
-			mState = EIDLE;
+			mState = EIDLE; //待機状態へ移行
 			mAttackFlag_2 = false;
 		}
-	}
-
-	CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
-	if (tEnemy) {
-		mAttackDir = tEnemy->mPosition - mPosition; //向きを求める
 	}
 
 	mMoveDir = mAttackDir.Normalize(); //攻撃時の向きを正規化して代入する
@@ -621,10 +637,14 @@ void CXPlayer::Attack_3()
 		ChangeAnimation(5, true, 15);
 		mAttackFlag_3 = true;
 		mAttackFlag_Once = true;
-		mCombo++;
-		CXEnemy* tEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
-		if (tEnemy) {
-			mAttackDir = tEnemy->mPosition - mPosition; //攻撃時の向きを求める
+		mComboCount++; //コンボ数加算
+		mpTargetEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
+		if (mpTargetEnemy) {
+			mAttackDir = mpTargetEnemy->mPosition - mPosition; //攻撃時の向きを求める
+			mMoveDirKeep = mAttackDir.Normalize();
+		}
+		else {
+			mAttackDir = mMoveDirKeep.Normalize();
 		}
 	}
 
@@ -636,7 +656,8 @@ void CXPlayer::Attack_3()
 		if (mAnimationFrame == 0) {
 			mHit = true;
 		}
-		if (mAnimationFrame >= mAnimationFrameSize)
+		//アニメーション終了時
+		if (mIsAnimationEnd())
 		{
 			mHit = false; //ヒット判定終了
 			ChangeAnimation(6, false, 30);
@@ -644,20 +665,24 @@ void CXPlayer::Attack_3()
 	}
 	else if (mAnimationIndex == 6)
 	{
+		//アニメーションの再生フレーム数が派生攻撃の受付時間内のとき
 		if (mAnimationFrame < GRACETIME) {
+			//左クリックをしているとき
 			if (CKey::Once(VK_LBUTTON)) {
-				if (mCombo < COMBO_MAX) {
-					mState = EATTACK_1;
+				//コンボ数がコンボの上限回数に達していないとき
+				if (mComboCount < COMBO_MAX) {
+					mState = EATTACK_1; //攻撃1状態へ移行
 				}
 				else {
-					mState = EATTACK_2;
+					mState = EATTACK_2; //攻撃2状態へ移行
 				}
 				mAttackFlag_3 = false;
 			}
 		}
-		if (mAnimationFrame >= mAnimationFrameSize)
+		//アニメーション終了時
+		if (mIsAnimationEnd())
 		{
-			mState = EIDLE;
+			mState = EIDLE; //待機状態へ移行
 			mAttackFlag_3 = false;
 		}
 	}
@@ -718,7 +743,8 @@ void CXPlayer::KnockBack()
 
 	if (mAnimationIndex == 2)
 	{
-		if (mAnimationFrame >= mAnimationFrameSize)
+		//アニメーション終了時
+		if (mIsAnimationEnd())
 		{
 			mState = EIDLE;	//待機状態へ移行
 			mInvincibleFlag = false; //無敵状態を終了する
@@ -729,6 +755,7 @@ void CXPlayer::KnockBack()
 //アイテムが使用可能か判断する
 bool CXPlayer::mIsItemUse()
 {
+	//選択中のアイテム
 	switch (mItemSelect) {
 	case ETRAP:	//罠
 		//罠アイテムが使用可能な時
@@ -750,6 +777,7 @@ bool CXPlayer::mIsItemUse()
 //アイテム使用処理
 void CXPlayer::ItemUse()
 {
+	//選択中のアイテム
 	switch (mItemSelect) {
 	case ETRAP:	//罠
 		//罠生成
@@ -799,5 +827,3 @@ void CXPlayer::ItemSelect()
 		mItemSelect = TAIL - 1;
 	}
 }
-
-

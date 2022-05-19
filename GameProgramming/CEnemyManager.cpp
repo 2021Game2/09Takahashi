@@ -1,6 +1,7 @@
 #include "CEnemyManager.h"
 #include "CRes.h"
 #include "CXPlayer.h"
+#include "CKey.h"
 
 #define MODEL_ENEMY "Resource\\knight\\knight_low.x" //“Gƒ‚ƒfƒ‹
 
@@ -29,8 +30,6 @@ CEnemyManager::CEnemyManager()
 	CRes::sKnight.SeparateAnimationSet(0, 1120, 1160, "stun");//13:ƒXƒ^ƒ“
 	CRes::sKnight.SeparateAnimationSet(0, 170, 220, "dash");//14:ƒ_ƒbƒVƒ…
 	CRes::sKnight.SeparateAnimationSet(0, 380, 430, "jump");//15:ƒWƒƒƒ“ƒv
-
-	EnemyGenerate(ENEMY_GENERATE_NUM); //“G‚ğ¶¬‚·‚é
 }
 
 CEnemyManager::~CEnemyManager()
@@ -81,6 +80,14 @@ CXEnemy* CEnemyManager::GetNearEnemy()
 void CEnemyManager::Update()
 {
 	AIUpdate();
+	
+#ifdef _DEBUG
+	//ƒeƒXƒg—pA“G‚ªˆê‘Ì¶¬‚³‚ê‚é
+	if (CKey::Once('P')) {
+		EnemyGenerate(1);
+	}
+#endif
+
 }
 
 void CEnemyManager::Render()
@@ -96,12 +103,12 @@ void CEnemyManager::AIUpdate()
 
 	for (size_t i = 0; i < mEnemyList.size(); i++) {
 		if (i == 0) {
-			mNearTarget = mEnemyList[i];
+			mNearTarget = nullptr;
 		}
 		mEnemyList[i]->mIsTarget = false;
 		//€–Só‘Ô‚¾‚Á‚½
 		if (mEnemyList[i]->mIsDeath()) {
-			mEnemyDeathNum++; //ƒJƒEƒ“ƒg‰ÁZ
+			mEnemyDeathNum++; //€–Só‘Ô‚Ì“G‚ÌƒJƒEƒ“ƒg‰ÁZ
 			continue; //“Ç‚İ”ò‚Î‚µ
 		}
 		//UŒ‚ó‘Ô‚¾‚Á‚½‚Æ‚«UŒ‚ó‘Ô‚Ì“G‚Ì”‚ğ‰ÁZ
@@ -111,20 +118,22 @@ void CEnemyManager::AIUpdate()
 		float len2 = pos.Length();
 		if (len1 > len2) {
 			len1 = len2;
-			mNearTarget = mEnemyList[i];
+			mNearTarget = mEnemyList[i]; //ƒvƒŒƒCƒ„[‚Æ‚Ì‹——£‚ªˆê”Ô‹ß‚¢“G‚ğŠi”[‚·‚é
 		}
 	}
 
-	if (mIsEnemyAllDeath() == false) {
+	if (mNearTarget) {
 		mNearTarget->mIsTarget = true; //ƒvƒŒƒCƒ„[‚Éˆê”Ô‹ß‚¢“G‚ÌUŒ‚‘ÎÛƒtƒ‰ƒO‚ğtrue‚É‚·‚é
 	}
 }
 
+//“G‚ª‘S‚Ä€–Só‘Ô‚Ì‚Æ‚«true‚ğ•Ô‚·
 bool CEnemyManager::mIsEnemyAllDeath()
 {
 	return(mEnemyList.size() == mEnemyDeathNum);
 }
 
+//UŒ‚ó‘Ô‚Ì“G‚Ì”‚ª“¯‚ÉUŒ‚‚Å‚«‚é“G‚Ì”‚ğ’´‚¦‚Ä‚¢‚È‚¯‚ê‚Îtrue‚ğ•Ô‚·
 bool CEnemyManager::mIsEnemyAttack()
 {
 	return (mEnemyAttackNum < ATTACK_NUM_MAX);

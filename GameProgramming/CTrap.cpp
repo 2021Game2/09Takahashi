@@ -40,14 +40,16 @@ void CTrap::Collision(CCollider* m, CCollider* o)
 		//相手の親のタグが敵の時
 		if (o->mpParent->mTag == EENEMY)
 		{
+			//敵が死亡状態だとリターンする
+			if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EDEATH)return;
 			//コライダのタグがボディの時
 			if (o->mTag == CCollider::EBODY)
 			{
-				//球コライダ同士の衝突判定
-				if (CCollider::Collision(m, o))
+				//敵の状態がスタン状態では無いとき
+				if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN)
 				{
-					//敵の状態がスタン状態では無く、死亡状態で無ければ通る
-					if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN && ((CXEnemy*)(o->mpParent))->mState != CXEnemy::EDEATH)
+					//球コライダ同士の衝突判定
+					if (CCollider::Collision(m, o))
 					{
 						mEnemyCol = true; //敵に当たったことを返す
 						CTrapManager::GetInstance()->mMapTrap = false; //マップ上に罠がない判定にする

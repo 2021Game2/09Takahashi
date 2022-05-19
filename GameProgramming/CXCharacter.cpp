@@ -1,5 +1,6 @@
 #include "CXCharacter.h"
 
+//アニメーションが終了したときtrueを返す
 bool CXCharacter::mIsAnimationEnd()
 {
 	return (mAnimationFrame >= mAnimationFrameSize);

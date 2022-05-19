@@ -4,7 +4,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "CCamera.h"
-#include <time.h>
 #include <windows.h>
 #include "CEffect.h"
 #include "CSound.h"
@@ -12,7 +11,7 @@
 #include "CRes.h"
 #include "CEnemyManager.h"
 
-#define HP_MAX 150			//体力最大値
+#define HP_MAX 1			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
 #define ATTACK_DIS 4.0f		//攻撃可能になる距離
@@ -183,6 +182,9 @@ void CXEnemy::Update()
 
 void CXEnemy::Render2D()
 {
+	//自分が死亡状態の時リターンする
+	if (mState == EDEATH)return;
+
 	//2D描画開始
 	CUtil::Start2D(0, 800, 0, 600);
 
@@ -270,12 +272,13 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 			//自分のコライダのタグが本体
 			if (m->mTag == CCollider::EBODY)
 			{
-				//球コライダ同士の衝突判定
-				if (CCollider::Collision(m, o))
+				//スタン状態でなければ
+				if (mState != ESTUN) 
 				{
-					//スタン状態でなければ、スタン状態へ移行
-					if (mState != ESTUN) {
-						mState = ESTUN;
+					//球コライダ同士の衝突判定
+					if (CCollider::Collision(m, o))
+					{
+						mState = ESTUN; //スタン状態へ移行
 						mStunTime = STUN_TIME; //スタン時間を入れる
 						mHit = false; //攻撃のヒット判定を無効化
 					}
@@ -509,7 +512,8 @@ void CXEnemy::Attack_1()
 		if (mAnimationFrame == 60) {
 			mHit = false;
 		}
-		if (mAnimationFrame >= mAnimationFrameSize)
+		//アニメーション終了時
+		if (mIsAnimationEnd())
 		{
 			mState = EIDLE; //待機状態へ移行
 		}
@@ -545,7 +549,8 @@ void CXEnemy::Attack_2()
 		if (mAnimationFrame == 65) {
 			mHit = false;
 		}
-		if (mAnimationFrame >= mAnimationFrameSize)
+		//アニメーション終了時
+		if (mIsAnimationEnd())
 		{
 			mState = EIDLE;	//待機状態へ移行
 		}
@@ -567,7 +572,8 @@ void CXEnemy::KnockBack()
 
 	if (mAnimationIndex == 12)
 	{
-		if (mAnimationFrame >= mAnimationFrameSize)
+		//アニメーション終了時
+		if (mIsAnimationEnd())
 		{
 			mState = EIDLE;	//待機状態へ移行
 		}
@@ -602,8 +608,10 @@ void CXEnemy::Avoid()
 	mSpeed = -0.2f;
 
 	ChangeAnimation(15, false, 40);
-	if (mAnimationIndex == 15) {
-		if (mAnimationFrame >= mAnimationFrameSize)
+	if (mAnimationIndex == 15) 
+	{
+		//アニメーション終了時
+		if (mIsAnimationEnd())
 		{
 			int random = rand() % 2;
 			//回避後ランダムで攻撃2状態へ移行するかどうか判断
@@ -639,13 +647,13 @@ CVector CXEnemy::GetPos()
 	return mPosition;
 }
 
-//死亡時trueを返す
+//死亡状態のときtrueを返す
 bool CXEnemy::mIsDeath()
 {
 	return (mState == EDEATH);
 }
 
-//攻撃時trueを返す
+//攻撃状態のときtrueを返す
 bool CXEnemy::mIsAttack()
 {
 	return (mState == EATTACK_1 || mState == EATTACK_2);

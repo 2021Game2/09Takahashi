@@ -106,6 +106,7 @@ void CSceneGame::Init() {
 
 	//“GŠÇ—¶¬
 	CEnemyManager::Generate();
+	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM); //“G‚ğ¶¬‚·‚é
 
 	//ƒJƒƒ‰‰Šú‰»
 	Camera.Init();
