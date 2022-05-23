@@ -30,8 +30,6 @@
 #define IMAGE_TARGET "Resource\\Image_Target.png" //ターゲット画像
 
 extern CSound SE_Attack_Hit_1;	//攻撃ヒット時の効果音
-extern CSound SE_Knight_Walk;	//敵(ナイト)の歩行時の効果音
-extern CSound SE_Knight_Run;	//敵(ナイト)の走行時の効果音
 
 CXEnemy::CXEnemy()
 	: mColSphereBody(this, nullptr, CVector(0.5f, -1.0f, 0.0f), 1.2f)
@@ -55,21 +53,23 @@ CXEnemy::CXEnemy()
 {
 	Init(&CRes::sKnight);
 
+	//タグを設定
 	mTag = EENEMY;	//敵
 
+	//コライダのタグを設定
 	mColSphereBody.mTag = CCollider::EBODY;		//本体
 	mColSphereHead.mTag = CCollider::EHEAD;		//頭
 	mColSphereSword0.mTag = CCollider::ESWORD;	//剣
 	mColSphereSword1.mTag = CCollider::ESWORD;	//剣
 	mColSphereSword2.mTag = CCollider::ESWORD;	//剣
 
-	mState = EIDLE;	//待機
+	//初期状態を設定
+	mState = EIDLE;	//待機状態
 
-	mFont.LoadTexture(FONT, 1, 4096 / 64);
-
-	mImageGauge.Load(IMAGE_GAUGE);
-
-	mImageTarget.Load(IMAGE_TARGET);
+	//画像ファイル読み込み
+	mFont.LoadTexture(FONT, 1, 4096 / 64);	//フォント画像
+	mImageGauge.Load(IMAGE_GAUGE);			//ゲージ画像
+	mImageTarget.Load(IMAGE_TARGET);		//ターゲット画像
 
 	srand(timeGetTime()); //乱数用
 }

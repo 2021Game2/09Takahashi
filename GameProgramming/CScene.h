@@ -9,7 +9,7 @@
 class CScene {
 public:
 	enum EScene {
-		ETITLE,		//タイトル
+		ETITLE = 0,	//タイトル
 		EGAME,		//ゲーム
 		ERESULT,	//リザルト
 		ERECORD,	//レコード

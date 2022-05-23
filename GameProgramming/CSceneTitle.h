@@ -1,6 +1,7 @@
 #pragma once
 #include "CScene.h"
 
+//タイトル画面のシーンクラス
 class CSceneTitle :public CScene {
 private:
 	enum ESelect {

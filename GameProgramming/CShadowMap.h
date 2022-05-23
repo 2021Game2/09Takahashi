@@ -1,5 +1,6 @@
 #pragma once
 
+//シャドウマップクラス
 class CShadowMap
 {
 	GLfloat mLightPos[3]; //光源の位置

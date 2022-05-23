@@ -1,6 +1,7 @@
 #pragma once
 #include "CScene.h"
 
+//リザルト画面のシーンクラス
 class CSceneResult :public CScene {
 private:
 	int mNewRecord;	//新記録の順位を記録

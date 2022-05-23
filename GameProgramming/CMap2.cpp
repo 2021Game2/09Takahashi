@@ -1,5 +1,12 @@
 #include "CMap2.h"
 #include "CTaskManager.h"
+#include "CRes.h"
+
+#define MODEL_CYLINDER "Resource\\Cylinder.obj", "Resource\\Cylinder.mtl" //シリンダーモデル
+
+#define POSITION CVector(0.0f, -5.0f, 0.0f) //位置
+#define ROTATION CVector() //回転
+#define SCALE CVector(4.0f, 3.0f, 4.0f) //スケール
 
 CMap2* CMap2::mInstance;
 
@@ -19,14 +26,13 @@ CMap2::CMap2(CModel* model, CVector position,
 
 	CTransform::Update();
 
-	CModel Cylinder;
-	Cylinder.Load("Resource\\Cylinder.obj", "Resource\\Cylinder.mtl");
-	mMatrixCol = CMatrix().Scale(1.0f, 1.0f, 1.0f) * mMatrix;
-	mColliderMesh.Set(this, &mMatrixCol, &Cylinder);
+	CModel Cylinder; //シリンダーモデル
+	Cylinder.Load(MODEL_CYLINDER); //シリンダーモデル読み込み
+	mMatrixCol = CMatrix().Scale(1.0f, 1.0f, 1.0f) * mMatrix; //スケール
+	mColliderMesh.Set(this, &mMatrixCol, &Cylinder); //コライダメッシュを設定
 
-	mTag = EMAP;
-
-	mInstance = this;
+	//タグを設定
+	mTag = EMAP; //マップ
 }
 
 CMap2::~CMap2()
@@ -44,4 +50,9 @@ void CMap2::Release()
 		delete mInstance;
 		mInstance = NULL;
 	}
+}
+
+void CMap2::Generate()
+{
+	mInstance = new CMap2(&CRes::sMap2, POSITION, ROTATION, SCALE);
 }

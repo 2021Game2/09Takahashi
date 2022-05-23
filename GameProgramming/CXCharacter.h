@@ -5,6 +5,7 @@
 #include "CMatrix.h"
 #include "CCharacter.h"
 
+//アニメーションを利用するキャラクタークラス
 class CXCharacter : public CCharacter {
 public:
 	CModelX* mpModel;	//モデルデータ

@@ -2,6 +2,7 @@
 #include "CCharacter.h"
 #include "CCollider.h"
 
+//罠(アイテム)クラス
 class CTrap :public CCharacter {
 private:
 	CCollider mCollider;

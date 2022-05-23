@@ -59,8 +59,6 @@
 CSound SE_Player_Walk;	//プレイヤーの歩行時の効果音
 CSound SE_Player_Run;	//プレイヤーの走行時の効果音
 CSound SE_Player_Avoid;	//プレイヤーの回避時の効果音
-CSound SE_Knight_Walk;	//敵(ナイト)の歩行時の効果音
-CSound SE_Knight_Run;	//敵(ナイト)の走行時の効果音
 CSound SE_Attack_Hit_1;	//攻撃ヒット時の効果音1
 CSound SE_Attack_Hit_2;	//攻撃ヒット時の効果音2
 CSound SE_Portion_Use;	//回復アイテム使用時の効果音
@@ -77,9 +75,11 @@ CSceneGame::CSceneGame()
 }
 
 CSceneGame::~CSceneGame() {
-	CTrapManager::Release();
-	CMap2::Release();
-	CEnemyManager::Release();
+	CXPlayer::Release();		//プレイヤー解放
+	CTrapManager::Release();	//罠管理解放
+	CMap::Release();			//マップ解放
+	CMap2::Release();			//マップ2解放
+	CEnemyManager::Release();	//敵管理解放
 }
 
 void CSceneGame::Init() {
@@ -98,24 +98,30 @@ void CSceneGame::Init() {
 	mImageMouse.Load(IMAGE_MOUSE);					//マウス操作説明用画像
 
 	CRes::sModelX.Load(MODEL_FILE);
-	
-	//キャラクターにモデルを設定
-	mPlayer.Init(&CRes::sModelX);
-	mPlayer.mPosition = CVector(0.0f, 0.0f, 20.0f);
-	mPlayer.mRotation = CVector(0.0f, 180.0f, 0.0f);
+
+	//プレイヤー生成
+	CXPlayer::Generate();
+	//プレイヤーの初期化
+	CXPlayer::GetInstance()->Init(&CRes::sModelX);
 
 	//敵管理生成
 	CEnemyManager::Generate();
-	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM); //敵を生成する
+	//敵を生成する
+	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM);
 
 	//カメラ初期化
 	Camera.Init();
 
-	//マップモデルの読み込み、生成
-	mMap2.Load(MODEL_MAP);
-	new CMap2(&mMap2, CVector(0.0f, -5.0f, 0.0f),
-		CVector(), CVector(4.0f, 3.0f, 4.0f));
-
+	//マップ生成
+	CMap::Generate();
+	//マップ2モデルの読み込み
+	//読み込んでいなければ読み込む
+	if (CRes::sMap2.mTriangles.size() == 0) {
+		CRes::sMap2.Load(MODEL_MAP);
+	}
+	//マップ2生成
+	CMap2::Generate();
+	
 	CTrapManager::Generate();
 
 	ShowCursor(false); //カーソル非表示
@@ -141,8 +147,6 @@ void CSceneGame::Init() {
 	SE_Player_Walk.Load(SE_PLAYER_WALK);	//プレイヤーの歩行時の効果音
 	SE_Player_Run.Load(SE_PLAYER_RUN);		//プレイヤーの走行時の効果音
 	SE_Player_Avoid.Load(SE_PLAYER_AVOID);	//プレイヤーの回避時の効果音
-	SE_Knight_Walk.Load(SE_KNIGHT_WALK);	//敵(ナイト)の歩行時の効果音
-	SE_Knight_Run.Load(SE_KNIGHT_RUN);		//敵(ナイト)の走行時の効果音
 	SE_Attack_Hit_1.Load(SE_ATTACK_HIT_1);	//攻撃ヒット時の効果1
 	SE_Attack_Hit_2.Load(SE_ATTACK_HIT_2);	//攻撃ヒット時の効果2
 	SE_Portion_Use.Load(SE_PORTION_USE);	//回復アイテム使用時の効果音

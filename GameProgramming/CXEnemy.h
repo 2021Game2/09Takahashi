@@ -6,6 +6,7 @@
 #include "CTexture.h"
 #include "CText.h"
 
+//エネミー(敵)クラス
 class CXEnemy : public CXCharacter
 {
 private:
@@ -13,6 +14,9 @@ private:
 	CTexture mImageGauge; //ゲージ画像
 	CTexture mImageTarget;
 
+	//コライダの宣言
+	CCollider mColSphereBody;	//体
+	CCollider mColSphereHead;	//頭
 	CCollider mColSphereSword0;	//剣
 	CCollider mColSphereSword1;	//剣
 	CCollider mColSphereSword2;	//剣
@@ -46,10 +50,6 @@ private:
 	void Stun();		//スタン処理
 	void Avoid();		//回避処理
 public:
-	//コライダの宣言
-	CCollider mColSphereBody;	//体
-	CCollider mColSphereHead;	//頭
-//	CCollider mColSphereSword;	//剣
 
 	CXEnemy();
 	/*
@@ -68,7 +68,7 @@ public:
 	//敵の状態
 	enum EEnemyState
 	{
-		EIDLE,			//待機
+		EIDLE = 0,		//待機
 		EAUTOMOVE,		//移動
 		ECHASE,			//追跡
 		EATTACK_IDLE,	//攻撃待機

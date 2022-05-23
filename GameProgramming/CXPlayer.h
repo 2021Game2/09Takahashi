@@ -7,6 +7,7 @@
 #include "CTexture.h"
 #include "CXEnemy.h"
 
+//プレイヤークラス
 class CXPlayer : public CXCharacter
 {
 private:
@@ -80,6 +81,7 @@ private:
 	void KnockBack();	//ノックバック処理
 public:
 	CXPlayer();
+	~CXPlayer();
 
 	/*
 	初期化(Xモデルクラスのポインタ)
@@ -94,12 +96,14 @@ public:
 	void CXPlayer::Collision(CCollider* m, CCollider* o);
 	void CXPlayer::TaskCollision();
 
-	static CXPlayer* GetInstance();
+	static void Generate();	//生成
+	static void Release();	//解放
+	static CXPlayer* GetInstance(); //インスタンスを取得
 
 	//プレイヤーの状態
 	enum EPlayerState
 	{
-		EIDLE,		//待機
+		EIDLE = 0,	//待機
 		EMOVE,		//移動
 		EDASH,		//ダッシュ
 		EAVOID,		//回避

@@ -6,18 +6,11 @@
 #include <time.h>
 #include "CShadowMap.h"
 
-/*
-ゲームのシーン
-*/
+//ゲームのシーンクラス
 class CSceneGame : public CScene {
 private:
 	//マップのインスタンス
-	CMap mMap;
-
-	CModel mMap2;
-
-	//キャラクタのインスタンス
-	CXPlayer mPlayer;
+	//CMap mMap;
 
 	clock_t mStartTime, mEndTime; //計測開始時刻、計測終了時刻
 	bool mCountStart; //クリア時間計測開始用

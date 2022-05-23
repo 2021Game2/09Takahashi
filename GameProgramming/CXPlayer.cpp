@@ -81,23 +81,27 @@ CXPlayer::CXPlayer()
 	, mAttackDir(0.0f, 0.0f, 0.0f)
 	,mpTargetEnemy(nullptr)
 {
-	//タグにプレイヤーを設定します
-	mTag = EPLAYER;
-	mColSphereBody.mTag = CCollider::EBODY;
-	mColSphereHead.mTag = CCollider::EHEAD;
-	mColSphereSword.mTag = CCollider::ESWORD;
+	//タグを設定
+	mTag = EPLAYER;	//プレイヤー
 
+	//コライダのタグを設定
+	mColSphereBody.mTag = CCollider::EBODY;		//体
+	mColSphereHead.mTag = CCollider::EHEAD;		//頭
+	mColSphereSword.mTag = CCollider::ESWORD;	//剣
+
+	//初期状態を設定
 	mState = EIDLE;	//待機状態
 
-	mInstance = this;
+	//画像ファイル読み込み
+	mFont.LoadTexture(FONT, 1, 4096 / 64);	//フォント画像
+	mImageGauge.Load(IMAGE_GAUGE);			//ゲージ画像
+	mImagePortion.Load(IMAGE_PORTION);		//回復アイテム画像
+	mImageTrap.Load(IMAGE_TRAP);			//罠アイテム画像
+	mImageNixsign.Load(IMAGE_NIXSIGN);		//禁止マーク画像
+}
 
-	mFont.LoadTexture(FONT, 1, 4096 / 64);
-
-	//画像読み込み
-	mImageGauge.Load(IMAGE_GAUGE);
-	mImagePortion.Load(IMAGE_PORTION);
-	mImageTrap.Load(IMAGE_TRAP);
-	mImageNixsign.Load(IMAGE_NIXSIGN);
+CXPlayer::~CXPlayer()
+{
 }
 
 void CXPlayer::Init(CModelX* model)
@@ -110,7 +114,8 @@ void CXPlayer::Init(CModelX* model)
 	//剣
 	mColSphereSword.mpMatrix = &mpCombinedMatrix[22];
 
-	mRotation.mY = 0.01f;
+	mPosition.Set(0.0f, 0.0f, 20.0);	//位置を設定
+	mRotation.Set(0.0f, 180.0f, 0.0f);	//回転を設定
 }
 
 void CXPlayer::Update()
@@ -436,9 +441,22 @@ void CXPlayer::TaskCollision()
 	CCollisionManager::Get()->Collision(&mColSphereSword, COLLISIONRANGE);
 }
 
+void CXPlayer::Generate()
+{
+	mInstance = new CXPlayer;
+}
+
+void CXPlayer::Release()
+{
+	if (mInstance) {
+		delete mInstance;
+		mInstance = nullptr;
+	}
+}
+
 CXPlayer* CXPlayer::GetInstance()
 {
-	return mInstance;
+	return mInstance; //インスタンスを返す
 }
 
 //剣のコライダの座標を取得する
