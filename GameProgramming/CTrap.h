@@ -5,7 +5,7 @@
 //罠(アイテム)クラス
 class CTrap :public CCharacter {
 private:
-	CCollider mCollider;
+	CCollider mCollider; //コライダ
 
 	bool mEnemyCol; //敵と当たるとtrue
 public:

@@ -15,8 +15,6 @@ private:
 	//シャドウマップのインスタンス
 	CShadowMap mShadowMap;
 
-
-
 public:
 	CSceneGame();
 	~CSceneGame();
@@ -25,7 +23,7 @@ public:
 	//更新処理のオーバーライド
 	void Update();
 
-	EScene GetNextScene();
+	EScene GetNextScene(); //次のシーンを取得
 
 	static float mClearTime;	//クリアまでにかかった時間
 };

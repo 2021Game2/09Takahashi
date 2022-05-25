@@ -8,7 +8,7 @@ bool CRes::sIsResLoad = false; //ファイル読み込み判断用
 
 #define MODEL_MAP "Resource\\sky.obj", "Resource\\sky.mtl"				//マップモデル
 #define MODEL_MAP2 "Resource\\Colosseum.obj", "Resource\\Colosseum.mtl" //マップ2モデル
-#define MODEL_TRAP "Resource\\trap.obj", "Resource\\trap.mtl"			//罠モデル
+#define MODEL_TRAP "Resource\\Trap.obj", "Resource\\Trap.mtl"			//罠モデル
 
 //画像系
 #define FONT "Resource\\FontG.png"	//フォント画像

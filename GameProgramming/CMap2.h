@@ -2,13 +2,14 @@
 #include "CCharacter.h"
 #include "CColliderMesh.h"
 
+//マップ2クラス
 class CMap2 : public CCharacter {
 private:
-	CMatrix mMatrixCol;
-	
-	static CMap2* mInstance;
+	static CMap2* mInstance; //マップ2のインスタンス
 
-	CColliderMesh mColliderMesh;
+	CColliderMesh mColliderMesh; //マップ2のメッシュコライダ
+
+	CMatrix mMatrixCol; //コライダのマトリクス
 public:
 	//コンストラクタ
 	CMap2(CModel* model, CVector position, CVector rotation, CVector scale);

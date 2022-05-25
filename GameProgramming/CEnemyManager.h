@@ -9,9 +9,9 @@
 class CEnemyManager
 {
 private:
-	static CEnemyManager* mInstance; //ƒCƒ“ƒXƒ^ƒ“ƒX
+	static CEnemyManager* mInstance; //“GŠÇ—‚ÌƒCƒ“ƒXƒ^ƒ“ƒX
 
-	std::vector<CXEnemy*> mEnemyList; //Ši”[
+	std::vector<CXEnemy*> mEnemyList; //“GŠi”[
 
 	CXEnemy* mNearTarget; //ˆê”Ô‹ß‚¢“G‚ğŠi”[
 

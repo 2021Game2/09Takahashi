@@ -40,9 +40,10 @@ void CSceneResult::Init()
 void CSceneResult::Update()
 {
 	count++;
+
 	//左クリックorEnterキーでタイトルへ移行する
 	if (CKey::Once(VK_LBUTTON)||CKey::Once(VK_RETURN)) {
-		mScene = ETITLE;
+		mScene = ETITLE; 
 	}
 
 	CUtil::Start2D(0, 800, 0, 600);

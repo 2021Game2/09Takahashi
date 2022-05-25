@@ -1,18 +1,19 @@
 #pragma once
 #include "CTrap.h"
 
+//罠管理クラス
 class CTrapManager {
 private:
-	static CTrapManager* mInstance;
+	static CTrapManager* mInstance; //罠管理のインスタンス
 
-	std::vector<CTrap*> mTrapList;
+	std::vector<CTrap*> mTrapList; //罠格納
 public:
 	CTrapManager();
 	~CTrapManager();
 
-	static void Generate();
-	static void Release();
-	static CTrapManager* GetInstance();
+	static void Generate();	//生成
+	static void Release();	//解放
+	static CTrapManager* GetInstance();	//インスタンス取得
 
 	void Update();
 

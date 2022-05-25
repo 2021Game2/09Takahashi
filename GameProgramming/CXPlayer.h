@@ -9,14 +9,14 @@
 class CXPlayer : public CXCharacter
 {
 private:
-	CXEnemy* mpTargetEnemy;	//攻撃対象の敵を入れる
-
 	//コライダの宣言
 	CCollider mColSphereBody;	//体
 	CCollider mColSphereHead;	//頭
 	CCollider mColSphereSword;	//剣
 
-	static CXPlayer* mInstance;
+	static CXPlayer* mInstance;	 //プレイヤーのインスタンス
+
+	CXEnemy* mpTargetEnemy;	//攻撃対象の敵を入れる
 
 	int mHp;		//体力
 	int mStamina;	//スタミナ
@@ -43,13 +43,11 @@ private:
 	CVector mKnockBackDir;	//ノックバックする方向を保持する
 	CVector mAttackDir;		//攻撃時の方向を保持する
 
-	CVector mMoveSide;
-	CVector mMoveFront;
+	CVector mSideVec;		//カメラの横ベクトル
+	CVector mFrontVec;		//カメラの正面ベクトル
+	float mTurnspeed;		//ターンの速度
 
-	CVector mSideVec;
-	CVector mFrontVec;
-	float mTurnspeed;
-
+	//アイテム
 	enum EItem {
 		HEAD = 0,
 		ETRAP,		//罠

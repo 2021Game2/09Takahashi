@@ -5,20 +5,24 @@
 #include "CTrapManager.h"
 #include "CCollisionManager.h"
 
+#define SCALE CVector(7.0f,7.0f,7.0f) //スケール
+
 CTrap::CTrap()
 	:mCollider(this, &mMatrix, CVector(0.0f, 0.0f, 0.0f), 1.0f)
 	,mEnemyCol(false)
 {
+	//タグを設定
 	mTag = ETRAP;	//罠
 	mCollider.mTag = CCollider::EBODY;	//本体
-	mScale = CVector(7.0f, 7.0f, 7.0f);
 
-	mpModel = &CRes::sModelTrap;
+	mScale = SCALE; //スケールを設定
+
+	mpModel = &CRes::sModelTrap; //モデルを設定
 }
 
 void CTrap::Update()
 {
-	//当たったらY座標を下げる
+	//敵と当たっていたらY座標を下げる
 	if (mEnemyCol == true) {
 		mPosition.mY = -10.0f;
 	}

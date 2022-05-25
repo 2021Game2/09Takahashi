@@ -5,8 +5,9 @@
 class CSceneRecord :public CScene {
 public:
 	CSceneRecord();
+
 	void Init();
 	void Update();
 
-	EScene GetNextScene();
+	EScene GetNextScene(); //Ÿ‚ÌƒV[ƒ“‚ğæ“¾
 };

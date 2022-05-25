@@ -1,7 +1,7 @@
 #include "CTrapManager.h"
 #include "CTaskManager.h"
 
-#define TRAP_QUANTITY 10	//ã©‚ÌŠ”
+#define TRAP_QUANTITY 2	//ã©‚ÌŠ”
 
 CTrapManager* CTrapManager::mInstance;
 
@@ -38,9 +38,11 @@ CTrapManager* CTrapManager::GetInstance()
 
 void CTrapManager::Update()
 {
+	/*
 	for (size_t i = 0; i < mTrapList.size(); i++) {
 		mTrapList[i]->Update();
 	}
+	*/
 }
 
 void CTrapManager::TrapGenerate(CVector pos, CVector rot)
