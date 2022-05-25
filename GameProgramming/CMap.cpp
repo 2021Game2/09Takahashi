@@ -1,4 +1,5 @@
 #include "CMap.h"
+#include "CRes.h"
 
 CMap* CMap::mInstance;
 
@@ -8,8 +9,7 @@ CMap::CMap()
 	mScale = CVector(1.0f, 1.0f, 1.0f);
 	CTransform::Update();
 
-	mModel.Load("Resource\\sky.obj", "Resource\\sky.mtl");
-	mpModel = &mModel;
+	mpModel = &CRes::sModelMap;
 }
 
 CMap::~CMap()

@@ -1,6 +1,5 @@
 #pragma once
 #include "CTrap.h"
-#include "CModel.h"
 
 class CTrapManager {
 private:
@@ -16,8 +15,6 @@ public:
 	static CTrapManager* GetInstance();
 
 	void Update();
-
-	static CModel sTrap;
 
 	void TrapGenerate(CVector pos, CVector rot); //„©ê∂ê¨
 

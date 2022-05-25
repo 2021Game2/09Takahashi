@@ -6,10 +6,10 @@
 #include <math.h>
 #include "CInput.h"
 #include "CTrapManager.h"
-#include "CSound.h"
 #include "CEffect2.h"
 #include "CCollisionManager.h"
 #include "CEnemyManager.h"
+#include "CRes.h"
 
 #define GRAVITY 0.9f			//重力
 #define HP_MAX 100				//体力最大値
@@ -33,19 +33,6 @@
 
 #define GAUGE_WID_MAX 400.0f	//ゲージの幅の最大値
 #define GAUGE_LEFT 20			//ゲージ描画時の左端
-
-#define FONT "Resource\\FontG.png"				//フォント
-#define IMAGE_GAUGE "Resource\\Gauge.png"		//ゲージ画像
-#define IMAGE_PORTION "Resource\\Image_Portion.png"	//回復薬画像
-#define IMAGE_TRAP "Resource\\Image_Trap.png"		//罠画像
-#define IMAGE_NIXSIGN "Resource\\Image_Nixsign.png"	//禁止マーク画像
-
-extern CSound SE_Player_Walk;	//プレイヤーの歩行時の効果音
-extern CSound SE_Player_Run;	//プレイヤーの走行時の効果音
-extern CSound SE_Player_Avoid;	//プレイヤーの回避時の効果音
-extern CSound SE_Attack_Hit_2;	//攻撃ヒット時の効果音2
-extern CSound SE_Portion_Use;	//回復アイテム使用時の効果音
-extern CSound SE_Trap_Use;		//罠アイテム使用時の効果音
 
 CXPlayer* CXPlayer::mInstance;
 
@@ -91,13 +78,6 @@ CXPlayer::CXPlayer()
 
 	//初期状態を設定
 	mState = EIDLE;	//待機状態
-
-	//画像ファイル読み込み
-	mFont.LoadTexture(FONT, 1, 4096 / 64);	//フォント画像
-	mImageGauge.Load(IMAGE_GAUGE);			//ゲージ画像
-	mImagePortion.Load(IMAGE_PORTION);		//回復アイテム画像
-	mImageTrap.Load(IMAGE_TRAP);			//罠アイテム画像
-	mImageNixsign.Load(IMAGE_NIXSIGN);		//禁止マーク画像
 }
 
 CXPlayer::~CXPlayer()
@@ -134,7 +114,7 @@ void CXPlayer::Update()
 		//WASDキーを押すと移動へ移行
 		else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
 			mState = EMOVE;
-			SE_Player_Walk.Repeat(); //効果音を再生する
+			CRes::sSEPlayerWalk.Repeat(); //効果音を再生する
 		}
 		//右クリックでアイテム使用可能な時アイテムを使用する
 		else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
@@ -162,7 +142,7 @@ void CXPlayer::Update()
 		//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
 		else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
 			mState = EAVOID;
-			SE_Player_Avoid.Play(); //効果音を再生
+			CRes::sSEPlayerAvoid.Play(); //効果音を再生
 		}
 		//右クリックでアイテム使用可能な時アイテムを使用する
 		else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
@@ -173,7 +153,7 @@ void CXPlayer::Update()
 			//SHIFTキーを押しているとダッシュへ移行
 			if (CKey::Push(VK_SHIFT)) {
 				mState = EDASH;
-				SE_Player_Run.Repeat(); //効果音を再生する
+				CRes::sSEPlayerRun.Repeat(); //効果音を再生する
 			}
 			else {
 				Move();	//移動処理を呼ぶ
@@ -185,7 +165,7 @@ void CXPlayer::Update()
 		}
 		//状態が移行したとき、効果音を停止する
 		if (mState != EMOVE) {
-			SE_Player_Walk.Stop();
+			CRes::sSEPlayerWalk.Stop();
 		}
 		break;
 
@@ -197,7 +177,7 @@ void CXPlayer::Update()
 		//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
 		else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
 			mState = EAVOID;
-			SE_Player_Avoid.Play(); //効果音を再生
+			CRes::sSEPlayerAvoid.Play(); //効果音を再生
 		}
 		//右クリックでアイテム使用可能な時アイテムを使用する
 		else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
@@ -211,7 +191,7 @@ void CXPlayer::Update()
 			}
 			else {
 				mState = EMOVE;
-				SE_Player_Walk.Play(); //効果音を再生
+				CRes::sSEPlayerWalk.Play(); //効果音を再生
 			}
 		}
 		//待機状態へ移行
@@ -220,7 +200,7 @@ void CXPlayer::Update()
 		}
 		//状態が移行したとき、効果音を停止する
 		if (mState != EDASH) {
-			SE_Player_Run.Stop();
+			CRes::sSEPlayerRun.Stop();
 		}
 		break;
 
@@ -233,11 +213,11 @@ void CXPlayer::Update()
 				//SHIFTキーを押しているとダッシュへ移行
 				if (CKey::Push(VK_SHIFT)) {
 					mState = EDASH;
-					SE_Player_Run.Play(); //効果音を再生
+					CRes::sSEPlayerRun.Play(); //効果音を再生
 				}
 				else {
 					mState = EMOVE;
-					SE_Player_Walk.Play(); //効果音を再生
+					CRes::sSEPlayerWalk.Play(); //効果音を再生
 				}
 			}
 			//待機状態へ移行
@@ -257,9 +237,9 @@ void CXPlayer::Update()
 
 	case EKNOCKBACK: //ノックバック状態
 		//効果音を停止する
-		SE_Player_Walk.Stop();
-		SE_Player_Run.Stop();
-		SE_Player_Avoid.Stop();
+		CRes::sSEPlayerWalk.Stop();
+		CRes::sSEPlayerRun.Stop();
+		CRes::sSEPlayerAvoid.Stop();
 		KnockBack(); //ノックバック処理を呼ぶ
 		break;
 	}
@@ -316,34 +296,34 @@ void CXPlayer::Render2D()
 	float HpRate = (float)mHp / (float)HP_MAX;	//体力最大値に対する、現在の体力の割合
 	float HpGaugeWid = GAUGE_WID_MAX * HpRate;	//体力ゲージの幅
 
-	mImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + GAUGE_WID_MAX, 560, 590, 210, 290, 63, 0);	//体力ゲージ背景を表示
-	mImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + HpGaugeWid, 560, 590, 0, 0, 0, 0);;			//体力ゲージを表示
+	CRes::sImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + GAUGE_WID_MAX, 560, 590, 210, 290, 63, 0);	//体力ゲージ背景を表示
+	CRes::sImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + HpGaugeWid, 560, 590, 0, 0, 0, 0);;			//体力ゲージを表示
 
 	float StaminaRate = (float)mStamina / (float)STAMINA_MAX;	//スタミナ最大値に対する、現在のスタミナの割合
 	float StaminaGaugeWid = GAUGE_WID_MAX * StaminaRate;		//スタミナゲージの幅
 
-	mImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + GAUGE_WID_MAX, 520, 550, 210, 290, 63, 0);	//スタミナゲージ背景を表示
-	mImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + StaminaGaugeWid, 520, 550, 110, 190, 63, 0);	//スタミナゲージを表示
+	CRes::sImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + GAUGE_WID_MAX, 520, 550, 210, 290, 63, 0);	//スタミナゲージ背景を表示
+	CRes::sImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + StaminaGaugeWid, 520, 550, 110, 190, 63, 0);	//スタミナゲージを表示
 
 	char buf[64];
-	mImageGauge.Draw(630, 750, 30, 150, 310, 390, 63, 0);	//アイテム背景を表示
+	CRes::sImageGauge.Draw(630, 750, 30, 150, 310, 390, 63, 0);	//アイテム背景を表示
 	//選択中のアイテム
 	switch (mItemSelect) {	
 	case ETRAP: //罠
-		mImageTrap.Draw(640, 740, 40, 140, 0, 255, 255, 0); //罠画像を表示
+		CRes::sImageTrap.Draw(640, 740, 40, 140, 0, 255, 255, 0); //罠画像を表示
 		sprintf(buf, "%d", CTrapManager::GetInstance()->mTrapQuantity); //罠の所持数
 		break;
 	case EPORTION: //回復
-		mImagePortion.Draw(640, 740, 40, 140, 0, 255, 255, 0); //回復薬画像を表示
+		CRes::sImagePortion.Draw(640, 740, 40, 140, 0, 255, 255, 0); //回復薬画像を表示
 		sprintf(buf, "%d", mPortionQuantity); //回復の所持数
 		break;
 	}
 	//アイテムが使用不可能な時
 	if (mIsItemUse() == false) {
-		mImageNixsign.Draw(640, 740, 40, 140, 255, 0, 255, 0); //禁止マーク画像を表示
+		CRes::sImageNixsign.Draw(640, 740, 40, 140, 255, 0, 255, 0); //禁止マーク画像を表示
 	}
 
-	mFont.DrawString(buf, 730, 50, 15, 15); //アイテムの所持数を表示
+	CRes::sFont.DrawString(buf, 730, 50, 15, 15); //アイテムの所持数を表示
 
 	//2Dの描画終了
 	CUtil::End2D();
@@ -388,7 +368,7 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 								mAttackFlag_2 = false;
 								mAttackFlag_3 = false;
 								mMove = CVector(0.0f, 0.0f, 0.0f);
-								SE_Attack_Hit_2.Play();	//攻撃ヒット時の効果音再生
+								CRes::sSEAttackHit2.Play();	//攻撃ヒット時の効果音再生
 								break;
 							}
 						}
@@ -801,7 +781,7 @@ void CXPlayer::ItemUse()
 		//罠生成
 		CTrapManager::GetInstance()->TrapGenerate(mPosition, mRotation);
 		//罠アイテム使用時の効果音を再生する
-		SE_Trap_Use.Play();
+		CRes::sSETrapUse.Play();
 		break;
 
 	case EPORTION: //回復薬
@@ -814,7 +794,7 @@ void CXPlayer::ItemUse()
 		//回復アイテム使用時のエフェクトを生成する
 		new CEffect2(mPosition, 2.0f, 2.0f, "", 2, 5, 3);
 		//回復アイテム使用時の効果音再生
-		SE_Portion_Use.Play();
+		CRes::sSEPortionUse.Play();
 		break;
 	}
 	//待機状態へ移行

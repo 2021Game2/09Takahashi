@@ -3,12 +3,7 @@
 #include "CXEnemy.h"
 #include "CRes.h"
 #include "CTrapManager.h"
-#include "CSound.h"
 #include "CCollisionManager.h"
-
-extern CSound SE_Trap_Active;	//罠アイテム作動時の効果音
-
-CTrap* CTrap::mInstance;
 
 CTrap::CTrap()
 	:mCollider(this, &mMatrix, CVector(0.0f, 0.0f, 0.0f), 1.0f)
@@ -18,9 +13,7 @@ CTrap::CTrap()
 	mCollider.mTag = CCollider::EBODY;	//本体
 	mScale = CVector(7.0f, 7.0f, 7.0f);
 
-	mpModel = &CTrapManager::sTrap;
-
-	mInstance = this;
+	mpModel = &CRes::sModelTrap;
 }
 
 void CTrap::Update()
@@ -34,6 +27,9 @@ void CTrap::Update()
 
 void CTrap::Collision(CCollider* m, CCollider* o)
 {
+	//既に敵に当たっている場合リターンする
+	if (mEnemyCol == true)return;
+
 	//自分と相手が球コライダの時
 	if (m->mType == CCollider::ESPHERE && o->mType == CCollider::ESPHERE)
 	{
@@ -53,7 +49,7 @@ void CTrap::Collision(CCollider* m, CCollider* o)
 					{
 						mEnemyCol = true; //敵に当たったことを返す
 						CTrapManager::GetInstance()->mMapTrap = false; //マップ上に罠がない判定にする
-						SE_Trap_Active.Play(); //罠アイテム作動時の効果音を再生する
+						CRes::sSETrapActive.Play(); //罠アイテム作動時の効果音を再生する
 					}
 				}
 			}
@@ -64,11 +60,6 @@ void CTrap::Collision(CCollider* m, CCollider* o)
 void CTrap::TaskCollision()
 {
 	CCollisionManager::Get()->Collision(&mCollider, COLLISIONRANGE);
-}
-
-CTrap* CTrap::GetInstance()
-{
-	return mInstance;
 }
 
 //位置を設定

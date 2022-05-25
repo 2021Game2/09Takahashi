@@ -7,8 +7,6 @@
 class CMap : public CCharacter
 {
 private:
-	CModel mModel;
-
 	static CMap* mInstance;
 public:
 	CMap();

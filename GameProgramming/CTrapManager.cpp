@@ -1,18 +1,14 @@
 #include "CTrapManager.h"
 #include "CTaskManager.h"
 
-#define MODEL_TRAP "Resource\\trap.obj", "Resource\\trap.mtl" //ã©ƒ‚ƒfƒ‹
-#define TRAP_QUANTITY 2	//ã©‚ÌŠ”
+#define TRAP_QUANTITY 10	//ã©‚ÌŠ”
 
 CTrapManager* CTrapManager::mInstance;
-
-CModel CTrapManager::sTrap;
 
 CTrapManager::CTrapManager()
 	:mMapTrap(false)
 	, mTrapQuantity(TRAP_QUANTITY)
 {
-	sTrap.Load(MODEL_TRAP);
 }
 
 CTrapManager::~CTrapManager()

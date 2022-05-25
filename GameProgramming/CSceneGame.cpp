@@ -30,40 +30,10 @@
 //
 
 //画像系
-#define FONT "Resource\\FontG.png" //フォント
 #define EFFECT_ATTACK_HIT "Resource\\Effect_Attack_Hit.png"		//攻撃ヒット時のエフェクト画像
 #define EFFECT_PORTION_USE "Resource\\Effect_Portion_Use.png"	//回復アイテム使用時のエフェクト画像
-#define IMAGE_PLAYER_RUN "Resource\\Image_Player_Run.png"		//プレイヤーの走り方説明用画像
-#define IMAGE_PLAYER_ATTACK "Resource\\Image_Player_Attack.png" //プレイヤーの攻撃方法説明用画像
-#define IMAGE_PLAYER_AVOID "Resource\\Image_Player_Avoid.png"	//プレイヤーの回避方法説明用画像
-#define IMAGE_MOUSE "Resource\\Image_Mouse.png"					//マウス操作説明用画像
 #define TEXWIDTH  8192	//テクスチャ幅
 #define TEXHEIGHT  6144	//テクスチャ高さ
-
-//モデル系
-#define MODEL_ENEMY "Resource\\knight\\knight_low.x" //敵モデル
-#define MODEL_MAP "Resource\\Colosseum.obj", "Resource\\Colosseum.mtl" //マップモデル
-
-//サウンド系
-#define SE_PLAYER_WALK "Resource\\SE_Player_Walk.wav"	//プレイヤーの歩行時の効果音
-#define SE_PLAYER_RUN "Resource\\SE_Player_Run.wav"		//プレイヤーの走行時の効果音
-#define SE_PLAYER_AVOID "Resource\\SE_Player_Avoid.wav"	//プレイヤーの回避時の効果音
-#define SE_KNIGHT_WALK "Resource\\SE_Knight_Walk.wav"	//敵(ナイト)の歩行時の効果音
-#define SE_KNIGHT_RUN "Resource\\SE_Knight_Run.wav"		//敵(ナイト)の走行時の効果音
-#define SE_ATTACK_HIT_1 "Resource\\SE_Attack_Hit_1.wav"	//攻撃ヒット時の効果音1
-#define SE_ATTACK_HIT_2 "Resource\\SE_Attack_Hit_2.wav"	//攻撃ヒット時の効果音2
-#define SE_PORTION_USE "Resource\\SE_Portion_Use.wav"	//回復アイテム使用時の効果音
-#define SE_TRAP_USE "Resource\\SE_Trap_Use.wav"			//罠アイテム使用時の効果音
-#define SE_TRAP_ACTIVE "Resource\\SE_Trap_Active.wav"	//罠アイテム作動時の効果音
-
-CSound SE_Player_Walk;	//プレイヤーの歩行時の効果音
-CSound SE_Player_Run;	//プレイヤーの走行時の効果音
-CSound SE_Player_Avoid;	//プレイヤーの回避時の効果音
-CSound SE_Attack_Hit_1;	//攻撃ヒット時の効果音1
-CSound SE_Attack_Hit_2;	//攻撃ヒット時の効果音2
-CSound SE_Portion_Use;	//回復アイテム使用時の効果音
-CSound SE_Trap_Use;		//罠アイテム使用時の効果音
-CSound SE_Trap_Active;	//罠アイテム作動時の効果音
 
 float CSceneGame::mClearTime = 0.0f; //クリアまでにかかった時間
 
@@ -76,59 +46,44 @@ CSceneGame::CSceneGame()
 
 CSceneGame::~CSceneGame() {
 	CXPlayer::Release();		//プレイヤー解放
-	CTrapManager::Release();	//罠管理解放
 	CMap::Release();			//マップ解放
 	CMap2::Release();			//マップ2解放
 	CEnemyManager::Release();	//敵管理解放
+	CTrapManager::Release();	//罠管理解放
 }
 
 void CSceneGame::Init() {
-	mScene = EGAME;
+	mScene = EGAME; //シーンゲーム
 
 	mCountStart = false;
 	mClearTime = 0.0f;
 
-	//テキストフォントの読み込みと設定
-	mFont.LoadTexture(FONT, 1, 4096 / 64);
-
-	//画像読み込み
-	mImagePlayerRun.Load(IMAGE_PLAYER_RUN);			//プレイヤーの走り方説明用画像
-	mImagePlayerAttack.Load(IMAGE_PLAYER_ATTACK);	//プレイヤーの攻撃方法説明用画像
-	mImagePlayerAvoid.Load(IMAGE_PLAYER_AVOID);		//プレイヤーの回避方法説明用画像
-	mImageMouse.Load(IMAGE_MOUSE);					//マウス操作説明用画像
-
-	CRes::sModelX.Load(MODEL_FILE);
-
 	//プレイヤー生成
 	CXPlayer::Generate();
 	//プレイヤーの初期化
-	CXPlayer::GetInstance()->Init(&CRes::sModelX);
+	CXPlayer::GetInstance()->Init(&CRes::sModelXPlayer);
 
 	//敵管理生成
 	CEnemyManager::Generate();
 	//敵を生成する
 	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM);
 
-	//カメラ初期化
-	Camera.Init();
-
 	//マップ生成
 	CMap::Generate();
-	//マップ2モデルの読み込み
-	//読み込んでいなければ読み込む
-	if (CRes::sMap2.mTriangles.size() == 0) {
-		CRes::sMap2.Load(MODEL_MAP);
-	}
 	//マップ2生成
 	CMap2::Generate();
-	
+
+	//トラップ管理生成
 	CTrapManager::Generate();
+
+	//カメラ初期化
+	Camera.Init();
 
 	ShowCursor(false); //カーソル非表示
 
 	//影の設定
-	float shadowColor[] = { 0.4f, 0.4f, 0.4f, 0.2f };  //影の色
-	float lightPos[] = { 50.0f, 160.0f, 50.0f };  //光源の位置
+	float shadowColor[] = { 0.4f, 0.4f, 0.4f, 0.2f };	//影の色
+	float lightPos[] = { 50.0f, 160.0f, 50.0f };		//光源の位置
 	mShadowMap.Init(TEXWIDTH, TEXHEIGHT, Render, shadowColor, lightPos);
 
 	//エフェクト画像読み込み
@@ -142,16 +97,6 @@ void CSceneGame::Init() {
 		CEffect2::sMaterial.mDiffuse[0] = CEffect2::sMaterial.mDiffuse[1] =
 			CEffect2::sMaterial.mDiffuse[2] = CEffect2::sMaterial.mDiffuse[3] = 1.0f;
 	}
-
-	//効果音読み込み
-	SE_Player_Walk.Load(SE_PLAYER_WALK);	//プレイヤーの歩行時の効果音
-	SE_Player_Run.Load(SE_PLAYER_RUN);		//プレイヤーの走行時の効果音
-	SE_Player_Avoid.Load(SE_PLAYER_AVOID);	//プレイヤーの回避時の効果音
-	SE_Attack_Hit_1.Load(SE_ATTACK_HIT_1);	//攻撃ヒット時の効果1
-	SE_Attack_Hit_2.Load(SE_ATTACK_HIT_2);	//攻撃ヒット時の効果2
-	SE_Portion_Use.Load(SE_PORTION_USE);	//回復アイテム使用時の効果音
-	SE_Trap_Use.Load(SE_TRAP_USE);			//罠アイテム使用時の効果音
-	SE_Trap_Active.Load(SE_TRAP_ACTIVE);	//罠アイテム作動時の効果音
 }
 
 void CSceneGame::Update() {
@@ -210,21 +155,21 @@ void CSceneGame::Update() {
 	CUtil::Start2D(0, 800, 0, 600);
 
 	//操作方法の画像表示
-	mImagePlayerRun.Draw(110, 190, 20, 100, 0, 255, 255, 0);	//プレイヤーの走り方
-	mImagePlayerAttack.Draw(20, 100, 20, 100, 0, 255, 255, 0);	//プレイヤーの攻撃方法
-	mImagePlayerAvoid.Draw(200, 280, 20, 100, 0, 255, 255, 0);	//プレイヤーの回避方法
-	mImageMouse.Draw(590, 630, 70, 110, 0, 255, 255, 0);	//右クリック用
-	mImageMouse.Draw(750, 790, 70, 110, 0, 255, 511, 256);	//ホイール用
+	CRes::sImagePlayerRun.Draw(110, 190, 20, 100, 0, 255, 255, 0);		//プレイヤーの走り方
+	CRes::sImagePlayerAttack.Draw(20, 100, 20, 100, 0, 255, 255, 0);	//プレイヤーの攻撃方法
+	CRes::sImagePlayerAvoid.Draw(200, 280, 20, 100, 0, 255, 255, 0);	//プレイヤーの回避方法
+	CRes::sImageMouse.Draw(590, 630, 70, 110, 0, 255, 255, 0);			//右クリック用
+	CRes::sImageMouse.Draw(750, 790, 70, 110, 0, 255, 511, 256);		//ホイール用
 
 	//プレイヤーが死亡状態になるとGAMEOVERと表示する
 	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {
-		mFont.DrawString("GAMEOVER", 120, 350, 40, 40);
-		mFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
+		CRes::sFont.DrawString("GAMEOVER", 120, 350, 40, 40);
+		CRes::sFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
 	}
 	//敵が全て死亡状態になるとGAMECLEARと表示する
 	else if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
-		mFont.DrawString("CLEAR", 230, 350, 40, 40);
-		mFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
+		CRes::sFont.DrawString("CLEAR", 230, 350, 40, 40);
+		CRes::sFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
 	}
 
 	//2Dの描画終了

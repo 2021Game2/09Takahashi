@@ -3,8 +3,6 @@
 #include "CXPlayer.h"
 #include "CKey.h"
 
-#define MODEL_ENEMY "Resource\\knight\\knight_low.x" //敵モデル
-
 #define ATTACK_NUM_MAX 1 //同時に攻撃できる敵の数
 
 CEnemyManager* CEnemyManager::mInstance;
@@ -14,22 +12,21 @@ CEnemyManager::CEnemyManager()
 	,mEnemyDeathNum(0)
 	,mEnemyAttackNum(0)
 {
-	CRes::sKnight.Load(MODEL_ENEMY);
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//1:移動
-	CRes::sKnight.SeparateAnimationSet(0, 1530, 1830, "idle1");//2:待機
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//3:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//4:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//5:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//6:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 440, 520, "attack1_1");//7:Attack1
-	CRes::sKnight.SeparateAnimationSet(0, 520, 615, "attack2");//8:Attack2
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//9:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 10, 80, "walk");//10:ダミー
-	CRes::sKnight.SeparateAnimationSet(0, 1160, 1260, "death1");//11:ダウン
-	CRes::sKnight.SeparateAnimationSet(0, 90, 160, "knockback");//12:ノックバック
-	CRes::sKnight.SeparateAnimationSet(0, 1120, 1160, "stun");//13:スタン
-	CRes::sKnight.SeparateAnimationSet(0, 170, 220, "dash");//14:ダッシュ
-	CRes::sKnight.SeparateAnimationSet(0, 380, 430, "jump");//15:ジャンプ
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//1:移動
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 1530, 1830, "idle1");//2:待機
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//3:ダミー
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//4:ダミー
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//5:ダミー
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//6:ダミー
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 440, 520, "attack1_1");//7:Attack1
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 520, 615, "attack2");//8:Attack2
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//9:ダミー
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//10:ダミー
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 1160, 1260, "death1");//11:ダウン
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 90, 160, "knockback");//12:ノックバック
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 1120, 1160, "stun");//13:スタン
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 170, 220, "dash");//14:ダッシュ
+	CRes::sModelXEnemy.SeparateAnimationSet(0, 380, 430, "jump");//15:ジャンプ
 }
 
 CEnemyManager::~CEnemyManager()

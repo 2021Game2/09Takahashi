@@ -3,17 +3,11 @@
 
 #include "CXCharacter.h"
 #include "CCollider.h"
-#include "CTexture.h"
-#include "CText.h"
 
 //エネミー(敵)クラス
 class CXEnemy : public CXCharacter
 {
 private:
-	CText mFont; //フォント
-	CTexture mImageGauge; //ゲージ画像
-	CTexture mImageTarget;
-
 	//コライダの宣言
 	CCollider mColSphereBody;	//体
 	CCollider mColSphereHead;	//頭

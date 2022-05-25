@@ -54,5 +54,5 @@ void CMap2::Release()
 
 void CMap2::Generate()
 {
-	mInstance = new CMap2(&CRes::sMap2, POSITION, ROTATION, SCALE);
+	mInstance = new CMap2(&CRes::sModelMap2, POSITION, ROTATION, SCALE);
 }

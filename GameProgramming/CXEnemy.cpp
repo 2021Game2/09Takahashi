@@ -6,7 +6,6 @@
 #include "CCamera.h"
 #include <windows.h>
 #include "CEffect.h"
-#include "CSound.h"
 #include "CCollisionManager.h"
 #include "CRes.h"
 #include "CEnemyManager.h"
@@ -24,12 +23,6 @@
 #define AVOID_DIS 4.0f		//回避可能になる距離
 #define GAUGE_WID_MAX 50.0f	//ゲージの幅の最大値
 #define CHASE_RESTART_TIME 60 //追跡を再開するまでの時間
-
-#define FONT "Resource\\FontG.png" //フォント
-#define IMAGE_GAUGE "Resource\\Gauge.png" //ゲージ画像
-#define IMAGE_TARGET "Resource\\Image_Target.png" //ターゲット画像
-
-extern CSound SE_Attack_Hit_1;	//攻撃ヒット時の効果音
 
 CXEnemy::CXEnemy()
 	: mColSphereBody(this, nullptr, CVector(0.5f, -1.0f, 0.0f), 1.2f)
@@ -51,7 +44,7 @@ CXEnemy::CXEnemy()
 	, mIsInvincible(false)
 	, mChaseRestartCount(0)
 {
-	Init(&CRes::sKnight);
+	Init(&CRes::sModelXEnemy);
 
 	//タグを設定
 	mTag = EENEMY;	//敵
@@ -65,11 +58,6 @@ CXEnemy::CXEnemy()
 
 	//初期状態を設定
 	mState = EIDLE;	//待機状態
-
-	//画像ファイル読み込み
-	mFont.LoadTexture(FONT, 1, 4096 / 64);	//フォント画像
-	mImageGauge.Load(IMAGE_GAUGE);			//ゲージ画像
-	mImageTarget.Load(IMAGE_TARGET);		//ターゲット画像
 
 	srand(timeGetTime()); //乱数用
 }
@@ -198,13 +186,13 @@ void CXEnemy::Render2D()
 	//画面外の時に表示しない
 	if (ret.mX > 0 && ret.mX < 800) {
 		//ゲージ背景
-		mImageGauge.Draw(ret.mX - GAUGE_WID_MAX, ret.mX + GAUGE_WID_MAX, ret.mY + 30.0f, ret.mY + 45.0f, 210, 290, 63, 0);
+		CRes::sImageGauge.Draw(ret.mX - GAUGE_WID_MAX, ret.mX + GAUGE_WID_MAX, ret.mY + 30.0f, ret.mY + 45.0f, 210, 290, 63, 0);
 		//体力ゲージ
-		mImageGauge.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX - GAUGE_WID_MAX) + HpGaugeWid * 2.0f, ret.mY + 30.0f, ret.mY + 45.0f, 0, 0, 0, 0);
+		CRes::sImageGauge.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX - GAUGE_WID_MAX) + HpGaugeWid * 2.0f, ret.mY + 30.0f, ret.mY + 45.0f, 0, 0, 0, 0);
 		//プレイヤーの攻撃対象になっているとき
 		if (mIsTarget) {
 			//ターゲット画像表示
-			mImageTarget.Draw(ret.mX - 30.0f, ret.mX + 30.0f, ret.mY - 30.0f, ret.mY + 30.0f, 0, 255, 255, 0);
+			CRes::sImageTarget.Draw(ret.mX - 30.0f, ret.mX + 30.0f, ret.mY - 30.0f, ret.mY + 30.0f, 0, 255, 255, 0);
 		}
 	}
 	//2Dの描画終了
@@ -238,7 +226,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 							mHp -= DAMAGE_BODY;	//ダメージを受ける(体)	
 							mIsInvincible = true; //無敵フラグを有効にする
 							new CEffect(((CXPlayer*)(o->mpParent))->GetSwordColPos(), 1.0f, 1.0f, "", 3, 5, 2); //エフェクトを生成する
-							SE_Attack_Hit_1.Play(); //効果音を再生する
+							CRes::sSEAttackHit1.Play(); //効果音を再生する
 							//スタン状態で無ければノックバック状態へ移行
 							if (mState != ESTUN && mState != EATTACK_1 && mState != EATTACK_2) {
 								mState = EKNOCKBACK;
@@ -250,7 +238,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 							mHp -= DAMAGE_HEAD;	//ダメージを受ける(頭)
 							mIsInvincible = true; //無敵フラグを有効にする
 							new CEffect(((CXPlayer*)(o->mpParent))->GetSwordColPos(), 1.5f, 1.5f, "", 3, 5, 2); //エフェクトを生成する
-							SE_Attack_Hit_1.Play(); //効果音を再生する
+							CRes::sSEAttackHit1.Play(); //効果音を再生する
 							//スタン状態で無ければノックバック状態へ移行
 							if (mState != ESTUN && mState != EATTACK_1 && mState != EATTACK_2) {
 								mState = EKNOCKBACK;

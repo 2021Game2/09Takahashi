@@ -3,8 +3,6 @@
 
 #include "CXCharacter.h"
 #include "CCollider.h"
-#include "CText.h"
-#include "CTexture.h"
 #include "CXEnemy.h"
 
 //プレイヤークラス
@@ -12,12 +10,6 @@ class CXPlayer : public CXCharacter
 {
 private:
 	CXEnemy* mpTargetEnemy;	//攻撃対象の敵を入れる
-
-	CText mFont; //フォント
-	CTexture mImageGauge;	//ゲージ画像
-	CTexture mImagePortion;	//回復薬画像
-	CTexture mImageTrap;	//罠画像
-	CTexture mImageNixsign; //禁止マーク画像
 
 	//コライダの宣言
 	CCollider mColSphereBody;	//体

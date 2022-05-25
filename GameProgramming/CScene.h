@@ -2,6 +2,7 @@
 #define CSCENE_H
 
 #include "CText.h"
+#include "CRes.h"
 
 /*
 シーンの基底クラス
@@ -16,7 +17,8 @@ public:
 	};
 	EScene mScene;
 
-	CText mFont; //フォント
+	CRes mResource; //リソース
+	//CText mFont; //フォント
 	//virtual 仮想関数
 	//ポリモーフィズムの実装
 	//=0 純粋仮想関数の設定
