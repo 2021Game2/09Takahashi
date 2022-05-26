@@ -66,7 +66,7 @@ CXPlayer::CXPlayer()
 	, mPortionQuantity(PORTION_QUANTITY)
 	, mKnockBackDir(0.0f, 0.0f, 0.0f)
 	, mAttackDir(0.0f, 0.0f, 0.0f)
-	,mpTargetEnemy(nullptr)
+	, mpTargetEnemy(nullptr)
 {
 	//タグを設定
 	mTag = EPLAYER;	//プレイヤー
@@ -102,8 +102,10 @@ void CXPlayer::Update()
 {
 	mAttackFlag_Once = false;
 
+	//アイテム選択処理
 	ItemSelect();
 
+	//状態を判別
 	switch (mState) {
 	case EIDLE:	//待機状態
 		Idle();	//待機処理を呼ぶ

@@ -14,15 +14,11 @@
 //
 #include "CMap2.h"
 //
-#include "CTrap.h"
-//
 #include "CTrapManager.h"
 //
 #include "CEffect.h"
 //
 #include "CEffect2.h"
-//
-#include "CSound.h"
 //
 #include "CInput.h"
 //
@@ -84,7 +80,7 @@ void CSceneGame::Init() {
 	//影の設定
 	float shadowColor[] = { 0.4f, 0.4f, 0.4f, 0.2f };	//影の色
 	float lightPos[] = { 50.0f, 160.0f, 50.0f };		//光源の位置
-	mShadowMap.Init(TEXWIDTH, TEXHEIGHT, Render, shadowColor, lightPos);
+	mShadowMap.Init(TEXWIDTH, TEXHEIGHT, Render, shadowColor, lightPos); //シャドウマップ初期化
 
 	//エフェクト画像読み込み
 	if (CEffect::sMaterial.mTexture.mId == 0) {

@@ -19,6 +19,7 @@ public:
 	static CModel sModelMap;		//マップモデル
 	static CModel sModelMap2;		//マップ2モデル
 	static CModel sModelTrap;		//罠モデル
+	static CModel sModelCylinder;	//シリンダーモデル
 
 	//画像系
 	static CText sFont;				//フォント画像

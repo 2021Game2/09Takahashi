@@ -8,7 +8,8 @@ bool CRes::sIsResLoad = false; //ファイル読み込み判断用
 
 #define MODEL_MAP "Resource\\sky.obj", "Resource\\sky.mtl"				//マップモデル
 #define MODEL_MAP2 "Resource\\Colosseum.obj", "Resource\\Colosseum.mtl" //マップ2モデル
-#define MODEL_TRAP "Resource\\Trap.obj", "Resource\\Trap.mtl"			//罠モデル
+#define MODEL_TRAP "Resource\\trap.obj", "Resource\\trap.mtl"			//罠モデル
+#define MODEL_CYLINDER "Resource\\Cylinder.obj", "Resource\\Cylinder.mtl" //シリンダーモデル
 
 //画像系
 #define FONT "Resource\\FontG.png"	//フォント画像
@@ -49,6 +50,7 @@ CModelX CRes::sModelXEnemy;		//敵モデル
 CModel CRes::sModelMap;			//マップモデル
 CModel CRes::sModelMap2;		//マップ2モデル
 CModel CRes::sModelTrap;		//罠モデル
+CModel CRes::sModelCylinder;	//シリンダーモデル
 
 //画像系
 CText CRes::sFont;				//フォント画像
@@ -88,10 +90,26 @@ CRes::CRes()
 		//モデル系
 		CRes::sModelXPlayer.Load(MODEL_PLAYER);		//プレイヤーモデル
 		CRes::sModelXEnemy.Load(MODEL_ENEMY);		//敵モデル
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//1:移動
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 1530, 1830, "idle1");//2:待機
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//3:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//4:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//5:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//6:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 440, 520, "attack1_1");//7:Attack1
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 520, 615, "attack2");//8:Attack2
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//9:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//10:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 1160, 1260, "death1");//11:ダウン
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 90, 160, "knockback");//12:ノックバック
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 1120, 1160, "stun");//13:スタン
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 170, 220, "dash");//14:ダッシュ
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 380, 430, "jump");//15:ジャンプ
 
 		CRes::sModelMap.Load(MODEL_MAP);			//マップモデル
 		CRes::sModelMap2.Load(MODEL_MAP2);			//マップ2モデル
 		CRes::sModelTrap.Load(MODEL_TRAP);			//罠モデル
+		CRes::sModelCylinder.Load(MODEL_CYLINDER);	//シリンダーモデル
 
 		//画像系
 		CRes::sFont.LoadTexture(FONT, FONT_ROW, FONT_COL);	//フォント画像

@@ -87,6 +87,7 @@ void CXEnemy::Update()
 	//プレイヤーまでの距離を求める
 	mPlayerDis = mPlayerPoint.Length();
 
+	//状態を判別
 	switch (mState) {
 	case EIDLE:	//待機状態
 		Idle();	//待機処理を呼ぶ
@@ -130,7 +131,7 @@ void CXEnemy::Update()
 	}
 
 	Check tCheck = CUtil::GetCheck2D(mMoveDir.mX, mMoveDir.mZ, 0, 0, mRot.mY);
-	float turnspeed = 0.5f;
+	float turnspeed = 0.5f;	//回転速度
 
 	mDot = tCheck.dot;
 
