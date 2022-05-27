@@ -5,6 +5,7 @@ bool CRes::sIsResLoad = false; //ファイル読み込み判断用
 //モデル系
 #define MODEL_PLAYER "Resource\\ラグナ.x"				//プレイヤーモデル
 #define MODEL_ENEMY "Resource\\knight\\knight_low.x"	//敵モデル
+#define MODEL_ENEMY2 "Resource\\felguard\\felguard-X.x"	//敵モデル2
 
 #define MODEL_MAP "Resource\\sky.obj", "Resource\\sky.mtl"				//マップモデル
 #define MODEL_MAP2 "Resource\\Colosseum.obj", "Resource\\Colosseum.mtl" //マップ2モデル
@@ -46,6 +47,7 @@ bool CRes::sIsResLoad = false; //ファイル読み込み判断用
 //モデル系
 CModelX CRes::sModelXPlayer;	//プレイヤーモデル
 CModelX CRes::sModelXEnemy;		//敵モデル
+CModelX CRes::sModelXEnemy2;	//敵モデル2
 
 CModel CRes::sModelMap;			//マップモデル
 CModel CRes::sModelMap2;		//マップ2モデル
@@ -105,6 +107,16 @@ CRes::CRes()
 		CRes::sModelXEnemy.SeparateAnimationSet(0, 1120, 1160, "stun");//13:スタン
 		CRes::sModelXEnemy.SeparateAnimationSet(0, 170, 220, "dash");//14:ダッシュ
 		CRes::sModelXEnemy.SeparateAnimationSet(0, 380, 430, "jump");//15:ジャンプ
+
+		CRes::sModelXEnemy2.Load(MODEL_ENEMY2);		//敵モデル2
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 0, 100, "Idle");//1:待機
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 150, 200, "Attack1");//2:攻撃1
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 200, 260, "AttackIdle");//3:攻撃待機
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 260, 350, "Attack2");//4:攻撃2
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 380, 420, "Walk");//5:移動
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 425, 460, "Run");//6:走る
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 470, 510, "Death1");//7:死亡1
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 520, 700, "Death2");//8:死亡2
 
 		CRes::sModelMap.Load(MODEL_MAP);			//マップモデル
 		CRes::sModelMap2.Load(MODEL_MAP2);			//マップ2モデル

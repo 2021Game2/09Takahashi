@@ -15,6 +15,7 @@ public:
 	//モデル系
 	static CModelX sModelXPlayer;	//プレイヤーモデル
 	static CModelX sModelXEnemy;	//敵モデル
+	static CModelX sModelXEnemy2;	//敵モデル2
 
 	static CModel sModelMap;		//マップモデル
 	static CModel sModelMap2;		//マップ2モデル
