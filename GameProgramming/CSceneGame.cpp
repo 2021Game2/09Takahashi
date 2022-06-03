@@ -37,6 +37,7 @@ CSceneGame::CSceneGame()
 	:mStartTime(0)
 	, mEndTime(0)
 	, mCountStart(false)
+	, mPhase(EPHASE_1)
 {
 }
 
@@ -62,7 +63,7 @@ void CSceneGame::Init() {
 	//敵管理生成
 	CEnemyManager::Generate();
 	//敵を生成する
-	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM);
+	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM, 1);
 
 	//マップ生成
 	CMap::Generate();
@@ -120,23 +121,49 @@ void CSceneGame::Update() {
 	CCollisionManager::Get()->Render();
 #endif
 
-	//時間計測開始
+	//一度だけ通る
 	if (mCountStart == false) {
-		mStartTime = clock();
+		mStartTime = clock(); //計測開始時刻を入れる
+		//カメラ初期化
+		Camera.Init();
 		mCountStart = true;
 	}
-	//全ての敵が死亡状態になるまで時間を計測する
-	if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
-		//クリア時間を記録
-		mClearTime = (float)(mEndTime - mStartTime) / 1000;
-		//Enterキーを押すとリザルトに移行する
-		if (CKey::Once(VK_RETURN)) {
-			mScene = ERESULT;
-			ShowCursor(true); //カーソル表示
+
+	//現在のフェーズを判断
+	switch (mPhase) {
+	case EPHASE_1: //フェーズ1
+		//敵が全て死亡状態になったとき
+		if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
+			CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM,0); //敵を生成
+			mPhase = EPHASE_2;	//フェーズ2へ移行
 		}
+		break;
+
+	case EPHASE_2: //フェーズ2
+		//敵が全て死亡状態になったとき
+		if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
+			CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM,0); //敵を生成
+			mPhase = EPHASE_FINAL;	//最終フェーズへ移行
+		}
+		break;
+
+	case EPHASE_FINAL: //最終フェーズ
+		//敵が全て死亡状態になったとき
+		if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
+			//Enterキーを押すとリザルトに移行する
+			if (CKey::Once(VK_RETURN)) {
+				//クリア時間を記録
+				mClearTime = (float)(mEndTime - mStartTime) / 1000;
+				mScene = ERESULT;
+				ShowCursor(true); //カーソル表示
+			}
+		}
+		break;
 	}
-	else {
-		mEndTime = clock();
+
+	//全ての敵が死亡状態でないとき
+	if (CEnemyManager::GetInstance()->mIsEnemyAllDeath() == false) {
+		mEndTime = clock();	//計測終了時間を入れる
 	}
 	
 	//プレイヤーが死亡状態のとき、Enterキーでタイトルに移行する
@@ -162,10 +189,25 @@ void CSceneGame::Update() {
 		CRes::sFont.DrawString("GAMEOVER", 120, 350, 40, 40);
 		CRes::sFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
 	}
-	//敵が全て死亡状態になるとGAMECLEARと表示する
-	else if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
-		CRes::sFont.DrawString("CLEAR", 230, 350, 40, 40);
-		CRes::sFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
+
+	//現在のフェーズを判断
+	switch (mPhase) {
+	case EPHASE_1: //フェーズ1
+		CRes::sFont.DrawString("PHASE1", 660, 550, 10, 10);
+		break;
+
+	case EPHASE_2: //フェーズ2
+		CRes::sFont.DrawString("PHASE2", 660, 550, 10, 10);
+		break;
+
+	case EPHASE_FINAL: //最終フェーズ
+		CRes::sFont.DrawString("FINALPHASE", 580, 550, 10, 10);
+		//敵が全て死亡状態のときCLEARとPUSHENTERを表示する
+		if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
+			CRes::sFont.DrawString("CLEAR", 230, 350, 40, 40);
+			CRes::sFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
+		}
+		break;
 	}
 
 	//2Dの描画終了

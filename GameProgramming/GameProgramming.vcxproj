@@ -129,6 +129,8 @@
     <ClCompile Include="CVector.cpp" />
     <ClCompile Include="CXCharacter.cpp" />
     <ClCompile Include="CXEnemy.cpp" />
+    <ClCompile Include="CXEnemy1.cpp" />
+    <ClCompile Include="CXEnemy2.cpp" />
     <ClCompile Include="CXPlayer.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -180,6 +182,8 @@
     <ClInclude Include="CVertex.h" />
     <ClInclude Include="CXCharacter.h" />
     <ClInclude Include="CXEnemy.h" />
+    <ClInclude Include="CXEnemy1.h" />
+    <ClInclude Include="CXEnemy2.h" />
     <ClInclude Include="CXPlayer.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>

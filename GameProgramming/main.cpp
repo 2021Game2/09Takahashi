@@ -144,6 +144,7 @@ int main(void)
 		int state = glfwGetKey(window, GLFW_KEY_ESCAPE);
 		if (state == GLFW_PRESS)
 		{
+			break;
 			//ウィンドウ破棄
 			glfwDestroyWindow(window);
 		}

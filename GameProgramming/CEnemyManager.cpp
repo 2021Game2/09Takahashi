@@ -2,6 +2,8 @@
 #include "CRes.h"
 #include "CXPlayer.h"
 #include "CKey.h"
+#include "CXEnemy1.h"
+#include "CXEnemy2.h"
 
 #define ATTACK_NUM_MAX 1 //同時に攻撃できる敵の数
 
@@ -39,7 +41,7 @@ CEnemyManager* CEnemyManager::GetInstance()
 	return mInstance;
 }
 
-void CEnemyManager::EnemyGenerate(int num)
+void CEnemyManager::EnemyGenerate(int num,int type)
 {
 	for (int i = 0; i < num; i++) {
 		CVector tPos;
@@ -47,10 +49,26 @@ void CEnemyManager::EnemyGenerate(int num)
 		tPos.mX = mEnemyStartPos[i].mX;
 		tPos.mZ = mEnemyStartPos[i].mZ;
 
-		CXEnemy* tmp = new CXEnemy;
-		tmp->SetPos(tPos);
-		tmp->Update();
-		mEnemyList.push_back(tmp);
+		//生成する敵の種類を判別
+		switch (type) {
+		case CXEnemy::ETYPE_1:
+		{
+			CXEnemy1* tmp = new CXEnemy1;
+			tmp->SetPos(tPos);
+			tmp->Update();
+			mEnemyList.push_back(tmp);
+		}
+			break;
+
+		case CXEnemy::ETYPE_2:
+		{
+			CXEnemy2* tmp = new CXEnemy2;
+			tmp->SetPos(tPos);
+			tmp->Update();
+			mEnemyList.push_back(tmp);
+		}
+			break;
+		}
 	}
 }
 
@@ -62,14 +80,13 @@ CXEnemy* CEnemyManager::GetNearEnemy()
 void CEnemyManager::Update()
 {
 	AIUpdate();
-	
+
 #ifdef _DEBUG
-	//テスト用、敵が一体生成される
+	//テスト用、敵を一体生成する
 	if (CKey::Once('P')) {
-		EnemyGenerate(1);
+		EnemyGenerate(1, 1);
 	}
 #endif
-
 }
 
 void CEnemyManager::Render()

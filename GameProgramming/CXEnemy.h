@@ -4,17 +4,10 @@
 #include "CXCharacter.h"
 #include "CCollider.h"
 
-//エネミー(敵)クラス
+//エネミー(敵)のベースクラス
 class CXEnemy : public CXCharacter
 {
-private:
-	//コライダの宣言
-	CCollider mColSphereBody;	//体
-	CCollider mColSphereHead;	//頭
-	CCollider mColSphereSword0;	//剣
-	CCollider mColSphereSword1;	//剣
-	CCollider mColSphereSword2;	//剣
-
+protected:
 	int mHp;		//体力
 
 	int mStunTime;	//罠にかかった時のスタンする時間
@@ -33,23 +26,23 @@ private:
 
 	bool mIsInvincible;	//無敵フラグ、プレイヤーの攻撃がヒットするとtrueを返す
 
-	void Idle();		//待機処理
-	void AutoMove();	//移動処理
-	void Chase();		//追跡処理
-	void Attack_Idle();	//攻撃待機処理
-	void Attack_1();	//攻撃1処理
-	void Attack_2();	//攻撃2処理
-	void KnockBack();	//ノックバック処理
-	void Death();		//死亡処理
-	void Stun();		//スタン処理
-	void Avoid();		//回避処理
+	virtual void Idle();		//待機処理
+	virtual void AutoMove();	//移動処理
+	virtual void Chase();		//追跡処理
+	virtual void Attack_Idle();	//攻撃待機処理
+	virtual void Attack_1();	//攻撃1処理
+	virtual void Attack_2();	//攻撃2処理
+	virtual void KnockBack();	//ノックバック処理
+	virtual void Death();		//死亡処理
+	virtual void Stun();		//スタン処理
+	virtual void Avoid();		//回避処理
 public:
 
 	CXEnemy();
 	/*
 	初期化(Xモデルクラスのポインタ)
 	*/
-	void Init(CModelX* model);
+	virtual void Init(CModelX* model);
 
 	//衝突処理
 	//m:自分のコライダ o:相手のコライダ
@@ -75,6 +68,13 @@ public:
 	};
 	EEnemyState mState;	//状態
 
+	//敵の種類
+	enum EEnemyType {
+		ETYPE_1 = 0,	//タイプ1
+		ETYPE_2			//タイプ2
+	};
+	EEnemyType mEnemyType; //敵の種類判断用
+
 	void SetPos(CVector hpos);	//位置を設定
 	CVector GetPos();			//位置を取得
 
@@ -84,6 +84,7 @@ public:
 
 	bool mIsAttack();	//攻撃状態の時にtrueを返す
 	bool mIsDeath();	//死亡状態の時にtrueを返す
+	bool mIsKnockBack();//ノックバックが可能なときtrueを返す
 };
 
 #endif

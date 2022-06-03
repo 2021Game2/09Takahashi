@@ -90,33 +90,35 @@ CRes::CRes()
 	if (sIsResLoad == false) {
 		sIsResLoad = true;
 		//モデル系
-		CRes::sModelXPlayer.Load(MODEL_PLAYER);		//プレイヤーモデル
-		CRes::sModelXEnemy.Load(MODEL_ENEMY);		//敵モデル
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//1:移動
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 1530, 1830, "idle1");//2:待機
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//3:ダミー
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//4:ダミー
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//5:ダミー
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//6:ダミー
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 440, 520, "attack1_1");//7:Attack1
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 520, 615, "attack2");//8:Attack2
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//9:ダミー
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");//10:ダミー
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 1160, 1260, "death1");//11:ダウン
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 90, 160, "knockback");//12:ノックバック
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 1120, 1160, "stun");//13:スタン
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 170, 220, "dash");//14:ダッシュ
-		CRes::sModelXEnemy.SeparateAnimationSet(0, 380, 430, "jump");//15:ジャンプ
+		CRes::sModelXPlayer.Load(MODEL_PLAYER); //プレイヤーモデル
 
-		CRes::sModelXEnemy2.Load(MODEL_ENEMY2);		//敵モデル2
-		CRes::sModelXEnemy2.SeparateAnimationSet(0, 0, 100, "Idle");//1:待機
-		CRes::sModelXEnemy2.SeparateAnimationSet(0, 150, 200, "Attack1");//2:攻撃1
+		CRes::sModelXEnemy.Load(MODEL_ENEMY); //敵モデル
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");			//1:移動
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 1530, 1830, "idle1");	//2:待機
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");			//3:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");			//4:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");			//5:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");			//6:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 440, 520, "attack1_1");	//7:Attack1
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 520, 615, "attack2");	//8:Attack2
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");			//9:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 10, 80, "walk");			//10:ダミー
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 1160, 1260, "death1");	//11:ダウン
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 90, 160, "knockback");	//12:ノックバック
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 1120, 1160, "stun");		//13:スタン
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 170, 220, "dash");		//14:ダッシュ
+		CRes::sModelXEnemy.SeparateAnimationSet(0, 380, 430, "jump");		//15:ジャンプ
+
+		CRes::sModelXEnemy2.Load(MODEL_ENEMY2); //敵モデル2
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 0, 100, "Idle");		//1:待機
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 150, 200, "Attack1");	//2:攻撃1
 		CRes::sModelXEnemy2.SeparateAnimationSet(0, 200, 260, "AttackIdle");//3:攻撃待機
-		CRes::sModelXEnemy2.SeparateAnimationSet(0, 260, 350, "Attack2");//4:攻撃2
-		CRes::sModelXEnemy2.SeparateAnimationSet(0, 380, 420, "Walk");//5:移動
-		CRes::sModelXEnemy2.SeparateAnimationSet(0, 425, 460, "Run");//6:走る
-		CRes::sModelXEnemy2.SeparateAnimationSet(0, 470, 510, "Death1");//7:死亡1
-		CRes::sModelXEnemy2.SeparateAnimationSet(0, 520, 700, "Death2");//8:死亡2
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 260, 350, "Attack2");	//4:攻撃2
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 380, 420, "Walk");		//5:移動
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 425, 460, "Run");		//6:走る
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 470, 510, "Death1");	//7:死亡
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 520, 558, "KnockBack");	//8:ノックバック
+		CRes::sModelXEnemy2.SeparateAnimationSet(0, 520, 562, "Stun");		//9:スタン
 
 		CRes::sModelMap.Load(MODEL_MAP);			//マップモデル
 		CRes::sModelMap2.Load(MODEL_MAP2);			//マップ2モデル

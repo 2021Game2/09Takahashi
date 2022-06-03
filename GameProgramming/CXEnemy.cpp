@@ -10,7 +10,7 @@
 #include "CRes.h"
 #include "CEnemyManager.h"
 
-#define HP_MAX 1			//体力最大値
+#define HP_MAX 100			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
 #define ATTACK_DIS 4.0f		//攻撃可能になる距離
@@ -25,12 +25,7 @@
 #define CHASE_RESTART_TIME 60 //追跡を再開するまでの時間
 
 CXEnemy::CXEnemy()
-	: mColSphereBody(this, nullptr, CVector(0.5f, -1.0f, 0.0f), 1.2f)
-	, mColSphereHead(this, nullptr, CVector(0.0f, 1.f, 0.0f), 1.2f)
-	, mColSphereSword0(this, nullptr, CVector(0.7f, 3.5f, -0.2f), 0.8f)
-	, mColSphereSword1(this, nullptr, CVector(0.5f, 2.5f, -0.2f), 0.8f)
-	, mColSphereSword2(this, nullptr, CVector(0.3f, 1.5f, -0.2f), 0.8f)
-	, mHp(HP_MAX)
+	: mHp(HP_MAX)
 	, mPoint(0.0f, 0.0f, 0.0f)
 	, mPlayerPoint(0.0f, 0.0f, 0.0f)
 	, mPlayerDis(0.0f)
@@ -43,18 +38,12 @@ CXEnemy::CXEnemy()
 	, mIsTarget(false)
 	, mIsInvincible(false)
 	, mChaseRestartCount(0)
+	, mEnemyType(ETYPE_1)
 {
 	Init(&CRes::sModelXEnemy);
 
 	//タグを設定
 	mTag = EENEMY;	//敵
-
-	//コライダのタグを設定
-	mColSphereBody.mTag = CCollider::EBODY;		//本体
-	mColSphereHead.mTag = CCollider::EHEAD;		//頭
-	mColSphereSword0.mTag = CCollider::ESWORD;	//剣
-	mColSphereSword1.mTag = CCollider::ESWORD;	//剣
-	mColSphereSword2.mTag = CCollider::ESWORD;	//剣
 
 	//初期状態を設定
 	mState = EIDLE;	//待機状態
@@ -65,14 +54,6 @@ CXEnemy::CXEnemy()
 void CXEnemy::Init(CModelX* model)
 {
 	CXCharacter::Init(model);
-	//合成行列の設定
-	mColSphereBody.mpMatrix = &mpCombinedMatrix[1];
-	//頭
-	mColSphereHead.mpMatrix = &mpCombinedMatrix[1];
-	//剣
-	mColSphereSword0.mpMatrix = &mpCombinedMatrix[26];
-	mColSphereSword1.mpMatrix = &mpCombinedMatrix[26];
-	mColSphereSword2.mpMatrix = &mpCombinedMatrix[26];
 }
 
 void CXEnemy::Update()
@@ -130,20 +111,47 @@ void CXEnemy::Update()
 		break;
 	}
 
-	Check tCheck = CUtil::GetCheck2D(mMoveDir.mX, mMoveDir.mZ, 0, 0, mRot.mY);
-	float turnspeed = 0.5f;	//回転速度
+	//敵の種類がタイプ1のとき
+	if (mEnemyType == ETYPE_1) {
+		Check tCheck = CUtil::GetCheck2D(mMoveDir.mX, mMoveDir.mZ, 0, 0, mRot.mY);
+		float turnspeed = 0.5f;	//回転速度
 
-	mDot = tCheck.dot;
+		mDot = tCheck.dot;
 
-	//急な振り返りを抑制
-	if (tCheck.turn > 1.5f) tCheck.turn = 1.5f;
+		//急な振り返りを抑制
+		if (tCheck.turn > 1.5f) tCheck.turn = 1.5f;
 
-	//移動方向へキャラを向かせる
-	if (tCheck.cross > 0.0f) {
-		mRot.mY += tCheck.turn * turnspeed;
+		//移動方向へキャラを向かせる
+		if (tCheck.cross > 0.0f) {
+			mRot.mY += tCheck.turn * turnspeed;
+		}
+		if (tCheck.cross < 0.0f) {
+			mRot.mY -= tCheck.turn * turnspeed;
+		}
+		//表示が180度反転してるので調整
+		CVector adjust_rot = mRot;
+		adjust_rot.mY += M_PI;
+		mRotation = (adjust_rot) * (180.0f / M_PI);
 	}
-	if (tCheck.cross < 0.0f) {
-		mRot.mY -= tCheck.turn * turnspeed;
+	//それ以外
+	else {
+		//普通に3次元ベクトル計算で算出したほうが正確だが計算量を懸念する場合は擬似計算で軽量化
+		//擬似ベクトル計算
+		Check tCheck = CUtil::GetCheck2D(mMoveDir.mX, mMoveDir.mZ, 0, 0, mRotation.mY * (M_PI / 180.0f));
+
+		//回転速度　degreeに直す
+		float Turnspeed = (180.0f / M_PI) * 0.5f;
+
+		//急な振り返りを抑制
+		if (tCheck.turn > 1.5f) tCheck.turn = 1.5f;
+
+		//移動方向へキャラを向かせる
+		if (tCheck.cross > 0.0f) {
+			mRotation.mY += tCheck.turn * Turnspeed;
+		}
+		if (tCheck.cross < 0.0f) {
+			mRotation.mY -= tCheck.turn * Turnspeed;
+		}
 	}
 
 	//移動する
@@ -153,12 +161,6 @@ void CXEnemy::Update()
 	mMoveDir = CVector(0.0f, 0.0f, 0.0f);
 	//移動スピードリセット
 	mSpeed = 0.0f;
-
-	//表示が180度反転してるので調整
-	CVector adjust_rot = mRot;
-	adjust_rot.mY += M_PI;
-	mRotation = (adjust_rot) * (180.0f / M_PI);
-
 
 	//体力が0になると死亡状態へ移行
 	if (mHp <= 0) {
@@ -178,7 +180,17 @@ void CXEnemy::Render2D()
 	CUtil::Start2D(0, 800, 0, 600);
 
 	CVector ret;
-	CVector tpos = mpCombinedMatrix[6].GetPos();
+	CVector tpos;
+	//敵の種類を判断
+	switch (mEnemyType) {
+	case ETYPE_1:
+		tpos = mpCombinedMatrix[6].GetPos();
+		break;
+
+	case ETYPE_2:
+		tpos = mpCombinedMatrix[30].GetPos();
+		break;
+	}
 	Camera.WorldToScreen(&ret, tpos);
 
 	float HpRate = (float)mHp / (float)HP_MAX; //体力最大値に対する、現在の体力の割合
@@ -205,6 +217,9 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 	//自分が死亡状態の時はリターン
 	if (mState == EDEATH)return;
 
+	//相手の親が自分の時はリターン
+	if (o->mpParent == this)return;
+
 	//自分と相手が球コライダの時
 	if (m->mType == CCollider::ESPHERE && o->mType == CCollider::ESPHERE)
 	{
@@ -228,9 +243,9 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 							mIsInvincible = true; //無敵フラグを有効にする
 							new CEffect(((CXPlayer*)(o->mpParent))->GetSwordColPos(), 1.0f, 1.0f, "", 3, 5, 2); //エフェクトを生成する
 							CRes::sSEAttackHit1.Play(); //効果音を再生する
-							//スタン状態で無ければノックバック状態へ移行
-							if (mState != ESTUN && mState != EATTACK_1 && mState != EATTACK_2) {
-								mState = EKNOCKBACK;
+							//ノックバックが可能なとき
+							if (mIsKnockBack()) {
+								mState = EKNOCKBACK; //ノックバック状態へ移行
 								mHit = false; //自分の攻撃のヒット判定を終了させる
 							}
 							break;
@@ -240,9 +255,9 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 							mIsInvincible = true; //無敵フラグを有効にする
 							new CEffect(((CXPlayer*)(o->mpParent))->GetSwordColPos(), 1.5f, 1.5f, "", 3, 5, 2); //エフェクトを生成する
 							CRes::sSEAttackHit1.Play(); //効果音を再生する
-							//スタン状態で無ければノックバック状態へ移行
-							if (mState != ESTUN && mState != EATTACK_1 && mState != EATTACK_2) {
-								mState = EKNOCKBACK;
+							//ノックバックが可能なとき
+							if (mIsKnockBack()) {
+								mState = EKNOCKBACK; //ノックバック状態へ移行
 								mHit = false; //自分の攻撃のヒット判定を終了させる
 							}
 							break;
@@ -327,11 +342,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 
 void CXEnemy::TaskCollision()
 {
-	CCollisionManager::Get()->Collision(&mColSphereBody, COLLISIONRANGE);
-	CCollisionManager::Get()->Collision(&mColSphereHead, COLLISIONRANGE);
-	CCollisionManager::Get()->Collision(&mColSphereSword0, COLLISIONRANGE);
-	CCollisionManager::Get()->Collision(&mColSphereSword1, COLLISIONRANGE);
-	CCollisionManager::Get()->Collision(&mColSphereSword2, COLLISIONRANGE);
+
 }
 
 //待機処理
@@ -353,8 +364,9 @@ void CXEnemy::Idle()
 	if (random == 0) {
 		//目標地点を設定
 		mPoint = mPosition;
-		mPoint.mX += -15.0f + (float)(rand() % 30);
-		mPoint.mZ += -15.0f + (float)(rand() % 30);
+		//mPointのmXとmZの値へ同時に0.0fが入ると敵が消えるので、最後に値を足している
+		mPoint.mX += -15.0f + (float)(rand() % 30) + 0.001f;
+		mPoint.mZ += -15.0f + (float)(rand() % 30) + 0.001f;
 		//移動状態へ移行する
 		mState = EAUTOMOVE;
 	}
@@ -426,6 +438,9 @@ void CXEnemy::Chase()
 //攻撃待機処理
 void CXEnemy::Attack_Idle()
 {
+	//プレイヤーが死亡状態だったとき待機状態に移行する
+	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH)mState = EIDLE;
+
 	//待機アニメーション
 	ChangeAnimation(2, true, 200);
 
@@ -640,6 +655,13 @@ CVector CXEnemy::GetPos()
 bool CXEnemy::mIsDeath()
 {
 	return (mState == EDEATH);
+}
+
+//ノックバックが可能なときにtrueを返す
+bool CXEnemy::mIsKnockBack()
+{
+	//スタン状態もしくは攻撃状態でなければtrue
+	return (mState != ESTUN && mState != EATTACK_1 && mState != EATTACK_2);
 }
 
 //攻撃状態のときtrueを返す

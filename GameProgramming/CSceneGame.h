@@ -15,6 +15,14 @@ private:
 	//シャドウマップのインスタンス
 	CShadowMap mShadowMap;
 
+	//フェーズ
+	enum EPhase {
+		EPHASE_1 = 0,
+		EPHASE_2,
+		EPHASE_FINAL,
+	};
+	EPhase mPhase; //フェーズ判断用
+
 public:
 	CSceneGame();
 	~CSceneGame();
