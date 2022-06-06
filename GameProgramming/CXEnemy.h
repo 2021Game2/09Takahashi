@@ -9,6 +9,7 @@ class CXEnemy : public CXCharacter
 {
 protected:
 	int mHp;		//体力
+	int mHpMax;
 
 	int mStunTime;	//罠にかかった時のスタンする時間
 
@@ -77,6 +78,8 @@ public:
 
 	void SetPos(CVector hpos);	//位置を設定
 	CVector GetPos();			//位置を取得
+
+	void SetHp(int hp);			//体力を設定
 
 	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
 

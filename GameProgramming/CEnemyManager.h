@@ -3,8 +3,7 @@
 
 #define ENEMY_GENERATE_NUM 3 //敵の生成数
 
-#define ENEMY_START_POS CVector(10.0f, 0.0f, 0.0f),CVector(-10.0f, 0.0f, 0.0f),CVector(0.0f, 0.0f, -10.0f) //敵の初期座標1
-
+#define ENEMY_START_POS CVector(0.0f, 0.0f, -10.0f),CVector(10.0f, 0.0f, 0.0f),CVector(-10.0f, 0.0f, 0.0f) //敵の初期座標1
 
 //敵を管理するクラス
 class CEnemyManager
@@ -29,7 +28,7 @@ public:
 	static void Release(); //破棄
 	static CEnemyManager* GetInstance(); //インスタンス取得
 
-	void EnemyGenerate(int num,int type); //敵生成、引数で生成数と敵の種類を指定する
+	void EnemyGenerate(int num, int type, int hp); //敵生成、引数で生成数と敵の種類と初期体力(省略可)を指定する
 	CXEnemy* GetNearEnemy(); //一番近い敵を取得する
 
 	void Update();

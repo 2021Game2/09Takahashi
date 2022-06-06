@@ -41,7 +41,9 @@ CEnemyManager* CEnemyManager::GetInstance()
 	return mInstance;
 }
 
-void CEnemyManager::EnemyGenerate(int num,int type)
+//敵の生成処理
+//引数で生成数、種類、体力を設定する
+void CEnemyManager::EnemyGenerate(int num, int type, int hp)
 {
 	for (int i = 0; i < num; i++) {
 		CVector tPos;
@@ -51,23 +53,25 @@ void CEnemyManager::EnemyGenerate(int num,int type)
 
 		//生成する敵の種類を判別
 		switch (type) {
-		case CXEnemy::ETYPE_1:
+		case CXEnemy::ETYPE_1:	//タイプ1
 		{
 			CXEnemy1* tmp = new CXEnemy1;
-			tmp->SetPos(tPos);
-			tmp->Update();
-			mEnemyList.push_back(tmp);
+			tmp->SetPos(tPos);	//座標設定
+			tmp->SetHp(hp);		//体力を設定
+			tmp->Update();		//更新
+			mEnemyList.push_back(tmp);	//リストに追加
 		}
-			break;
+		break;
 
-		case CXEnemy::ETYPE_2:
+		case CXEnemy::ETYPE_2:	//タイプ2
 		{
 			CXEnemy2* tmp = new CXEnemy2;
-			tmp->SetPos(tPos);
-			tmp->Update();
-			mEnemyList.push_back(tmp);
+			tmp->SetPos(tPos);	//座標設定
+			tmp->SetHp(hp);		//体力を設定
+			tmp->Update();		//更新
+			mEnemyList.push_back(tmp);	//リストに追加
 		}
-			break;
+		break;
 		}
 	}
 }
@@ -84,7 +88,7 @@ void CEnemyManager::Update()
 #ifdef _DEBUG
 	//テスト用、敵を一体生成する
 	if (CKey::Once('P')) {
-		EnemyGenerate(1, 1);
+		EnemyGenerate(1, 1, 10);
 	}
 #endif
 }

@@ -63,7 +63,7 @@ void CSceneGame::Init() {
 	//敵管理生成
 	CEnemyManager::Generate();
 	//敵を生成する
-	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM, 1);
+	CEnemyManager::GetInstance()->EnemyGenerate(1, 1, 100);
 
 	//マップ生成
 	CMap::Generate();
@@ -134,7 +134,7 @@ void CSceneGame::Update() {
 	case EPHASE_1: //フェーズ1
 		//敵が全て死亡状態になったとき
 		if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
-			CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM,0); //敵を生成
+			CEnemyManager::GetInstance()->EnemyGenerate(2, 0, 100); //敵を生成
 			mPhase = EPHASE_2;	//フェーズ2へ移行
 		}
 		break;
@@ -142,7 +142,7 @@ void CSceneGame::Update() {
 	case EPHASE_2: //フェーズ2
 		//敵が全て死亡状態になったとき
 		if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
-			CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM,0); //敵を生成
+			CEnemyManager::GetInstance()->EnemyGenerate(3, 0, 200); //敵を生成
 			mPhase = EPHASE_FINAL;	//最終フェーズへ移行
 		}
 		break;

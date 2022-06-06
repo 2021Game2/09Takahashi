@@ -10,7 +10,7 @@
 #include "CRes.h"
 #include "CEnemyManager.h"
 
-#define HP_MAX 100			//体力最大値
+//#define HP_MAX 150			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
 #define ATTACK_DIS 4.0f		//攻撃可能になる距離
@@ -25,7 +25,7 @@
 #define CHASE_RESTART_TIME 60 //追跡を再開するまでの時間
 
 CXEnemy::CXEnemy()
-	: mHp(HP_MAX)
+	: mHp(0)
 	, mPoint(0.0f, 0.0f, 0.0f)
 	, mPlayerPoint(0.0f, 0.0f, 0.0f)
 	, mPlayerDis(0.0f)
@@ -193,7 +193,7 @@ void CXEnemy::Render2D()
 	}
 	Camera.WorldToScreen(&ret, tpos);
 
-	float HpRate = (float)mHp / (float)HP_MAX; //体力最大値に対する、現在の体力の割合
+	float HpRate = (float)mHp / (float)mHpMax; //体力最大値に対する、現在の体力の割合
 	float HpGaugeWid = GAUGE_WID_MAX * HpRate; //体力ゲージの幅
 	
 	//画面外の時に表示しない
@@ -649,6 +649,13 @@ void CXEnemy::SetPos(CVector hpos)
 CVector CXEnemy::GetPos()
 {
 	return mPosition;
+}
+
+//体力を設定する
+void CXEnemy::SetHp(int hp)
+{
+	mHp = hp;		//体力の初期値を設定
+	mHpMax = mHp;	//体力の初期値を体力の最大値とする
 }
 
 //死亡状態のときtrueを返す
