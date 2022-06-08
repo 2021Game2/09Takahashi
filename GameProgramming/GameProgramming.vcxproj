@@ -111,6 +111,7 @@
     <ClCompile Include="CPlayer.cpp" />
     <ClCompile Include="CRes.cpp" />
     <ClCompile Include="CSceneGame.cpp" />
+    <ClCompile Include="CSceneGame2.cpp" />
     <ClCompile Include="CSceneManager.cpp" />
     <ClCompile Include="CSceneRecord.cpp" />
     <ClCompile Include="CSceneResult.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="CRes.h" />
     <ClInclude Include="CScene.h" />
     <ClInclude Include="CSceneGame.h" />
+    <ClInclude Include="CSceneGame2.h" />
     <ClInclude Include="CSceneManager.h" />
     <ClInclude Include="CSceneRecord.h" />
     <ClInclude Include="CSceneResult.h" />

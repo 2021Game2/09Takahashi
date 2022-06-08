@@ -10,6 +10,8 @@ CTexture::CTexture()
 	, mpName(nullptr)
 	, mRow(1)
 	, mCol(1)
+	, mHeader()
+	, mAlpha(1.0f)
 {
 }
 
@@ -37,6 +39,7 @@ void CTexture::Destory() {
 }
 
 #include <assert.h>
+#include "CKey.h"
 
 void CTexture::Load(const char* filename) {
 
@@ -179,10 +182,17 @@ void CTexture::DrawImage(float left, float right, float bottom, float top, float
 	//テクスチャを指定
 	glBindTexture(GL_TEXTURE_2D, mId);
 
-	float diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	if (mAlpha <= 0.0f) {
+		mAlpha = 0.0f;
+	}
+	else if (mAlpha >= 1.0f) {
+		mAlpha = 1.0f;
+	}
+
+	float diffuse[] = { 1.0f, 1.0f, 1.0f, mAlpha };
 	//色の設定
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-//	glColor4fv(diffuse);
+	//glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+	glColor4fv(diffuse);
 
 	glBegin(GL_TRIANGLES);
 	glTexCoord2f(tleft,  ttop);

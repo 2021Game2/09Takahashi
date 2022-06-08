@@ -43,13 +43,13 @@ CEnemyManager* CEnemyManager::GetInstance()
 
 //敵の生成処理
 //引数で生成数、種類、体力を設定する
-void CEnemyManager::EnemyGenerate(int num, int type, int hp)
+void CEnemyManager::EnemyGenerate(int num, int type, int hp,CVector pos[])
 {
 	for (int i = 0; i < num; i++) {
 		CVector tPos;
 		tPos.Set(0, 0, 0);
-		tPos.mX = mEnemyStartPos[i].mX;
-		tPos.mZ = mEnemyStartPos[i].mZ;
+		tPos.mX = pos[i].mX;
+		tPos.mZ = pos[i].mZ;
 
 		//生成する敵の種類を判別
 		switch (type) {
@@ -88,7 +88,7 @@ void CEnemyManager::Update()
 #ifdef _DEBUG
 	//テスト用、敵を一体生成する
 	if (CKey::Once('P')) {
-		EnemyGenerate(1, 1, 10);
+		//EnemyGenerate(1, 1, 10);
 	}
 #endif
 }

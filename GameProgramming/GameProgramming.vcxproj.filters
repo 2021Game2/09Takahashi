@@ -162,6 +162,9 @@
     <ClCompile Include="CXEnemy2.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="CSceneGame2.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CSceneGame.h">
@@ -315,6 +318,9 @@
       <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="CXEnemy2.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="CSceneGame2.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
   </ItemGroup>

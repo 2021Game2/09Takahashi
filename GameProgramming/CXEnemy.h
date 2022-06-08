@@ -9,7 +9,7 @@ class CXEnemy : public CXCharacter
 {
 protected:
 	int mHp;		//‘Ì—Í
-	int mHpMax;
+	int mHpMax;		//‘Ì—ÍÅ‘å’l
 
 	int mStunTime;	//ã©‚É‚©‚©‚Á‚½‚ÌƒXƒ^ƒ“‚·‚éŠÔ
 

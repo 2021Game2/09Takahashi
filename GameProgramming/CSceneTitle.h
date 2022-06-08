@@ -12,6 +12,18 @@ private:
 	};
 	ESelect mSelect; //選択している場所の判断用
 
+	//フェード
+	enum EFade {
+		EFADE_STOP = 0,	//フェード停止
+		EFADE_IN,		//フェードイン
+		EFADE_OUT		//フェードアウト
+	};
+	EFade mFade; //フェード判断用
+
+	EScene mSceneTransitionKeep; //シーンの遷移先を保存する
+
+	bool mIsButtonPush; //ボタンを押すとtrue
+
 public:
 	CSceneTitle();
 

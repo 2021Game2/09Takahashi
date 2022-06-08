@@ -12,6 +12,7 @@ public:
 	enum EScene {
 		ETITLE = 0,	//タイトル
 		EGAME,		//ゲーム
+		EGAME2,		//ゲーム2
 		ERESULT,	//リザルト
 		ERECORD,	//レコード
 	};

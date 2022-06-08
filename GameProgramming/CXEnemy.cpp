@@ -10,7 +10,6 @@
 #include "CRes.h"
 #include "CEnemyManager.h"
 
-//#define HP_MAX 150			//体力最大値
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
 #define ATTACK_DIS 4.0f		//攻撃可能になる距離

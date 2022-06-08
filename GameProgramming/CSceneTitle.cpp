@@ -9,12 +9,16 @@
 
 CSceneTitle::CSceneTitle()
 	:mSelect(EBACKGROUND)
+	,mFade(EFADE_STOP)
+	,mSceneTransitionKeep(ETITLE)
+	,mIsButtonPush(false)
 {
 }
 
 void CSceneTitle::Init()
 {
 	mScene = ETITLE; //シーンタイトル
+	mFade = EFADE_IN;
 }
 
 void CSceneTitle::Update()
@@ -40,22 +44,61 @@ void CSceneTitle::Update()
 
 	//左クリックしたとき
 	if (CKey::Once(VK_LBUTTON)) {
+		//選んだボタンを判断する
 		switch (mSelect) {
-		case EGAMESTART:
-			mScene = EGAME;
-			/*
-			ゲームスタート時の効果音を追加する
-			*/
+		case EGAMESTART: //ゲームスタート
+			//ボタンを押していないとき、フェードイン中ではないとき
+			if (mIsButtonPush == false && mFade != EFADE_IN) {
+				mIsButtonPush = true;	//ボタンを押した
+				mFade = EFADE_OUT;		//フェードアウト開始
+				mSceneTransitionKeep = EGAME; //シーンの遷移先を保存
+				/*
+				ゲームスタート時の効果音を追加する
+				*/
+			}
 			break;
 
-		case CSceneTitle::ERECORD:
-			mScene = CScene::ERECORD; //シーンをレコードに移行
-			CRes::sSETransitionRecord.Play(); //効果音を再生する
+		case CSceneTitle::ERECORD: //レコード画面
+			//ボタンを押していないとき、フェードイン中ではないとき
+			if (mIsButtonPush == false && mFade != EFADE_IN) {
+				mIsButtonPush = true;	//ボタンを押した
+				mFade = EFADE_OUT;		//フェードアウト開始
+				mSceneTransitionKeep = CScene::ERECORD; //シーンの遷移先を保存
+				CRes::sSETransitionRecord.Play(); //効果音を再生する
+			}
 			break;
 
 		default:
 			break;
 		}
+	}
+
+	//フェードを判断
+	switch (mFade) {
+	case EFADE_STOP: //フェード停止
+		break;
+
+	case EFADE_IN: //フェードイン
+		if (CRes::sImageBlack.mAlpha > 0.0f) {
+			//黒い画像のアルファ値を下げる
+			CRes::sImageBlack.mAlpha -= 0.02f;
+		}
+		else if(CRes::sImageBlack.mAlpha == 0.0f){
+			//フェードインを停止する
+			mFade = EFADE_STOP;
+		}
+		break;
+
+	case EFADE_OUT: //フェードアウト
+		if (CRes::sImageBlack.mAlpha < 1.0f) {
+			//黒い画像のアルファ値を上げる
+			CRes::sImageBlack.mAlpha += 0.02f;
+		}
+		else if (CRes::sImageBlack.mAlpha == 1.0f) {
+			//保存された遷移先へシーンを移行する
+			mScene = mSceneTransitionKeep;
+		}
+		break;
 	}
 
 	CUtil::Start2D(0, 800, 0, 600);
@@ -80,6 +123,9 @@ void CSceneTitle::Update()
 	CRes::sFont.DrawString("GAMESTART", 240, 220, 20, 20);
 
 	CRes::sFont.DrawString("RECORD", 300, 120, 20, 20);
+
+	//黒い画像を表示
+	CRes::sImageBlack.Draw(0, 800, 0, 600, 1, 1, 1, 1);
 
 	CUtil::End2D();
 }

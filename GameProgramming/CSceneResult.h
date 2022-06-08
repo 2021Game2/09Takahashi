@@ -7,6 +7,18 @@ private:
 	int mNewRecord;	//新記録の順位を記録
 
 	int count; //文字点滅用カウント
+
+	//フェード
+	enum EFade {
+		EFADE_STOP = 0,	//フェード停止
+		EFADE_IN,		//フェードイン
+		EFADE_OUT		//フェードアウト
+	};
+	EFade mFade; //フェード判断用
+
+	EScene mSceneTransitionKeep; //シーンの遷移先を保存する
+
+	bool mIsButtonPush; //ボタンを押しているとtrue
 public:
 	CSceneResult();
 

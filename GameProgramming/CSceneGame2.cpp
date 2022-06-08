@@ -1,4 +1,4 @@
-#include "CSceneGame.h"
+#include "CSceneGame2.h"
 //
 #include "CCamera.h"
 //
@@ -27,6 +27,9 @@
 #include "CXPlayer.h"
 //
 #include "CMap.h"
+//
+#include "CSceneGame.h"
+
 
 //敵の生成数
 #define ENEMY_GENERATE_NUM_PHASE1 1 //フェーズ1
@@ -47,35 +50,29 @@
 #define TEXWIDTH  8192	//テクスチャ幅
 #define TEXHEIGHT  6144	//テクスチャ高さ
 
-float CSceneGame::mClearTime = 0.0f; //クリアまでにかかった時間
-
-CSceneGame::CSceneGame()
+CSceneGame2::CSceneGame2()
 	:mStartTime(0)
 	, mEndTime(0)
 	, mCountStart(false)
-	, mPhase(EPHASE_FINAL)
+	, mPhase(EPHASE_1)
 	, mFade(EFADE_IN)
-	, mSceneTransitionKeep(EGAME)
+	, mSceneTransitionKeep(EGAME2)
 {
 }
 
-CSceneGame::~CSceneGame() {
+CSceneGame2::~CSceneGame2() {
 	CXPlayer::Release();		//プレイヤー解放
 	CMap::Release();			//マップ解放
 	CMap2::Release();			//マップ2解放
 	CEnemyManager::Release();	//敵管理解放
 	CTrapManager::Release();	//罠管理解放
-	//タイトルに戻るとき
-	if (mScene == ETITLE) {
-		ShowCursor(true);		//カーソル表示
-	}
+	ShowCursor(true);			//カーソル表示
 }
 
-void CSceneGame::Init() {
-	mScene = EGAME; //シーンゲーム
+void CSceneGame2::Init() {
+	mScene = EGAME2; //シーンゲーム2
 
 	mCountStart = false;
-	mClearTime = 0.0f;
 
 	//プレイヤー生成
 	CXPlayer::Generate();
@@ -99,7 +96,7 @@ void CSceneGame::Init() {
 	//カメラ初期化
 	Camera.Init();
 
-	ShowCursor(false); //カーソル非表示
+	//ShowCursor(false); //カーソル非表示
 
 	//影の設定
 	float shadowColor[] = { 0.4f, 0.4f, 0.4f, 0.2f };	//影の色
@@ -119,7 +116,7 @@ void CSceneGame::Init() {
 	}
 }
 
-void CSceneGame::Update() {
+void CSceneGame2::Update() {
 	//更新
 	CEnemyManager::GetInstance()->Update(); //敵管理更新
 	CTaskManager::Get()->Update(); //タスク更新
@@ -158,7 +155,7 @@ void CSceneGame::Update() {
 		//敵が全て死亡状態になったとき
 		if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
 			CVector pos[ENEMY_GENERATE_NUM_PHASE2] = { ENEMY_START_POS_PHASE2 }; //敵の初期位置
-			CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM_PHASE2, CXEnemy::ETYPE_2, ENEMY_HP_PHASE2,pos); //敵を生成
+			CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM_PHASE2, CXEnemy::ETYPE_2, ENEMY_HP_PHASE2, pos); //敵を生成
 			mPhase = EPHASE_2;	//フェーズ2へ移行
 		}
 		break;
@@ -167,7 +164,7 @@ void CSceneGame::Update() {
 		//敵が全て死亡状態になったとき
 		if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
 			CVector pos[ENEMY_GENERATE_NUM_FINALPHASE] = { ENEMY_START_POS_FINALPHASE }; //敵の初期位置
-			CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM_FINALPHASE, CXEnemy::ETYPE_2, ENEMY_HP_FINALPHASE,pos); //敵を生成
+			CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM_FINALPHASE, CXEnemy::ETYPE_2, ENEMY_HP_FINALPHASE, pos); //敵を生成
 			mPhase = EPHASE_FINAL;	//最終フェーズへ移行
 		}
 		break;
@@ -178,8 +175,8 @@ void CSceneGame::Update() {
 			//Enterキーを押したとき
 			if (CKey::Once(VK_RETURN)) {
 				//クリア時間を記録
-				mClearTime = (float)(mEndTime - mStartTime) / 1000;
-				mSceneTransitionKeep = EGAME2; //シーンの遷移先を保存
+				CSceneGame::mClearTime += (float)(mEndTime - mStartTime) / 1000;
+				mSceneTransitionKeep = ERESULT; //シーンの遷移先を保存
 				mFade = EFADE_OUT; //フェードアウト開始
 			}
 		}
@@ -190,12 +187,11 @@ void CSceneGame::Update() {
 	if (CEnemyManager::GetInstance()->mIsEnemyAllDeath() == false) {
 		mEndTime = clock();	//計測終了時間を入れる
 	}
-	
-	//プレイヤーが死亡状態のとき
+
+	//プレイヤーが死亡状態のとき、Enterキーでタイトルに移行する
 	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {
-		//Enterキーを押したとき
 		if (CKey::Once(VK_RETURN)) {
-			mSceneTransitionKeep = ETITLE; //シーンの遷移先を保存
+			mSceneTransitionKeep = ETITLE;
 			mFade = EFADE_OUT; //フェードアウト開始
 		}
 	}
@@ -214,7 +210,7 @@ void CSceneGame::Update() {
 			//黒い画像のアルファ値を上げる
 			CRes::sImageBlack.mAlpha += 0.02f;
 		}
-		else if(CRes::sImageBlack.mAlpha == 1.0f){
+		else if (CRes::sImageBlack.mAlpha == 1.0f) {
 			//保存された遷移先へシーンを移行する
 			mScene = mSceneTransitionKeep;
 		}
@@ -269,15 +265,9 @@ void CSceneGame::Update() {
 	return;
 }
 
-void Render()
-{
-	//タスク描画
-	CTaskManager::Get()->Render();
-}
-
-CScene::EScene CSceneGame::GetNextScene()
+CScene::EScene CSceneGame2::GetNextScene()
 {
 	return mScene;
 }
-	
+
 

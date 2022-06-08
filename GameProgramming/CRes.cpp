@@ -32,6 +32,8 @@ bool CRes::sIsResLoad = false; //ファイル読み込み判断用
 #define IMAGE_BUTTONBACK "Resource\\Gauge.png"			//ボタン背景画像
 #define IMAGE_BACKGROUND "Resource\\Result_Back.png"	//背景画像
 
+#define IMAGE_BLACK "Resource\\Image_Black.png"				//黒画像
+
 //サウンド系
 #define SE_PLAYER_WALK "Resource\\SE_Player_Walk.wav"	//プレイヤーの歩行時の効果音
 #define SE_PLAYER_RUN "Resource\\SE_Player_Run.wav"		//プレイヤーの走行時の効果音
@@ -72,6 +74,8 @@ CTexture CRes::sImageMouse;			//マウス操作説明用画像
 CTexture CRes::sImageButtonBack;	//ボタン背景画像
 CTexture CRes::sImageBackGround;	//背景画像
 
+CTexture CRes::sImageBlack;			//黒画像
+
 //サウンド系
 CSound CRes::sSEPlayerWalk;		//プレイヤーの歩行時の効果音
 CSound CRes::sSEPlayerRun;		//プレイヤーの走行時の効果音
@@ -89,6 +93,7 @@ CRes::CRes()
 	//リソースファイル読み込み、一度だけ通る
 	if (sIsResLoad == false) {
 		sIsResLoad = true;
+
 		//モデル系
 		CRes::sModelXPlayer.Load(MODEL_PLAYER); //プレイヤーモデル
 
@@ -141,6 +146,9 @@ CRes::CRes()
 
 		CRes::sImageButtonBack.Load(IMAGE_BUTTONBACK);	//ボタン背景画像
 		CRes::sImageBackGround.Load(IMAGE_BACKGROUND);	//背景画像
+
+		CRes::sImageBlack.Load(IMAGE_BLACK);			//黒画像
+		CRes::sImageBlack.mAlpha = 0.0f;				//黒画像のアルファ値を設定
 
 		//サウンド系
 		CRes::sSEPlayerWalk.Load(SE_PLAYER_WALK);	//プレイヤーの歩行時の効果音

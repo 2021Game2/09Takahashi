@@ -12,6 +12,7 @@ private:
 	static bool sIsResLoad; //リソースファイルの読み込み判断用
 public:
 	CRes();
+
 	//モデル系
 	static CModelX sModelXPlayer;	//プレイヤーモデル
 	static CModelX sModelXEnemy;	//敵モデル
@@ -38,6 +39,8 @@ public:
 
 	static CTexture sImageButtonBack;		//ボタン背景画像
 	static CTexture sImageBackGround;		//背景画像
+
+	static CTexture sImageBlack;			//黒画像
 
 	//サウンド系
 	static CSound sSEPlayerWalk;	//プレイヤーの歩行時の効果音

@@ -1,12 +1,11 @@
-#ifndef CSCENEGAME_H
-#define CSCENEGAME_H
+#pragma once
 
 #include "CScene.h"
 #include <time.h>
 #include "CShadowMap.h"
 
 //ゲームのシーンクラス
-class CSceneGame : public CScene {
+class CSceneGame2 : public CScene {
 private:
 	clock_t mStartTime, mEndTime; //計測開始時刻、計測終了時刻
 	bool mCountStart; //クリア時間計測開始用
@@ -16,9 +15,9 @@ private:
 
 	//フェーズ
 	enum EPhase {
-		EPHASE_1 = 0,	//フェーズ1
-		EPHASE_2,		//フェーズ2
-		EPHASE_FINAL,	//最終フェーズ
+		EPHASE_1 = 0,
+		EPHASE_2,
+		EPHASE_FINAL,
 	};
 	EPhase mPhase; //フェーズ判断用
 
@@ -30,21 +29,14 @@ private:
 	EFade mFade; //フェード判断用
 
 	EScene mSceneTransitionKeep; //シーンの遷移先を保存する
-
 public:
-	CSceneGame();
-	~CSceneGame();
+	CSceneGame2();
+	~CSceneGame2();
 	//初期化処理のオーバーライド
 	void Init();
 	//更新処理のオーバーライド
 	void Update();
 
 	EScene GetNextScene(); //次のシーンを取得
-
-	static float mClearTime;	//クリアまでにかかった時間
 };
 
-//外部関数
-void Render();
-
-#endif

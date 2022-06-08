@@ -1,5 +1,6 @@
 #include "CSceneManager.h"
 #include "CSceneGame.h"
+#include "CSceneGame2.h"
 #include "CSceneTitle.h"
 #include "CSceneResult.h"
 #include "CSceneRecord.h"
@@ -36,6 +37,10 @@ void CSceneManager::Update() {
 		switch (mScene) {
 		case CScene::EGAME:
 			mpScene = new CSceneGame();
+			mpScene->Init();
+			break;
+		case CScene::EGAME2:
+			mpScene = new CSceneGame2();
 			mpScene->Init();
 			break;
 		case CScene::ETITLE:
