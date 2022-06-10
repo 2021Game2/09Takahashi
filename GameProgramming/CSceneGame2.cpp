@@ -101,7 +101,7 @@ void CSceneGame2::Init() {
 	//影の設定
 	float shadowColor[] = { 0.4f, 0.4f, 0.4f, 0.2f };	//影の色
 	float lightPos[] = { 50.0f, 160.0f, 50.0f };		//光源の位置
-	mShadowMap.Init(TEXWIDTH, TEXHEIGHT, Render, shadowColor, lightPos); //シャドウマップ初期化
+	mShadowMap.Init(TEXWIDTH, TEXHEIGHT, GlobalRender, shadowColor, lightPos); //シャドウマップ初期化
 
 	//エフェクト画像読み込み
 	if (CEffect::sMaterial.mTexture.mId == 0) {
@@ -126,20 +126,6 @@ void CSceneGame2::Update() {
 
 	//タスクリスト削除
 	CTaskManager::Get()->Delete();
-
-	//カメラ描画
-	Camera.Draw();
-
-	//シャドウマップ描画
-	mShadowMap.Render();
-
-	//タスク2D描画
-	CTaskManager::Get()->Render2D();
-
-#ifdef _DEBUG
-	//コライダの描画
-	CCollisionManager::Get()->Render();
-#endif
 
 	//一度だけ通る
 	if (mCountStart == false) {
@@ -217,6 +203,28 @@ void CSceneGame2::Update() {
 		break;
 	}
 
+	//リセット
+	CInput::InputReset();
+
+	return;
+}
+
+void CSceneGame2::Render()
+{
+	//カメラ描画
+	Camera.Draw();
+
+	//シャドウマップ描画
+	mShadowMap.Render();
+
+	//タスク2D描画
+	CTaskManager::Get()->Render2D();
+
+#ifdef _DEBUG
+	//コライダの描画
+	CCollisionManager::Get()->Render();
+#endif
+
 	//2D描画開始
 	CUtil::Start2D(0, 800, 0, 600);
 
@@ -258,11 +266,6 @@ void CSceneGame2::Update() {
 
 	//2Dの描画終了
 	CUtil::End2D();
-
-	//リセット
-	CInput::InputReset();
-
-	return;
 }
 
 CScene::EScene CSceneGame2::GetNextScene()

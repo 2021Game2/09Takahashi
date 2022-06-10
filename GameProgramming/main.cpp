@@ -27,6 +27,7 @@ void display() {
 	}
 	else {
 		SceneManager.Update();
+		SceneManager.Render();
 	}
 
 }

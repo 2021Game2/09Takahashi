@@ -100,7 +100,10 @@ void CSceneTitle::Update()
 		}
 		break;
 	}
+}
 
+void CSceneTitle::Render()
+{
 	CUtil::Start2D(0, 800, 0, 600);
 
 	CRes::sFont.DrawString("BATTLE", 200, 500, 40, 40);

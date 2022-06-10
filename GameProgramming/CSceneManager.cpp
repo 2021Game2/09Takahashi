@@ -58,3 +58,12 @@ void CSceneManager::Update() {
 		}
 	}
 }
+
+//•`‰æˆ—
+void CSceneManager::Render()
+{
+	//ƒ|ƒCƒ“ƒ^‚Ì•`‰æˆ—‚ğŒÄ‚Ô
+	if (mpScene) {
+		mpScene->Render();
+	}
+}

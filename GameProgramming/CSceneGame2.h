@@ -4,7 +4,7 @@
 #include <time.h>
 #include "CShadowMap.h"
 
-//ゲームのシーンクラス
+//ゲーム2のシーンクラス
 class CSceneGame2 : public CScene {
 private:
 	clock_t mStartTime, mEndTime; //計測開始時刻、計測終了時刻
@@ -36,6 +36,8 @@ public:
 	void Init();
 	//更新処理のオーバーライド
 	void Update();
+	//描画処理のオーバーライド
+	void Render();
 
 	EScene GetNextScene(); //次のシーンを取得
 };

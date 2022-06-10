@@ -18,8 +18,9 @@ private:
 public:
 	CSceneRecord();
 
-	void Init();
-	void Update();
+	void Init();	//初期化処理
+	void Update();	//更新処理
+	void Render();	//描画処理
 
 	EScene GetNextScene(); //次のシーンを取得
 };

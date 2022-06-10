@@ -83,7 +83,10 @@ void CSceneResult::Update()
 		}
 		break;
 	}
+}
 
+void CSceneResult::Render()
+{
 	CUtil::Start2D(0, 800, 0, 600);
 	char buf[64];
 	CRes::sImageBackGround.Draw(0, 800, 0, 600, 0, 599, 319, 0); //”wŒi‰æ‘œ‚ð•\Ž¦

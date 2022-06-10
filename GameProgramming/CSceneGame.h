@@ -38,13 +38,15 @@ public:
 	void Init();
 	//更新処理のオーバーライド
 	void Update();
+	//描画処理のオーバーライド
+	void Render();
 
 	EScene GetNextScene(); //次のシーンを取得
 
 	static float mClearTime;	//クリアまでにかかった時間
 };
 
-//外部関数
-void Render();
+//描画用外部関数
+void GlobalRender();
 
 #endif
