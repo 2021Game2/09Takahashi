@@ -6,6 +6,8 @@
 #include "CInput.h"
 #include "main.h"
 #include "CCollisionManager.h"
+#include "CEnemyManager.h"
+#include "CXPlayer.h"
 
 //カメラの外部変数
 CCamera Camera;
@@ -118,13 +120,34 @@ void CCamera::Update() {
 	if (mAngleY < 0.05f) mAngleY = 0.05f;
 	if (mAngleY > 1.51f) mAngleY = 1.51f;
 
-	mPos.mX = mTarget.mX + (sinf(mAngleX)) * (mDist * sinf(mAngleY));
-	mPos.mY = mTarget.mY + cosf(mAngleY) * mDist;
-	mPos.mZ = mTarget.mZ + (cosf(mAngleX)) * (mDist * sinf(mAngleY));
+	if (CKey::Push('C')&& CEnemyManager::GetInstance()->GetNearEnemy()!=nullptr) {
+		//注視点はプレイヤーに1番近い敵
+		mCenter = CEnemyManager::GetInstance()->GetNearEnemy()->mPosition;
+		//プレイヤーに一番近い敵からプレイヤーに伸びるベクトルを求める
+		CVector pos = CXPlayer::GetInstance()->mPosition - CEnemyManager::GetInstance()->GetNearEnemy()->mPosition;
+		//posのYは0.0にしておく
+		pos.mY = 0.0f;
+		//ベクトルを正規化
+		pos = pos.Normalize();
+		//プレイヤーからの距離を設定
+		pos = pos * 7.0f;
+		//カメラの高さを設定
+		pos.mY = 4.0f;
+		//カメラの位置を設定
+		mPos = CXPlayer::GetInstance()->mPosition + pos;
+		mCenter.mY += DEF_CAMERA_HEAD_ADJUST; //注視点を調整する
+		//視点を設定
+		mEye = mPos;
+	}
+	else {
+		mPos.mX = mTarget.mX + (sinf(mAngleX)) * (mDist * sinf(mAngleY));
+		mPos.mY = mTarget.mY + cosf(mAngleY) * mDist;
+		mPos.mZ = mTarget.mZ + (cosf(mAngleX)) * (mDist * sinf(mAngleY));
 
-	mCenter = mTarget;
-	mCenter.mY += DEF_CAMERA_HEAD_ADJUST;//頭上補正
-	mEye = mPos;
+		mCenter = mTarget;
+		mCenter.mY += DEF_CAMERA_HEAD_ADJUST;//頭上補正
+		mEye = mPos;
+	}
 
 	//線コライダセット
 	mColliderLine.Set(this, nullptr, mEye, mCenter);

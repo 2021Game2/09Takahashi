@@ -86,7 +86,7 @@ void CSceneGame::Init() {
 	CEnemyManager::Generate();
 	//敵を生成する
 	CVector pos[ENEMY_GENERATE_NUM_PHASE1] = { ENEMY_START_POS_PHASE1 }; //敵の初期位置
-	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM_PHASE1, CXEnemy::ETYPE_1, ENEMY_HP_PHASE1, pos);
+	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM_PHASE1, CXEnemy::ETYPE_2, ENEMY_HP_PHASE1, pos);
 
 	//マップ生成
 	CMap::Generate();

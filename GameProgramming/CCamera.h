@@ -14,7 +14,6 @@
 class CCamera :public CCharacter {
 private:
 	CColliderLine mColliderLine; //視点から注視点まで伸びる線コライダ
-
 public:
 	CCamera();
 	//視点
