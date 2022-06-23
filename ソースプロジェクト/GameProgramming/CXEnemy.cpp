@@ -351,7 +351,7 @@ void CXEnemy::Idle()
 	ChangeAnimation(2, true, 200);
 
 	//プレイヤーが死亡状態では無いとき
-	if (CXPlayer::GetInstance()->mState != CXPlayer::EPlayerState::EDEATH) {
+	if (CXPlayer::GetInstance()->GetState() != CXPlayer::EPlayerState::EDEATH) {
 		//プレイヤーが一定距離まで近づくと追跡状態へ移行
 		if (mPlayerDis <= SEARCH_DIS) {
 			mState = ECHASE;
@@ -386,7 +386,7 @@ void CXEnemy::AutoMove()
 	mMoveDir = Point.Normalize();
 
 	//プレイヤーが死亡状態では無いとき
-	if (CXPlayer::GetInstance()->mState != CXPlayer::EPlayerState::EDEATH) {
+	if (CXPlayer::GetInstance()->GetState() != CXPlayer::EPlayerState::EDEATH) {
 		//プレイヤーが一定距離まで近づくと追跡状態へ移行
 		if (mPlayerDis <= SEARCH_DIS) {
 			mState = ECHASE;
@@ -438,7 +438,7 @@ void CXEnemy::Chase()
 void CXEnemy::Attack_Idle()
 {
 	//プレイヤーが死亡状態だったとき待機状態に移行する
-	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH)mState = EIDLE;
+	if (CXPlayer::GetInstance()->GetState() == CXPlayer::EPlayerState::EDEATH)mState = EIDLE;
 
 	//待機アニメーション
 	ChangeAnimation(2, true, 200);
@@ -648,6 +648,12 @@ void CXEnemy::SetPos(CVector hpos)
 CVector CXEnemy::GetPos()
 {
 	return mPosition;
+}
+
+//敵の状態を取得する
+CXEnemy::EEnemyState CXEnemy::GetState()
+{
+	return mState;
 }
 
 //体力を設定する

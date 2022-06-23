@@ -36,6 +36,7 @@ public:
 	static CTexture sImagePlayerAttack;		//プレイヤーの攻撃方法説明用画像
 	static CTexture sImagePlayerAvoid;		//プレイヤーの回避方法説明用画像
 	static CTexture sImageMouse;			//マウス操作説明用画像
+	static CTexture sImageTargetLook;		//一番近い敵の方向へカメラを向かせる方法の説明用画像
 
 	static CTexture sImageButtonBack;		//ボタン背景画像
 	static CTexture sImageBackGround;		//背景画像

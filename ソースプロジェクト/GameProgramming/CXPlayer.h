@@ -8,6 +8,21 @@
 //プレイヤークラス
 class CXPlayer : public CXCharacter
 {
+public:
+	//プレイヤーの状態
+	enum EPlayerState
+	{
+		EIDLE = 0,	//待機
+		EMOVE,		//移動
+		EDASH,		//ダッシュ
+		EAVOID,		//回避
+		EATTACK_1,	//攻撃1
+		EATTACK_2,	//攻撃2
+		EATTACK_3,	//攻撃3(攻撃1から派生)
+		EDEATH,		//死亡
+		EITEMUSE,	//アイテム使用
+		EKNOCKBACK,	//ノックバック
+	};
 private:
 	//コライダの宣言
 	CCollider mColSphereBody;	//体
@@ -37,7 +52,7 @@ private:
 	int mGraceTime;			//派生攻撃の受付時間
 	int mComboCount;		//派生攻撃を連続で行った回数
 
-	CVector mMove;			//方向と速度をかけ合わせたベクトル
+	CVector mMove;			//方向と速度をかけ合わせたベクトル、プレイヤーの移動量
 	CVector mMoveDir;		//移動する方向、モデルの回転にも使用している、毎フレームリセットされる
 	CVector mMoveDirKeep;	//移動時の方向を保存する
 	CVector mKnockBackDir;	//ノックバックする方向を保持する
@@ -59,6 +74,7 @@ private:
 	bool mIsItemUse();		//アイテムが使用可能な時にtrueを返す
 
 	void Idle();		//待機処理
+	void MoveCamera();	//カメラを基準にした移動処理
 	void Move();		//移動処理
 	void Dash();		//ダッシュ処理
 	void Attack_1();	//攻撃1処理
@@ -69,6 +85,8 @@ private:
 	void ItemUse();		//アイテム使用処理
 	void ItemSelect();	//アイテム選択処理
 	void KnockBack();	//ノックバック処理
+
+	EPlayerState mState;	//プレイヤーの状態判断用
 public:
 	CXPlayer();
 	~CXPlayer();
@@ -78,8 +96,8 @@ public:
 	*/
 	void Init(CModelX* model);
 
-	void Update();
-	void Render2D();
+	void Update();		//更新
+	void Render2D();	//2D描画
 
 	//衝突処理
 	//m:自分のコライダ o:相手のコライダ
@@ -90,26 +108,12 @@ public:
 	static void Release();	//解放
 	static CXPlayer* GetInstance(); //インスタンスを取得
 
-	//プレイヤーの状態
-	enum EPlayerState
-	{
-		EIDLE = 0,	//待機
-		EMOVE,		//移動
-		EDASH,		//ダッシュ
-		EAVOID,		//回避
-		EATTACK_1,	//攻撃1
-		EATTACK_2,	//攻撃2
-		EATTACK_3,	//攻撃3(攻撃1から派生)
-		EDEATH,		//死亡
-		EITEMUSE,	//アイテム使用
-		EKNOCKBACK,	//ノックバック
-	};
-	EPlayerState mState;
-
 	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
 	bool mAttackFlag_Once; //攻撃した瞬間だけtrueを返す
 
 	CVector GetSwordColPos();	//剣のコライダの座標を取得する
+
+	CXPlayer::EPlayerState GetState();	//プレイヤーの状態を取得する
 };
 
 #endif

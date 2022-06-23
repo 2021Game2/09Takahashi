@@ -41,12 +41,12 @@ void CTrap::Collision(CCollider* m, CCollider* o)
 		if (o->mpParent->mTag == EENEMY)
 		{
 			//敵が死亡状態だとリターンする
-			if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EDEATH)return;
+			if (((CXEnemy*)(o->mpParent))->GetState() == CXEnemy::EDEATH)return;
 			//コライダのタグがボディの時
 			if (o->mTag == CCollider::EBODY)
 			{
 				//敵の状態がスタン状態では無いとき
-				if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN)
+				if (((CXEnemy*)(o->mpParent))->GetState() != CXEnemy::ESTUN)
 				{
 					//球コライダ同士の衝突判定
 					if (CCollider::Collision(m, o))

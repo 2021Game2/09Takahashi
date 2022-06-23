@@ -63,7 +63,7 @@ void CXEnemy2::Idle()
 	ChangeAnimation(1, true, 100);
 
 	//プレイヤーが死亡状態では無いとき
-	if (CXPlayer::GetInstance()->mState != CXPlayer::EPlayerState::EDEATH) {
+	if (CXPlayer::GetInstance()->GetState() != CXPlayer::EPlayerState::EDEATH) {
 		//プレイヤーが一定距離まで近づくと追跡状態へ移行
 		if (mPlayerDis <= SEARCH_DIS) {
 			mState = ECHASE;
@@ -97,7 +97,7 @@ void CXEnemy2::AutoMove()
 	mMoveDir = Point.Normalize();
 
 	//プレイヤーが死亡状態では無いとき
-	if (CXPlayer::GetInstance()->mState != CXPlayer::EPlayerState::EDEATH) {
+	if (CXPlayer::GetInstance()->GetState() != CXPlayer::EPlayerState::EDEATH) {
 		//プレイヤーが一定距離まで近づくと追跡状態へ移行
 		if (mPlayerDis <= SEARCH_DIS) {
 			mState = ECHASE;
@@ -147,7 +147,7 @@ void CXEnemy2::Chase()
 void CXEnemy2::Attack_Idle()
 {
 	//プレイヤーが死亡状態だったとき待機状態に移行する
-	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH)mState = EIDLE;
+	if (CXPlayer::GetInstance()->GetState() == CXPlayer::EPlayerState::EDEATH)mState = EIDLE;
 
 	//攻撃待機アニメーション
 	ChangeAnimation(3, true, 100);

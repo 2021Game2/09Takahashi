@@ -42,7 +42,7 @@ void CXCharacter::Init(CModelX* model) {
 */
 void CXCharacter::ChangeAnimation(int index, bool loop, float framesize) {
 	//同じ場合は切り替えない
-	if (mAnimationIndex == index) return;
+	if (mAnimationIndex == index && mAnimationFrameSize == framesize) return;
 	//今のアニメーションの重みを0.0（0%)にする
 	mpModel->mAnimationSet[mAnimationIndex]->mWeight = 0.0f;
 	//番号、繰り返し、フレーム数を設定

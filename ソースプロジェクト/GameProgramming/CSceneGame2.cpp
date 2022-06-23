@@ -57,6 +57,7 @@ CSceneGame2::CSceneGame2()
 	, mPhase(EPHASE_1)
 	, mFade(EFADE_IN)
 	, mSceneTransitionKeep(EGAME2)
+	,mShadowMap()
 {
 }
 
@@ -175,7 +176,7 @@ void CSceneGame2::Update() {
 	}
 
 	//プレイヤーが死亡状態のとき、Enterキーでタイトルに移行する
-	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {
+	if (CXPlayer::GetInstance()->GetState() == CXPlayer::EPlayerState::EDEATH) {
 		if (CKey::Once(VK_RETURN)) {
 			mSceneTransitionKeep = ETITLE;
 			mFade = EFADE_OUT; //フェードアウト開始
@@ -232,11 +233,12 @@ void CSceneGame2::Render()
 	CRes::sImagePlayerRun.Draw(110, 190, 20, 100, 0, 255, 255, 0);		//プレイヤーの走り方
 	CRes::sImagePlayerAttack.Draw(20, 100, 20, 100, 0, 255, 255, 0);	//プレイヤーの攻撃方法
 	CRes::sImagePlayerAvoid.Draw(200, 280, 20, 100, 0, 255, 255, 0);	//プレイヤーの回避方法
+	CRes::sImageTargetLook.Draw(280, 360, 20, 100, 0, 255, 255, 0);		//一番近い敵の方向へカメラを向かせる
 	CRes::sImageMouse.Draw(590, 630, 70, 110, 0, 255, 255, 0);			//右クリック用
 	CRes::sImageMouse.Draw(750, 790, 70, 110, 0, 255, 511, 256);		//ホイール用
 
 	//プレイヤーが死亡状態になるとGAMEOVERと表示する
-	if (CXPlayer::GetInstance()->mState == CXPlayer::EPlayerState::EDEATH) {
+	if (CXPlayer::GetInstance()->GetState() == CXPlayer::EPlayerState::EDEATH) {
 		CRes::sFont.DrawString("GAMEOVER", 120, 350, 40, 40);
 		CRes::sFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
 	}

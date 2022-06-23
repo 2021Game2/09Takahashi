@@ -28,6 +28,7 @@ bool CRes::sIsResLoad = false; //ファイル読み込み判断用
 #define IMAGE_PLAYER_ATTACK "Resource\\Image_Player_Attack.png" //プレイヤーの攻撃方法説明用画像
 #define IMAGE_PLAYER_AVOID "Resource\\Image_Player_Avoid.png"	//プレイヤーの回避方法説明用画像
 #define IMAGE_MOUSE "Resource\\Image_Mouse.png"					//マウス操作説明用画像
+#define IMAGE_TARGET_LOOK "Resource\\Image_Target_look.png"		//一番近い敵の方向へカメラを向かせる方法の説明用画像
 
 #define IMAGE_BUTTONBACK "Resource\\Gauge.png"			//ボタン背景画像
 #define IMAGE_BACKGROUND "Resource\\Result_Back.png"	//背景画像
@@ -70,6 +71,7 @@ CTexture CRes::sImagePlayerRun;		//プレイヤーの走り方説明用画像
 CTexture CRes::sImagePlayerAttack;	//プレイヤーの攻撃方法説明用画像
 CTexture CRes::sImagePlayerAvoid;	//プレイヤーの回避方法説明用画像
 CTexture CRes::sImageMouse;			//マウス操作説明用画像
+CTexture CRes::sImageTargetLook;	//一番近い敵の方向へカメラを向かせる方法の説明用画像
 
 CTexture CRes::sImageButtonBack;	//ボタン背景画像
 CTexture CRes::sImageBackGround;	//背景画像
@@ -143,6 +145,7 @@ CRes::CRes()
 		CRes::sImagePlayerAttack.Load(IMAGE_PLAYER_ATTACK);	//プレイヤーの攻撃方法説明用画像
 		CRes::sImagePlayerAvoid.Load(IMAGE_PLAYER_AVOID);	//プレイヤーの回避方法説明用画像
 		CRes::sImageMouse.Load(IMAGE_MOUSE);				//マウス操作説明用画像
+		CRes::sImageTargetLook.Load(IMAGE_TARGET_LOOK);		//一番近い敵の方向へカメラを向かせる方法の説明用画像
 
 		CRes::sImageButtonBack.Load(IMAGE_BUTTONBACK);	//ボタン背景画像
 		CRes::sImageBackGround.Load(IMAGE_BACKGROUND);	//背景画像

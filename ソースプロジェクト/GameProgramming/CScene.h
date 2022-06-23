@@ -16,7 +16,7 @@ public:
 		ERESULT,	//リザルト
 		ERECORD,	//レコード
 	};
-	EScene mScene;
+	EScene mScene = ETITLE;
 
 	CRes mResource; //リソース
 	//CText mFont; //フォント

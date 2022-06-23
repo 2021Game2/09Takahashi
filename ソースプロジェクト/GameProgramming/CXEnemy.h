@@ -7,6 +7,27 @@
 //エネミー(敵)のベースクラス
 class CXEnemy : public CXCharacter
 {
+public:
+	//敵の種類
+	enum EEnemyType {
+		ETYPE_1 = 0,	//タイプ1
+		ETYPE_2			//タイプ2
+	};
+
+	//敵の状態
+	enum EEnemyState
+	{
+		EIDLE = 0,		//待機
+		EAUTOMOVE,		//移動
+		ECHASE,			//追跡
+		EATTACK_IDLE,	//攻撃待機
+		EATTACK_1,		//攻撃1
+		EATTACK_2,		//攻撃2
+		EKNOCKBACK,		//ノックバック
+		EDEATH,			//死亡
+		ESTUN,			//スタン
+		EAVOID,			//回避
+	};
 protected:
 	int mHp;		//体力
 	int mHpMax;		//体力最大値
@@ -25,7 +46,7 @@ protected:
 	CVector mRot;			//回転
 	float mDot;				//内積
 
-	bool mIsInvincible;	//無敵フラグ、プレイヤーの攻撃がヒットするとtrueを返す
+	bool mIsInvincible;		//無敵フラグ、プレイヤーの攻撃がヒットするとtrueを返す
 
 	virtual void Idle();		//待機処理
 	virtual void AutoMove();	//移動処理
@@ -37,8 +58,10 @@ protected:
 	virtual void Death();		//死亡処理
 	virtual void Stun();		//スタン処理
 	virtual void Avoid();		//回避処理
-public:
 
+	EEnemyType mEnemyType;	//敵の種類判断用
+	EEnemyState mState;		//敵の状態判断用
+public:
 	CXEnemy();
 	/*
 	初期化(Xモデルクラスのポインタ)
@@ -50,31 +73,8 @@ public:
 	void CXEnemy::Collision(CCollider* m, CCollider* o);
 	void CXEnemy::TaskCollision();
 
-	void Update();
-	void Render2D();
-
-	//敵の状態
-	enum EEnemyState
-	{
-		EIDLE = 0,		//待機
-		EAUTOMOVE,		//移動
-		ECHASE,			//追跡
-		EATTACK_IDLE,	//攻撃待機
-		EATTACK_1,		//攻撃1
-		EATTACK_2,		//攻撃2
-		EKNOCKBACK,		//ノックバック
-		EDEATH,			//死亡
-		ESTUN,			//スタン
-		EAVOID,			//回避
-	};
-	EEnemyState mState;	//状態
-
-	//敵の種類
-	enum EEnemyType {
-		ETYPE_1 = 0,	//タイプ1
-		ETYPE_2			//タイプ2
-	};
-	EEnemyType mEnemyType; //敵の種類判断用
+	void Update();		//更新
+	void Render2D();	//2D描画
 
 	void SetPos(CVector hpos);	//位置を設定
 	CVector GetPos();			//位置を取得
@@ -84,6 +84,8 @@ public:
 	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
 
 	bool mIsTarget; //プレイヤーの攻撃時の対象になっている時trueを返す
+
+	CXEnemy::EEnemyState GetState();	//敵の状態を取得
 
 	bool mIsAttack();	//攻撃状態の時にtrueを返す
 	bool mIsDeath();	//死亡状態の時にtrueを返す

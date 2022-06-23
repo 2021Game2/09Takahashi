@@ -109,19 +109,6 @@ void CXPlayer::Update()
 	switch (mState) {
 	case EIDLE:	//待機状態
 		Idle();	//待機処理を呼ぶ
-		//左クリックで攻撃1へ移行
-		if (CKey::Once(VK_LBUTTON)) {
-			mState = EATTACK_1;
-		}
-		//WASDキーを押すと移動へ移行
-		else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
-			mState = EMOVE;
-			CRes::sSEPlayerWalk.Repeat(); //効果音を再生する
-		}
-		//右クリックでアイテム使用可能な時アイテムを使用する
-		else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
-			mState = EITEMUSE;
-		}
 		break;
 
 	case EATTACK_1:	//攻撃1状態の時
@@ -137,111 +124,26 @@ void CXPlayer::Update()
 		break;
 
 	case EMOVE:	//移動状態
-		//左クリックで攻撃1へ移行
-		if (CKey::Once(VK_LBUTTON)) {
-			mState = EATTACK_2;
-		}
-		//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
-		else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
-			mState = EAVOID;
-			CRes::sSEPlayerAvoid.Play(); //効果音を再生
-		}
-		//右クリックでアイテム使用可能な時アイテムを使用する
-		else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
-			mState = EITEMUSE;
-		}
-		//WASDキーを押すと移動
-		else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
-			//SHIFTキーを押しているとダッシュへ移行
-			if (CKey::Push(VK_SHIFT)) {
-				mState = EDASH;
-				CRes::sSEPlayerRun.Repeat(); //効果音を再生する
-			}
-			else {
-				Move();	//移動処理を呼ぶ
-			}
-		}
-		//待機状態へ移行
-		else {
-			mState = EIDLE;
-		}
-		//状態が移行したとき、効果音を停止する
-		if (mState != EMOVE) {
-			CRes::sSEPlayerWalk.Stop();
-		}
+		Move();	//移動状態の処理を呼ぶ
 		break;
 
 	case EDASH:	//ダッシュ状態
-		//左クリックで攻撃1へ移行
-		if (CKey::Once(VK_LBUTTON)) {
-			mState = EATTACK_2;
-		}
-		//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
-		else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
-			mState = EAVOID;
-			CRes::sSEPlayerAvoid.Play(); //効果音を再生
-		}
-		//右クリックでアイテム使用可能な時アイテムを使用する
-		else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
-			mState = EITEMUSE;
-		}
-		//WASDキーを押すと移動
-		else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
-			//SHIFTキーを押しているとダッシュ
-			if (CKey::Push(VK_SHIFT)) {
-				Dash();	//ダッシュ処理を呼ぶ
-			}
-			else {
-				mState = EMOVE;
-				CRes::sSEPlayerWalk.Play(); //効果音を再生
-			}
-		}
-		//待機状態へ移行
-		else {
-			mState = EIDLE;
-		}
-		//状態が移行したとき、効果音を停止する
-		if (mState != EDASH) {
-			CRes::sSEPlayerRun.Stop();
-		}
+		Dash();	//ダッシュ状態の処理を呼ぶ
 		break;
 
-	case EAVOID:	//回避状態
-		Avoid();	//回避処理を呼ぶ
-		//回避状態が終了したとき
-		if (mAvoid == false) {
-			//回避終了時WASDキーが押されていると移動
-			if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
-				//SHIFTキーを押しているとダッシュへ移行
-				if (CKey::Push(VK_SHIFT)) {
-					mState = EDASH;
-					CRes::sSEPlayerRun.Play(); //効果音を再生
-				}
-				else {
-					mState = EMOVE;
-					CRes::sSEPlayerWalk.Play(); //効果音を再生
-				}
-			}
-			//待機状態へ移行
-			else {
-				mState = EIDLE;
-			}
-		}
+	case EAVOID: //回避状態
+		Avoid(); //回避処理を呼ぶ
 		break;
 
-	case EDEATH:	//死亡状態
-		Death();	//死亡処理を呼ぶ
+	case EDEATH: //死亡状態
+		Death(); //死亡処理を呼ぶ
 		break;
 
-	case EITEMUSE:	//アイテム使用中
-		ItemUse();	//アイテム使用処理を呼ぶ
+	case EITEMUSE: //アイテム使用中
+		ItemUse(); //アイテム使用処理を呼ぶ
 		break;
 
 	case EKNOCKBACK: //ノックバック状態
-		//効果音を停止する
-		CRes::sSEPlayerWalk.Stop();
-		CRes::sSEPlayerRun.Stop();
-		CRes::sSEPlayerAvoid.Stop();
 		KnockBack(); //ノックバック処理を呼ぶ
 		break;
 	}
@@ -343,7 +245,7 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 		if (o->mpParent->mTag == EENEMY)
 		{
 			//敵が死亡状態のときリターンする
-			if (((CXEnemy*)(o->mpParent))->mState == CXEnemy::EDEATH)return;
+			if (((CXEnemy*)(o->mpParent))->GetState() == CXEnemy::EDEATH)return;
 			//相手のコライダのタグが剣
 			if (o->mTag == CCollider::ESWORD)
 			{
@@ -384,7 +286,7 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 				//球コライダ同士の衝突判定(Y座標を調整しない)
 				if (CCollider::CollisionAdjust(m, o, &adjust)) {
 					//敵がスタン状態ではないとき、プレイヤーが攻撃2状態ではないとき
-					if (((CXEnemy*)(o->mpParent))->mState != CXEnemy::ESTUN && mState != EATTACK_2) {
+					if (((CXEnemy*)(o->mpParent))->GetState() != CXEnemy::ESTUN && mState != EATTACK_2) {
 						//敵のポジションを調整
 						CXEnemy* Enemy = (CXEnemy*)o->mpParent;
 						Enemy->SetPos(Enemy->GetPos() + adjust);
@@ -447,59 +349,78 @@ CVector CXPlayer::GetSwordColPos()
 	return mColSphereSword.mpMatrix->GetPos();	//剣のコライダの座標を返す
 }
 
+//プレイヤーの状態を取得する
+CXPlayer::EPlayerState CXPlayer::GetState()
+{
+	return mState;
+}
+
 //待機処理
 void CXPlayer::Idle()
 {
 	ChangeAnimation(0, true, 60); //待機モーション
 	mComboCount = 0; //コンボ数をリセット
+
+	//左クリックで攻撃1へ移行
+	if (CKey::Once(VK_LBUTTON)) {
+		mState = EATTACK_1;
+	}
+	//WASDキーを押すと移動へ移行
+	else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
+		mState = EMOVE;
+		CRes::sSEPlayerWalk.Repeat(); //効果音を再生する
+	}
+	//右クリックでアイテム使用可能な時アイテムを使用する
+	else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
+		mState = EITEMUSE;
+	}
 }
 
 //移動処理
 void CXPlayer::Move()
 {
 	ChangeAnimation(1, true, 65);
-	//ダッシュ時にスピードを上書きしない用
-	if (mState == EMOVE) {
-		mSpeed = SPEED_DEFAULT;
-	}
 
-	//カメラ視点移動　通称無双移動
-	//カメラの左右と前後のベクトルを取得
-	mSideVec = Camera.GetMat().GetXVec();
-	mFrontVec = Camera.GetMat().GetZVec();
-	//高さ移動はカットする
-	mSideVec.mY = 0.0f;
-	mFrontVec.mY = 0.0f;
-	//正規化する
-	mSideVec.Normalize();
-	mFrontVec.Normalize();
+	mSpeed = SPEED_DEFAULT;
 
-	if (CKey::Push('A'))
-	{
-		mMoveDir -= mSideVec;
+	//左クリックで攻撃1へ移行
+	if (CKey::Once(VK_LBUTTON)) {
+		mState = EATTACK_2;
 	}
-	else if (CKey::Push('D'))
-	{
-		mMoveDir += mSideVec;
+	//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
+	else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
+		mState = EAVOID;
+		CRes::sSEPlayerAvoid.Play(); //効果音を再生
 	}
-	if (CKey::Push('W')) {
-		mMoveDir += mFrontVec;
+	//右クリックでアイテム使用可能な時アイテムを使用する
+	else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
+		mState = EITEMUSE;
 	}
-	else if (CKey::Push('S'))
-	{
-		mMoveDir -= mFrontVec;
+	//WASDキーを押すと移動
+	else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
+		//SHIFTキーを押しているとダッシュへ移行
+		if (CKey::Push(VK_SHIFT)) {
+			mState = EDASH;
+			CRes::sSEPlayerRun.Repeat(); //効果音を再生する
+		}
+		else {
+			MoveCamera(); //カメラを基準にした移動処理を呼ぶ
+		}
 	}
-
-	//移動量正規化　これをしないと斜め移動が早くなってしまうので注意
-	//ジャンプ時などはY軸を正規化しないよう注意
-	mMoveDir = mMoveDir.Normalize();
-	mMoveDirKeep = mMoveDir;	//MoveDir保存
-	mMove = mMoveDir * mSpeed;
+	//待機状態へ移行
+	else {
+		mState = EIDLE;
+	}
+	//状態が移行したとき、効果音を停止する
+	if (mState != EMOVE) {
+		CRes::sSEPlayerWalk.Stop();
+	}
 }
 
 //ダッシュ処理
 void CXPlayer::Dash()
 {
+	ChangeAnimation(1, true, 40);
 	//スタミナが残っているとき
 	if (mStamina > 0) {
 		mSpeed = SPEED_DASH_HIGH;
@@ -510,7 +431,40 @@ void CXPlayer::Dash()
 		mSpeed = SPEED_DASH_LOW;
 	}
 
-	Move();	//移動処理を呼ぶ
+	//MoveCamera();	//移動処理を呼ぶ
+
+	//左クリックで攻撃1へ移行
+	if (CKey::Once(VK_LBUTTON)) {
+		mState = EATTACK_2;
+	}
+	//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
+	else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
+		mState = EAVOID;
+		CRes::sSEPlayerAvoid.Play(); //効果音を再生
+	}
+	//右クリックでアイテム使用可能な時アイテムを使用する
+	else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
+		mState = EITEMUSE;
+	}
+	//WASDキーを押すと移動
+	else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
+		//SHIFTキーを押しているとダッシュ
+		if (CKey::Push(VK_SHIFT) == false) {
+			mState = EMOVE;
+			CRes::sSEPlayerWalk.Play(); //効果音を再生
+		}
+		else {
+			MoveCamera(); //カメラを基準にした移動処理を呼ぶ
+		}
+	}
+	//待機状態へ移行
+	else {
+		mState = EIDLE;
+	}
+	//状態が移行したとき、効果音を停止する
+	if (mState != EDASH) {
+		CRes::sSEPlayerRun.Stop();
+	}
 }
 
 //攻撃1処理
@@ -719,6 +673,26 @@ void CXPlayer::Avoid()
 
 	mMove = mMoveDirKeep * mAvoidSpeed;
 	mAvoidSpeed = mAvoidSpeed * GRAVITY;	//スピードを下げていく
+
+	//回避状態が終了したとき
+	if (mAvoid == false) {
+		//回避終了時WASDキーが押されていると移動
+		if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
+			//SHIFTキーを押しているとダッシュへ移行
+			if (CKey::Push(VK_SHIFT)) {
+				mState = EDASH;
+				CRes::sSEPlayerRun.Play(); //効果音を再生
+			}
+			else {
+				mState = EMOVE;
+				CRes::sSEPlayerWalk.Play(); //効果音を再生
+			}
+		}
+		//待機状態へ移行
+		else {
+			mState = EIDLE;
+		}
+	}
 }
 
 //死亡処理
@@ -731,6 +705,11 @@ void CXPlayer::Death()
 void CXPlayer::KnockBack()
 {
 	ChangeAnimation(2, false, 20);
+
+	//効果音を停止する
+	CRes::sSEPlayerWalk.Stop();
+	CRes::sSEPlayerRun.Stop();
+	CRes::sSEPlayerAvoid.Stop();
 
 	//ノックバック方向正規化
 	mKnockBackDir = mKnockBackDir.Normalize();
@@ -750,6 +729,43 @@ void CXPlayer::KnockBack()
 			mInvincibleFlag = false; //無敵状態を終了する
 		}
 	}
+}
+
+//カメラを基準にした移動処理
+void CXPlayer::MoveCamera()
+{
+	//カメラ視点移動　通称無双移動
+	//カメラの左右と前後のベクトルを取得
+	mSideVec = Camera.GetMat().GetXVec();
+	mFrontVec = Camera.GetMat().GetZVec();
+	//高さ移動はカットする
+	mSideVec.mY = 0.0f;
+	mFrontVec.mY = 0.0f;
+	//正規化する
+	mSideVec.Normalize();
+	mFrontVec.Normalize();
+
+	if (CKey::Push('A'))
+	{
+		mMoveDir -= mSideVec;
+	}
+	else if (CKey::Push('D'))
+	{
+		mMoveDir += mSideVec;
+	}
+	if (CKey::Push('W')) {
+		mMoveDir += mFrontVec;
+	}
+	else if (CKey::Push('S'))
+	{
+		mMoveDir -= mFrontVec;
+	}
+
+	//移動量正規化　これをしないと斜め移動が早くなってしまうので注意
+	//ジャンプ時などはY軸を正規化しないよう注意
+	mMoveDir = mMoveDir.Normalize();
+	mMoveDirKeep = mMoveDir;	//MoveDir保存
+	mMove = mMoveDir * mSpeed;	//移動量を設定
 }
 
 //アイテムが使用可能か判断する

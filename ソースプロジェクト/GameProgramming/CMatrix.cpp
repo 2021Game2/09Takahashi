@@ -4,6 +4,7 @@
 
 //表示確認用
 void CMatrix::Print() {
+
 	printf("%10f %10f %10f %10f\n",
 		mM[0][0], mM[0][1], mM[0][2], mM[0][3]);
 	printf("%10f %10f %10f %10f\n",

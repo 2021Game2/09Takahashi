@@ -15,6 +15,8 @@ CCamera Camera;
 #define WIN_CENTRAL_X WINDOW_WIDTH/2
 #define WIN_CENTRAL_Y WINDOW_HEIGHT/2
 
+#define ROTATION_FRAME 1.0f/15.0f //回転にかけるフレーム数
+
 void CCamera::Init()
 {
 	//カメラのパラメータを作成する
@@ -30,12 +32,20 @@ void CCamera::Init()
 	Set(e, c, u);
 }
 
+float CCamera::mLerp(float start, float point, float rate)
+{
+	return start + rate * (point - start);
+}
+
 CCamera::CCamera()
-	:mSkip(true)
-	, mAngleX(0.0f)
+	:mAngleX(0.0f)
 	, mAngleY(0.0f)
 	, mDist(0.0f)
 	, mColliderLine(this, nullptr, CVector(0.0f, 0.0f, 0.0f), CVector(0.0f, 0.0f, 0.0f))
+	,mRotDir(LEFT)
+	,mRotRad(0.0f)
+	,mRotedRad(0.0f)
+	,mIsRot(false)
 {
 	ChangePriority(10);
 }
@@ -68,12 +78,7 @@ void CCamera::Update() {
 	float moveY = (float)(oldMouseY - mouseY);
 
 
-	if (mSkip == false) {
-		if (moveX != 0) mAngleX += (moveX * 0.005f);
-		if (moveY != 0) mAngleY += (moveY * 0.005f);
-	}
-	mSkip = false;
-
+	//マウスを画面中央に固定
 	int X = WIN_CENTRAL_X;
 	int Y = WIN_CENTRAL_Y;
 	CInput::SetMousePosW(X, Y);
@@ -116,38 +121,65 @@ void CCamera::Update() {
 		mAngleY -= 0.01f;
 	}
 
+	//敵の方向へ回転するフラグがtrueのとき
+	if (mIsRot == true) {
+		//回転する方向判断
+		switch (mRotDir) {
+		case LEFT: //左
+			//回転させたい角度に回転した角度が満たないとき
+			if (mRotRad > mRotedRad) {
+				mAngleX -= mLerp(0.0f, mRotRad, ROTATION_FRAME);	//アングルXを減算
+				mRotedRad += mLerp(0.0f, mRotRad, ROTATION_FRAME);	//回転した角度へ回転させた角度分加算
+				//回転させたい角度を回転した角度が超えたとき
+				if (mRotRad <= mRotedRad) {
+					//超過分を調整する
+					float adjust = mRotedRad - mRotRad;
+					mAngleX += adjust;
+					//敵の方向へ回転するフラグをfalseにする
+					mIsRot = false;
+				}
+			}
+			break;
+
+		case RIGHT: //右
+			//回転させたい角度に回転した角度が満たないとき
+			if (mRotRad > mRotedRad) {
+				mAngleX += mLerp(0.0f, mRotRad, ROTATION_FRAME);	//アングルXを加算
+				mRotedRad += mLerp(0.0f, mRotRad, ROTATION_FRAME);	//回転した角度へ回転させた角度分加算
+				//回転させたい角度を回転した角度が超えたとき
+				if (mRotRad <= mRotedRad) {
+					//超過分を調整する
+					float adjust = mRotedRad - mRotRad;
+					mAngleX -= adjust;
+					//敵の方向へ回転するフラグをfalseにする
+					mIsRot = false;
+				}
+			}
+			break;
+		}
+	}
+	else {
+		if (moveX != 0) mAngleX += (moveX * 0.005f);
+		if (moveY != 0) mAngleY += (moveY * 0.005f);
+
+		//Eキーを押したとき、敵が存在していれば通る
+		if (CKey::Once('E') && CEnemyManager::GetInstance()->GetNearEnemy() != nullptr) {
+			//ターゲットになっている敵の方向へカメラを向かせる処理
+			mTargetLook();
+		}
+	}
+
 	//Y軸制限 0～3.14が180度範囲
 	if (mAngleY < 0.05f) mAngleY = 0.05f;
 	if (mAngleY > 1.51f) mAngleY = 1.51f;
 
-	if (CKey::Push('C')&& CEnemyManager::GetInstance()->GetNearEnemy()!=nullptr) {
-		//注視点はプレイヤーに1番近い敵
-		mCenter = CEnemyManager::GetInstance()->GetNearEnemy()->mPosition;
-		//プレイヤーに一番近い敵からプレイヤーに伸びるベクトルを求める
-		CVector pos = CXPlayer::GetInstance()->mPosition - CEnemyManager::GetInstance()->GetNearEnemy()->mPosition;
-		//posのYは0.0にしておく
-		pos.mY = 0.0f;
-		//ベクトルを正規化
-		pos = pos.Normalize();
-		//プレイヤーからの距離を設定
-		pos = pos * 7.0f;
-		//カメラの高さを設定
-		pos.mY = 4.0f;
-		//カメラの位置を設定
-		mPos = CXPlayer::GetInstance()->mPosition + pos;
-		mCenter.mY += DEF_CAMERA_HEAD_ADJUST; //注視点を調整する
-		//視点を設定
-		mEye = mPos;
-	}
-	else {
-		mPos.mX = mTarget.mX + (sinf(mAngleX)) * (mDist * sinf(mAngleY));
-		mPos.mY = mTarget.mY + cosf(mAngleY) * mDist;
-		mPos.mZ = mTarget.mZ + (cosf(mAngleX)) * (mDist * sinf(mAngleY));
+	mPos.mX = mTarget.mX + (sinf(mAngleX)) * (mDist * sinf(mAngleY));
+	mPos.mY = mTarget.mY + cosf(mAngleY) * mDist;
+	mPos.mZ = mTarget.mZ + (cosf(mAngleX)) * (mDist * sinf(mAngleY));
 
-		mCenter = mTarget;
-		mCenter.mY += DEF_CAMERA_HEAD_ADJUST;//頭上補正
-		mEye = mPos;
-	}
+	mCenter = mTarget;
+	mCenter.mY += CAMERA_HEAD_ADJUST;//頭上補正
+	mEye = mPos;
 
 	//線コライダセット
 	mColliderLine.Set(this, nullptr, mEye, mCenter);
@@ -215,4 +247,55 @@ void CCamera::Collision(CCollider* m, CCollider* o)
 void CCamera::TaskCollision()
 {
 	CCollisionManager::Get()->Collision(&mColliderLine, COLLISIONRANGE);
+}
+
+//ターゲットになっている敵の方向へカメラを向かせる処理
+void CCamera::mTargetLook()
+{
+	//nullptrで無ければ通る
+	if (CEnemyManager::GetInstance()->GetNearEnemy() != nullptr) {
+		//プレイヤーに一番近い敵からプレイヤーに伸びるベクトルを求める
+		CVector pos = CXPlayer::GetInstance()->mPosition - CEnemyManager::GetInstance()->GetNearEnemy()->mPosition;
+		//posのYは0.0にしておく
+		pos.mY = 0.0f;
+		//ベクトルを正規化
+		pos = pos.Normalize();
+		//プレイヤーからの距離を設定
+		pos = pos * DEF_CAMERA_DIST;
+		//カメラを移動させたい位置を設定
+		mPos = CXPlayer::GetInstance()->mPosition + pos;
+
+		//プレイヤーから現在のカメラの位置までのベクトル
+		CVector vec1 = CXPlayer::GetInstance()->mPosition - mEye;
+		//プレイヤーからカメラを移動させたい位置までのベクトル
+		CVector vec2 = CXPlayer::GetInstance()->mPosition - mPos;
+		//高さは0にする
+		vec1.mY = 0.0f;
+		vec2.mY = 0.0f;
+		//ベクトルの長さをもとめる
+		float len1 = vec1.Length();
+		float len2 = vec2.Length();
+
+		float dot = (vec1.mX * vec2.mX) + (vec1.mZ * vec2.mZ);	//内積
+		float cross = (vec1.mX * vec2.mZ) - (vec1.mZ * vec2.mX);//外積
+		float cos_sita = dot / (len1 * len2);	//コサインシータを求める
+		mRotRad = acosf(cos_sita);	//回転させたい角度を設定
+		//NaN判定
+		if (isnan(mRotRad)) {
+			mRotRad = 0.0f;
+		}
+		//回転させたい角度が0ではないとき
+		if (mRotRad != 0.0f) {
+			//回転フラグをtrueにする
+			mIsRot = true;
+		}
+		//外積で回転させる方向を判断
+		if (cross > 0.0f) {
+			mRotDir = LEFT; //左へ回転
+		}
+		else if (cross < 0.0f) {
+			mRotDir = RIGHT; //右へ回転
+		}
+		mRotedRad = 0.0f;	//回転した角度を初期化
+	}
 }
