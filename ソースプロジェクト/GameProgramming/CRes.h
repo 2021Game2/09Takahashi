@@ -24,9 +24,11 @@ public:
 	static CModel sModelCylinder;	//シリンダーモデル
 
 	//画像系
-	static CText sFont;				//フォント画像
-	static CTexture sImageGauge;	//ゲージ画像
-	static CTexture sImageTarget;	//ターゲット画像
+	static CText sFont;					//フォント画像
+	static CTexture sImageGauge;		//ゲージ画像
+	static CTexture sImageGaugeFrame;	//ゲージ枠画像
+	static CTexture sImageTarget;		//ターゲット画像
+	static CTexture sImageStun;			//スタン画像
 
 	static CTexture sImagePortion;	//回復薬画像
 	static CTexture sImageTrap;		//罠画像
@@ -43,9 +45,18 @@ public:
 
 	static CTexture sImageBlack;			//黒画像
 
+	static CTexture sImageTitleText;		//タイトルテキスト画像
+	static CTexture sImageTitleBack;		//タイトル背景画像
+
+	static CTexture sImageStageClearText;	//ステージクリアテキスト画像
+	static CTexture sImageGameClearText;	//ゲームクリアテキスト画像
+	static CTexture sImageGameOverText;		//ゲームオーバーテキスト画像
+
 	//サウンド系
+	//SE
 	static CSound sSEPlayerWalk;	//プレイヤーの歩行時の効果音
 	static CSound sSEPlayerRun;		//プレイヤーの走行時の効果音
+	static CSound sSEPlayerRunSlow;	//プレイヤーの走行時(スタミナ切れ)の効果音
 	static CSound sSEPlayerAvoid;	//プレイヤーの回避時の効果音
 	static CSound sSEAttackHit1;	//攻撃ヒット時の効果音1
 	static CSound sSEAttackHit2;	//攻撃ヒット時の効果音2
@@ -54,6 +65,10 @@ public:
 	static CSound sSETrapActive;	//罠アイテム作動時の効果音
 	static CSound sSETransitionTitle;	//シーンがタイトルに遷移する時の効果音
 	static CSound sSETransitionRecord;	//シーンがレコードに遷移する時の効果音
+	//BGM
+	static CSound sBGMTitle;	//タイトル画面BGM
+	static CSound sBGMBattle;	//戦闘時BGM
+
 };
 
 #endif

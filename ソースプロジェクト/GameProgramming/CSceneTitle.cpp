@@ -7,6 +7,18 @@
 #include "CRes.h"
 #include "CSceneGame.h"
 
+//スタートボタン座標
+#define STARTBUTTON_LEFT 210	//スタートボタン左座標
+#define STARTBUTTON_RIGHT 590	//スタートボタン右座標
+#define STARTBUTTON_DOWN 180	//スタートボタン下座標
+#define STARTBUTTON_UP 240		//スタートボタン上座標
+
+//リザルトボタン座標
+#define RESULTBUTTON_LEFT 290	//リザルトボタン左座標
+#define RESULTBUTTON_RIGHT 510	//リザルトボタン右座標
+#define RESULTBUTTON_DOWN 80	//リザルトボタン下座標
+#define RESULTBUTTON_UP 140		//リザルトボタン上座標
+
 CSceneTitle::CSceneTitle()
 	:mSelect(EBACKGROUND)
 	,mFade(EFADE_STOP)
@@ -19,6 +31,7 @@ void CSceneTitle::Init()
 {
 	mScene = ETITLE; //シーンタイトル
 	mFade = EFADE_IN;
+	CRes::sBGMTitle.Repeat(); //BGM再生
 }
 
 void CSceneTitle::Update()
@@ -28,13 +41,13 @@ void CSceneTitle::Update()
 	mouseY = 600 - mouseY;
 
 	//ゲームスタートボタン上にマウスポインタがあるとき
-	if ((mouseX >= 240 - 20 && mouseX <= (240 - 20) + (40 * 9)) &&
-		(mouseY >= 220 - 20 && mouseY <= 220 + 20)) {
+	if ((mouseX >= STARTBUTTON_LEFT && mouseX <= STARTBUTTON_RIGHT) &&
+		(mouseY >= STARTBUTTON_DOWN && mouseY <= STARTBUTTON_UP)) {
 		mSelect = EGAMESTART;
 	}
 	//レコードボタン上にマウスポインタがあるとき
-	else if ((mouseX >= 300 - 20 && mouseX <= (300 - 20) + (40 * 6)) &&
-		(mouseY >= 120 - 20 && mouseY <= 120 + 20)) {
+	else if ((mouseX >= RESULTBUTTON_LEFT && mouseX <= RESULTBUTTON_RIGHT) &&
+		(mouseY >= RESULTBUTTON_DOWN && mouseY <= RESULTBUTTON_UP)) {
 		mSelect = CSceneTitle::ERECORD;
 	}
 	//上記以外は背景
@@ -97,6 +110,7 @@ void CSceneTitle::Update()
 		else if (CRes::sImageBlack.mAlpha == 1.0f) {
 			//保存された遷移先へシーンを移行する
 			mScene = mSceneTransitionKeep;
+			CRes::sBGMTitle.Stop(); //BGM停止
 		}
 		break;
 	}
@@ -104,32 +118,31 @@ void CSceneTitle::Update()
 
 void CSceneTitle::Render()
 {
+	//2D描画開始
 	CUtil::Start2D(0, 800, 0, 600);
 
-	CRes::sFont.DrawString("BATTLE", 200, 500, 40, 40);
-	CRes::sFont.DrawString("COLISEUM", 120, 400, 40, 40);
-
+	CRes::sImageTitleBack.Draw(0, 800, 0, 600, 0, 800, 600, 0);	//タイトル背景画像
+	
 	//選択中の場所
 	switch (mSelect) {
 	case EGAMESTART: //ゲームスタートボタン
-		CRes::sImageButtonBack.Draw(220, 580, 200, 240, 338, 338, 20, 20); //ボタン背景描画
+		CRes::sImageButtonBack.Draw(STARTBUTTON_LEFT, STARTBUTTON_RIGHT, STARTBUTTON_DOWN, STARTBUTTON_UP, 510, 510, 510, 510); //ボタン背景描画
 		break;
 
 	case CSceneTitle::ERECORD: //レコードボタン
-		CRes::sImageButtonBack.Draw(280, 520, 100, 140, 338, 338, 20, 20); //ボタン背景描画
+		CRes::sImageButtonBack.Draw(RESULTBUTTON_LEFT, RESULTBUTTON_RIGHT, RESULTBUTTON_DOWN, RESULTBUTTON_UP, 510, 510, 510, 510); //ボタン背景描画
 		break;
 
 	default:
 		break;
 	}
 
-	CRes::sFont.DrawString("GAMESTART", 240, 220, 20, 20);
-
-	CRes::sFont.DrawString("RECORD", 300, 120, 20, 20);
+	CRes::sImageTitleText.Draw(0, 800, 0, 600, 0, 800, 600, 0);	//タイトルテキスト画像
 
 	//黒い画像を表示
 	CRes::sImageBlack.Draw(0, 800, 0, 600, 1, 1, 1, 1);
 
+	//2D描画終了
 	CUtil::End2D();
 }
 

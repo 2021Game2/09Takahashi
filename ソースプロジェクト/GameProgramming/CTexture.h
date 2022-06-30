@@ -65,6 +65,7 @@ public:
 	void Draw(float left, float right, float bottom, float top, int tleft, int tright, int tbottom, int ttop);
 
 	float mAlpha;	//アルファ値
+
 };
 
 #endif

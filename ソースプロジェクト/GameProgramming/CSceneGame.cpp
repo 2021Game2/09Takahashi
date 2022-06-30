@@ -118,6 +118,9 @@ void CSceneGame::Init() {
 		CEffect2::sMaterial.mDiffuse[0] = CEffect2::sMaterial.mDiffuse[1] =
 			CEffect2::sMaterial.mDiffuse[2] = CEffect2::sMaterial.mDiffuse[3] = 1.0f;
 	}
+
+	//BGM再生
+	CRes::sBGMBattle.Repeat();
 }
 
 void CSceneGame::Update() {
@@ -204,6 +207,7 @@ void CSceneGame::Update() {
 		else if(CRes::sImageBlack.mAlpha == 1.0f){
 			//保存された遷移先へシーンを移行する
 			mScene = mSceneTransitionKeep;
+			CRes::sBGMBattle.Stop(); //BGM停止
 		}
 		break;
 	}
@@ -226,7 +230,7 @@ void CSceneGame::Render() {
 
 #ifdef _DEBUG
 	//コライダの描画
-	CCollisionManager::Get()->Render();
+	//CCollisionManager::Get()->Render();
 #endif
 
 	//2D描画開始
@@ -242,8 +246,8 @@ void CSceneGame::Render() {
 
 	//プレイヤーが死亡状態になるとGAMEOVERと表示する
 	if (CXPlayer::GetInstance()->GetState() == CXPlayer::EPlayerState::EDEATH) {
-		CRes::sFont.DrawString("GAMEOVER", 120, 350, 40, 40);
-		CRes::sFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
+		//ゲームオーバー時の画像を表示
+		CRes::sImageGameOverText.Draw(0, 800, 0, 600, 0, 800, 600, 0);
 	}
 
 	//現在のフェーズを判断
@@ -260,8 +264,8 @@ void CSceneGame::Render() {
 		CRes::sFont.DrawString("FINALPHASE", 580, 550, 10, 10);
 		//敵が全て死亡状態のときCLEARとPUSHENTERを表示する
 		if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
-			CRes::sFont.DrawString("CLEAR", 230, 350, 40, 40);
-			CRes::sFont.DrawString("PUSH ENTER", 125, 270, 30, 30);
+			//ステージクリア時の画像を表示
+			CRes::sImageStageClearText.Draw(0, 800, 0, 600, 0, 800, 600, 0);
 		}
 		break;
 	}

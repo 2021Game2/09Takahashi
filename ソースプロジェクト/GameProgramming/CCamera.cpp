@@ -73,10 +73,8 @@ void CCamera::Update() {
 	int mouseX(0), mouseY(0);
 	CInput::GetMousePosW(&mouseX, &mouseY);
 
-
 	float moveX = (float)(oldMouseX - mouseX);
 	float moveY = (float)(oldMouseY - mouseY);
-
 
 	//ƒ}ƒEƒX‚ğ‰æ–Ê’†‰›‚ÉŒÅ’è
 	int X = WIN_CENTRAL_X;
@@ -91,7 +89,6 @@ void CCamera::Update() {
 		mDist -= (float)(wheel) * 0.5f;
 	}
 	*/
-
 
 	//X²{‰ñ“]
 	//if (CKey::Push('K')) {

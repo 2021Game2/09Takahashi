@@ -206,6 +206,11 @@ void CXEnemy::Render2D()
 			//ターゲット画像表示
 			CRes::sImageTarget.Draw(ret.mX - 30.0f, ret.mX + 30.0f, ret.mY - 30.0f, ret.mY + 30.0f, 0, 255, 255, 0);
 		}
+		//スタン状態のとき
+		if (mState == ESTUN) {
+			//スタン画像表示
+			CRes::sImageStun.Draw(ret.mX - 20.0f, ret.mX + 20.0f, ret.mY + 45.0f, ret.mY + 85.0f, 0, 255, 255, 0);
+		}
 	}
 	//2Dの描画終了
 	CUtil::End2D();

@@ -26,9 +26,6 @@ private:
 	bool mIsRot;		//一番近い敵の方向へ回転するフラグ
 	float mRotRad;		//回転させたい角度
 	float mRotedRad;	//回転した角度
-
-	float mLerp(float start, float point, float rate); //線形補間
-
 public:
 	CCamera();
 	//視点
@@ -79,6 +76,9 @@ public:
 
 	//ターゲットになっている敵の方向へカメラを向かせる処理
 	void mTargetLook();
+
+	//線形補間
+	float mLerp(float start, float point, float rate);
 };
 
 //カメラの外部参照

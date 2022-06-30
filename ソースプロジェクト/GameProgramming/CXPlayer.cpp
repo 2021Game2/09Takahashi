@@ -31,8 +31,25 @@
 #define PORTION_QUANTITY 5		//回復薬の所持数
 #define HEAL_AMOUNT HP_MAX*0.3f	//回復薬を使用したときの回復量、体力最大値の3割回復する
 
-#define GAUGE_WID_MAX 400.0f	//ゲージの幅の最大値
-#define GAUGE_LEFT 20			//ゲージ描画時の左端
+#define GAUGE_FRAME_TEX_WID 426	//ゲージ枠の画像の幅
+#define GAUGE_FRAME_TEX_HEI 62	//ゲージ枠の画像の高さ
+#define GAUGE_FRAME_TEX_GAUGE_START 87 //ゲージ枠の画像のゲージ開始地点
+
+#define GAUGE_FRAME_LEFT 20	//ゲージ枠左座標
+#define GAUGE_FRAME_RIGHT (GAUGE_FRAME_LEFT+GAUGE_FRAME_TEX_WID) //ゲージ枠右座標
+#define GAUGE_FRAME_TOP 590 //ゲージ枠上座標
+#define GAUGE_FRAME_BOTTOM (GAUGE_FRAME_TOP-GAUGE_FRAME_TEX_HEI) //ゲージ枠下座標
+
+#define GAUGE_LEFT (GAUGE_FRAME_LEFT+GAUGE_FRAME_TEX_GAUGE_START)	//ゲージ描画時の左座標
+#define GAUGE_WID_MAX (GAUGE_FRAME_TEX_WID - GAUGE_FRAME_TEX_GAUGE_START)	//ゲージの幅の最大値
+
+#define GAUGE_HEIGHT 30 //ゲージ描画時の高さ
+
+#define GAUGE_HP_TOP GAUGE_FRAME_TOP //HPゲージ描画時の上座標
+#define GAUGE_HP_BOTTOM (GAUGE_HP_TOP-GAUGE_HEIGHT) //HPゲージ描画時の下座標
+
+#define GAUGE_STAMINA_TOP (GAUGE_FRAME_TOP-32) //スタミナゲージ描画時の上座標
+#define GAUGE_STAMINA_BOTTOM (GAUGE_STAMINA_TOP-GAUGE_HEIGHT) //スタミナゲージ描画時の下座標
 
 CXPlayer* CXPlayer::mInstance;
 
@@ -67,6 +84,7 @@ CXPlayer::CXPlayer()
 	, mKnockBackDir(0.0f, 0.0f, 0.0f)
 	, mAttackDir(0.0f, 0.0f, 0.0f)
 	, mpTargetEnemy(nullptr)
+	, mFollowGaugeWid(GAUGE_WID_MAX)
 {
 	//タグを設定
 	mTag = EPLAYER;	//プレイヤー
@@ -197,22 +215,49 @@ void CXPlayer::Render2D()
 	//2D描画開始
 	CUtil::Start2D(0, 800, 0, 600);
 
+	//ゲージを揺らす用
+	int shakeX = 0;
+	int shakeY = 0;
+
+	//ノックバック状態のとき
+	if (mState == EKNOCKBACK) {
+		//赤い画像を表示する
+		CRes::sImageGauge.mAlpha = 0.3f;	//アルファ値を変更
+		CRes::sImageGauge.Draw(0, 800, 0, 600, 410, 410, 410, 410);	//描画
+		CRes::sImageGauge.mAlpha = 1.0f;	//アルファ値を戻す
+		//ゲージを揺らす値を設定
+		shakeX = -5 + rand() % 10;
+		shakeY = -5 + rand() % 10;
+	}
+
+	//ゲージ枠表示
+	CRes::sImageGaugeFrame.Draw(GAUGE_FRAME_LEFT, GAUGE_FRAME_RIGHT, GAUGE_FRAME_BOTTOM, GAUGE_FRAME_TOP, 0, GAUGE_FRAME_TEX_WID, GAUGE_FRAME_TEX_HEI, 0);
+
+	//体力ゲージ
 	float HpRate = (float)mHp / (float)HP_MAX;	//体力最大値に対する、現在の体力の割合
 	float HpGaugeWid = GAUGE_WID_MAX * HpRate;	//体力ゲージの幅
+	//被ダメージ分後追いするゲージの幅が体力ゲージの幅より大きい時
+	if (mFollowGaugeWid > HpGaugeWid) {
+		//線形補間で被ダメージ分後追いするゲージの幅を設定する
+		mFollowGaugeWid = Camera.mLerp(mFollowGaugeWid, HpGaugeWid, 0.05f);
+	}
+	//被ダメージ分後追いするゲージの幅が体力ゲージの幅より小さいとき
+	else if (mFollowGaugeWid < HpGaugeWid) {
+		//被ダメージ分後追いするゲージの幅に体力ゲージの幅を設定する
+		mFollowGaugeWid = HpGaugeWid;
+	}
+	CRes::sImageGauge.Draw(GAUGE_LEFT + shakeX, GAUGE_LEFT + mFollowGaugeWid + shakeX, GAUGE_HP_BOTTOM + shakeY, GAUGE_HP_TOP + shakeY, 443, 443, 36, 36);	//被ダメージ分後追いするゲージを表示
+	CRes::sImageGauge.Draw(GAUGE_LEFT + shakeX, GAUGE_LEFT + HpGaugeWid + shakeX, GAUGE_HP_BOTTOM + shakeY, GAUGE_HP_TOP + shakeY, 0, 0, 0, 0);				//体力ゲージを表示
 
-	CRes::sImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + GAUGE_WID_MAX, 560, 590, 210, 290, 63, 0);	//体力ゲージ背景を表示
-	CRes::sImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + HpGaugeWid, 560, 590, 0, 0, 0, 0);;			//体力ゲージを表示
-
+	//スタミナゲージ
 	float StaminaRate = (float)mStamina / (float)STAMINA_MAX;	//スタミナ最大値に対する、現在のスタミナの割合
 	float StaminaGaugeWid = GAUGE_WID_MAX * StaminaRate;		//スタミナゲージの幅
-
-	CRes::sImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + GAUGE_WID_MAX, 520, 550, 210, 290, 63, 0);	//スタミナゲージ背景を表示
-	CRes::sImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + StaminaGaugeWid, 520, 550, 110, 190, 63, 0);	//スタミナゲージを表示
+	CRes::sImageGauge.Draw(GAUGE_LEFT, GAUGE_LEFT + StaminaGaugeWid, GAUGE_STAMINA_BOTTOM, GAUGE_STAMINA_TOP, 110, 190, 63, 0);	//スタミナゲージを表示
 
 	char buf[64];
 	CRes::sImageGauge.Draw(630, 750, 30, 150, 310, 390, 63, 0);	//アイテム背景を表示
 	//選択中のアイテム
-	switch (mItemSelect) {	
+	switch (mItemSelect) {
 	case ETRAP: //罠
 		CRes::sImageTrap.Draw(640, 740, 40, 140, 0, 255, 255, 0); //罠画像を表示
 		sprintf(buf, "%d", CTrapManager::GetInstance()->mTrapQuantity); //罠の所持数
@@ -420,18 +465,21 @@ void CXPlayer::Move()
 //ダッシュ処理
 void CXPlayer::Dash()
 {
-	ChangeAnimation(1, true, 40);
 	//スタミナが残っているとき
 	if (mStamina > 0) {
+		ChangeAnimation(1, true, 40);
 		mSpeed = SPEED_DASH_HIGH;
 		mStamina--;
+		if (mStamina == 0) {
+			CRes::sSEPlayerRun.Stop();		//効果音停止
+			CRes::sSEPlayerRunSlow.Repeat();	//効果音再生
+		}
 	}
 	//スタミナ切れ状態
 	else {
+		ChangeAnimation(1, true, 100);
 		mSpeed = SPEED_DASH_LOW;
 	}
-
-	//MoveCamera();	//移動処理を呼ぶ
 
 	//左クリックで攻撃1へ移行
 	if (CKey::Once(VK_LBUTTON)) {
@@ -451,7 +499,7 @@ void CXPlayer::Dash()
 		//SHIFTキーを押しているとダッシュ
 		if (CKey::Push(VK_SHIFT) == false) {
 			mState = EMOVE;
-			CRes::sSEPlayerWalk.Play(); //効果音を再生
+			CRes::sSEPlayerWalk.Repeat(); //効果音を再生
 		}
 		else {
 			MoveCamera(); //カメラを基準にした移動処理を呼ぶ
@@ -464,6 +512,7 @@ void CXPlayer::Dash()
 	//状態が移行したとき、効果音を停止する
 	if (mState != EDASH) {
 		CRes::sSEPlayerRun.Stop();
+		CRes::sSEPlayerRunSlow.Stop();
 	}
 }
 
@@ -681,11 +730,11 @@ void CXPlayer::Avoid()
 			//SHIFTキーを押しているとダッシュへ移行
 			if (CKey::Push(VK_SHIFT)) {
 				mState = EDASH;
-				CRes::sSEPlayerRun.Play(); //効果音を再生
+				CRes::sSEPlayerRun.Repeat(); //効果音を再生
 			}
 			else {
 				mState = EMOVE;
-				CRes::sSEPlayerWalk.Play(); //効果音を再生
+				CRes::sSEPlayerWalk.Repeat(); //効果音を再生
 			}
 		}
 		//待機状態へ移行

@@ -73,6 +73,8 @@ private:
 	int mPortionQuantity;	//回復薬の所持数
 	bool mIsItemUse();		//アイテムが使用可能な時にtrueを返す
 
+	float mFollowGaugeWid;	//被ダメージ分後追いするゲージの幅
+
 	void Idle();		//待機処理
 	void MoveCamera();	//カメラを基準にした移動処理
 	void Move();		//移動処理
