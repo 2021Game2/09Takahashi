@@ -32,8 +32,8 @@ private:
 	EScene mSceneTransitionKeep; //シーンの遷移先を保存する
 
 public:
-	CSceneGame();
-	~CSceneGame();
+	CSceneGame();	//デフォルトコンストラクタ
+	~CSceneGame();	//デストラクタ
 	//初期化処理のオーバーライド
 	void Init();
 	//更新処理のオーバーライド

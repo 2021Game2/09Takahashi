@@ -34,7 +34,7 @@
 #define ENEMY_GENERATE_NUM_FINALPHASE 3 //最終フェーズ
 //敵の体力
 #define ENEMY_HP_PHASE1 1
-#define ENEMY_HP_PHASE2 1
+#define ENEMY_HP_PHASE2 1000
 #define ENEMY_HP_FINALPHASE 1
 //敵の初期位置
 #define ENEMY_START_POS_PHASE1 CVector(0.0f,0.0f,-10.0f) //フェーズ1
@@ -61,14 +61,20 @@ CSceneGame::CSceneGame()
 }
 
 CSceneGame::~CSceneGame() {
-	CXPlayer::Release();		//プレイヤー解放
-	CMap::Release();			//マップ解放
-	CMap2::Release();			//マップ2解放
-	CEnemyManager::Release();	//敵管理解放
-	CTrapManager::Release();	//罠管理解放
 	//タイトルに戻るとき
 	if (mScene == ETITLE) {
-		ShowCursor(true);		//カーソル表示
+		CXPlayer::Release();		//プレイヤー解放
+		CMap::Release();			//マップ解放
+		CMap2::Release();			//マップ2解放
+		CEnemyManager::Release();	//敵管理解放
+		CTrapManager::Release();	//罠管理解放
+		ShowCursor(true);			//カーソル表示
+		Camera.SetCameraMode(CCamera::NORMAL);	//カメラのモードを通常モードに設定
+	}
+	//次のステージへ進んだとき
+	else {
+		CEnemyManager::Release();	//敵管理解放
+		CTrapManager::Release();	//罠管理解放
 	}
 }
 
@@ -165,6 +171,8 @@ void CSceneGame::Update() {
 	case EPHASE_FINAL: //最終フェーズ
 		//敵が全て死亡状態になったとき
 		if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
+			//カメラのモードを通常モードに設定する
+			Camera.SetCameraMode(CCamera::NORMAL);
 			//Enterキーを押したとき
 			if (CKey::Once(VK_RETURN)) {
 				//クリア時間を記録

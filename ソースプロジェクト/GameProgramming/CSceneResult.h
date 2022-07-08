@@ -20,7 +20,7 @@ private:
 
 	bool mIsButtonPush; //ボタンを押しているとtrue
 public:
-	CSceneResult();
+	CSceneResult();	//デフォルトコンストラクタ
 
 	void Init();	//初期化処理
 	void Update();	//更新処理

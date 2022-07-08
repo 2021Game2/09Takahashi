@@ -46,7 +46,14 @@ protected:
 	CVector mRot;			//回転
 	float mDot;				//内積
 
+	bool mIsHit;			//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
+
 	bool mIsInvincible;		//無敵フラグ、プレイヤーの攻撃がヒットするとtrueを返す
+
+	bool mIsTarget;			//プレイヤーの攻撃時の対象になっている時trueを返す
+
+	float mScore;			//プレイヤーのターゲット選別用スコア
+	void mScoreChange();	//スコア変更処理
 
 	virtual void Idle();		//待機処理
 	virtual void AutoMove();	//移動処理
@@ -62,7 +69,7 @@ protected:
 	EEnemyType mEnemyType;	//敵の種類判断用
 	EEnemyState mState;		//敵の状態判断用
 public:
-	CXEnemy();
+	CXEnemy();	//デフォルトコンストラクタ
 	/*
 	初期化(Xモデルクラスのポインタ)
 	*/
@@ -80,10 +87,14 @@ public:
 	CVector GetPos();			//位置を取得
 
 	void SetHp(int hp);			//体力を設定
+	int GetHp();				//体力を取得
 
-	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
+	bool GetIsHit();				//攻撃の当たり判定フラグを取得
+	void SetIsHit(bool hitflag);	//攻撃の当たり判定フラグを設定
 
-	bool mIsTarget; //プレイヤーの攻撃時の対象になっている時trueを返す
+	void SetIsTarget(bool targetflag);	//プレイヤーの攻撃対象か判別するフラグを設定する
+
+	float GetScore();	//スコアを取得
 
 	CXEnemy::EEnemyState GetState();	//敵の状態を取得
 

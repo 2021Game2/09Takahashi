@@ -68,6 +68,7 @@ CSceneGame2::~CSceneGame2() {
 	CEnemyManager::Release();	//敵管理解放
 	CTrapManager::Release();	//罠管理解放
 	ShowCursor(true);			//カーソル表示
+	Camera.SetCameraMode(CCamera::NORMAL);	//カメラのモードを通常モードに設定
 }
 
 void CSceneGame2::Init() {
@@ -76,7 +77,7 @@ void CSceneGame2::Init() {
 	mCountStart = false;
 
 	//プレイヤー生成
-	CXPlayer::Generate();
+	//CXPlayer::Generate();
 	//プレイヤーの初期化
 	CXPlayer::GetInstance()->Init(&CRes::sModelXPlayer);
 
@@ -87,9 +88,9 @@ void CSceneGame2::Init() {
 	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM_PHASE1, CXEnemy::ETYPE_2, ENEMY_HP_PHASE1, pos);
 
 	//マップ生成
-	CMap::Generate();
+	//CMap::Generate();
 	//マップ2生成
-	CMap2::Generate();
+	//CMap2::Generate();
 
 	//トラップ管理生成
 	CTrapManager::Generate();
@@ -162,6 +163,8 @@ void CSceneGame2::Update() {
 	case EPHASE_FINAL: //最終フェーズ
 		//敵が全て死亡状態になったとき
 		if (CEnemyManager::GetInstance()->mIsEnemyAllDeath()) {
+			//カメラのモードを通常モードに設定する
+			Camera.SetCameraMode(CCamera::NORMAL);
 			//Enterキーを押したとき
 			if (CKey::Once(VK_RETURN)) {
 				//クリア時間を記録

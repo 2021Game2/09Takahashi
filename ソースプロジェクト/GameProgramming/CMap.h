@@ -9,8 +9,8 @@ class CMap : public CCharacter
 private:
 	static CMap* mInstance; //マップのインスタンス
 public:
-	CMap();
-	~CMap();
+	CMap();		//デフォルトコンストラクタ
+	~CMap();	//デストラクタ
 
 	static void Generate();	//生成
 	static void Release();	//解放

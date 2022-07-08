@@ -14,26 +14,27 @@ private:
 
 	std::vector<CXEnemy*> mEnemyList; //敵格納
 
-	CXEnemy* mNearTarget; //一番近い敵を格納
+	CXEnemy* mTargetEnemy; //一番スコアが高い敵を格納
 
 	int mEnemyDeathNum; //死亡状態の敵の数
 
 	int mEnemyAttackNum; //攻撃状態の敵の数
 
 	CVector mEnemyStartPos[ENEMY_GENERATE_NUM] = { ENEMY_START_POS }; //敵の初期座標
+
 public:
-	CEnemyManager();
-	~CEnemyManager();
+	CEnemyManager();	//デフォルトコンストラクタ
+	~CEnemyManager();	//デストラクタ
 
 	static void Generate(); //生成
 	static void Release(); //破棄
 	static CEnemyManager* GetInstance(); //インスタンス取得
 
 	void EnemyGenerate(int num, int type, int hp,CVector pos[]); //敵生成、引数で生成数と敵の種類と初期体力(省略可)を指定する
-	CXEnemy* GetNearEnemy(); //一番近い敵を取得する
+	CXEnemy* GetTargetEnemy(); //一番近い敵を取得する
 
-	void Update();
-	void Render();
+	void Update();	//更新
+	void Render();	//描画
 
 	void AIUpdate(); //AI更新
 

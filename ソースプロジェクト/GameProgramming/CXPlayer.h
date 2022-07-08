@@ -48,6 +48,8 @@ private:
 	bool mAttackFlag_2;		//攻撃2状態の時trueを返す
 	float mAttack2Speed;	//攻撃2の時のスピード
 	bool mAttackFlag_3;		//攻撃3状態の時trueを返す
+	bool mIsHit;			//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
+	bool mAttackFlag_Once;	//攻撃した瞬間だけtrueを返す、敵の回避判定に使用
 
 	int mGraceTime;			//派生攻撃の受付時間
 	int mComboCount;		//派生攻撃を連続で行った回数
@@ -71,6 +73,7 @@ private:
 	};
 	int mItemSelect;		//選択中のアイテム
 	int mPortionQuantity;	//回復薬の所持数
+	int mTrapQuantity;		//罠の所持数
 	bool mIsItemUse();		//アイテムが使用可能な時にtrueを返す
 
 	float mFollowGaugeWid;	//被ダメージ分後追いするゲージの幅
@@ -90,8 +93,8 @@ private:
 
 	EPlayerState mState;	//プレイヤーの状態判断用
 public:
-	CXPlayer();
-	~CXPlayer();
+	CXPlayer();		//デフォルトコンストラクタ
+	~CXPlayer();	//デストラクタ
 
 	/*
 	初期化(Xモデルクラスのポインタ)
@@ -110,10 +113,13 @@ public:
 	static void Release();	//解放
 	static CXPlayer* GetInstance(); //インスタンスを取得
 
-	bool mHit;	//攻撃時にtrueを返す　敵に攻撃が当たるor攻撃終了時にfalseを返す
-	bool mAttackFlag_Once; //攻撃した瞬間だけtrueを返す
+	bool GetIsHit();		//攻撃のヒット判定を取得する
+	bool GetAttackFlag();	//攻撃した瞬間だけtrueを返すフラグを取得する
 
 	CVector GetSwordColPos();	//剣のコライダの座標を取得する
+
+	int GetTrapQuantity();	//罠の所持数を取得する
+	void SetTrapQuantity(int num, bool add = false);	//罠の所持数を設定する、引数addをtrueにすると加算になる
 
 	CXPlayer::EPlayerState GetState();	//プレイヤーの状態を取得する
 };

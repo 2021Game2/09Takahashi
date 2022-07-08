@@ -52,7 +52,7 @@ void CTrap::Collision(CCollider* m, CCollider* o)
 					if (CCollider::Collision(m, o))
 					{
 						mEnemyCol = true; //敵に当たったことを返す
-						CTrapManager::GetInstance()->mMapTrap = false; //マップ上に罠がない判定にする
+						CTrapManager::GetInstance()->SetMapTrapFlag(false); //マップ上に罠がない判定にする
 						CRes::sSETrapActive.Play(); //罠アイテム作動時の効果音を再生する
 					}
 				}

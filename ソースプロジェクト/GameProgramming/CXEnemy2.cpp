@@ -30,9 +30,6 @@ CXEnemy2::CXEnemy2()
 
 	//敵の種類を設定
 	mEnemyType = ETYPE_2;
-
-	//スケールを変更
-	//mScale = CVector(0.9f, 0.9f, 0.9f);
 }
 
 CXEnemy2::~CXEnemy2()
@@ -163,7 +160,7 @@ void CXEnemy2::Attack_Idle()
 		//攻撃可能なとき
 		if (CEnemyManager::GetInstance()->mIsEnemyAttack()) {
 			//ランダムで攻撃を行うかどうかを判定する
-			random = rand() % 180;
+			random = rand() % 120;
 			if (random == 0) {
 				//ランダムで攻撃の種類を決める
 				random = rand() % 2;
@@ -206,11 +203,11 @@ void CXEnemy2::Attack_1()
 	{
 		//ヒット判定発生
 		if (mAnimationFrame == 30) {
-			mHit = true;
+			mIsHit = true;
 		}
 		//ヒット判定終了
 		if (mAnimationFrame == 60) {
-			mHit = false;
+			mIsHit = false;
 		}
 		//アニメーション終了時
 		if (mIsAnimationEnd())
@@ -242,11 +239,11 @@ void CXEnemy2::Attack_2()
 	{
 		//ヒット判定発生
 		if (mAnimationFrame == 40) {
-			mHit = true;
+			mIsHit = true;
 		}
 		//ヒット判定終了
 		if (mAnimationFrame == 70) {
-			mHit = false;
+			mIsHit = false;
 		}
 		//アニメーション終了時
 		if (mIsAnimationEnd())

@@ -15,7 +15,10 @@ CCamera Camera;
 #define WIN_CENTRAL_X WINDOW_WIDTH/2
 #define WIN_CENTRAL_Y WINDOW_HEIGHT/2
 
-#define ROTATION_FRAME 1.0f/15.0f //回転にかけるフレーム数
+#define CAMERA_SENSITIVITY 0.0025f	//カメラ感度
+#define DELAY_RATE 0.3f				//カメラアングル移動時の遅延割合
+#define TARGETLOOK_Y 0.9f			//ターゲット時のカメラ高さ
+#define ROTATION_RATE 1.0f/15.0f	//回転させたい角度に対する回転する割合
 
 void CCamera::Init()
 {
@@ -35,6 +38,12 @@ void CCamera::Init()
 float CCamera::mLerp(float start, float point, float rate)
 {
 	return start + rate * (point - start);
+
+}
+
+void CCamera::SetCameraMode(ECameraMode cameramode)
+{
+	mCameraMode = cameramode;
 }
 
 CCamera::CCamera()
@@ -42,10 +51,11 @@ CCamera::CCamera()
 	, mAngleY(0.0f)
 	, mDist(0.0f)
 	, mColliderLine(this, nullptr, CVector(0.0f, 0.0f, 0.0f), CVector(0.0f, 0.0f, 0.0f))
-	,mRotDir(LEFT)
-	,mRotRad(0.0f)
-	,mRotedRad(0.0f)
-	,mIsRot(false)
+	, mRotRad(0.0f)
+	, mIsRot(false)
+	, mAngleDelayX(0.0f)
+	, mAngleDelayY(0.0f)
+	, mCameraMode(NORMAL)
 {
 	ChangePriority(10);
 }
@@ -60,6 +70,8 @@ void CCamera::Set(const CVector &eye, const CVector &center,
 	mTarget = center;
 	mAngleX = 0.0f;
 	mAngleY = 1.0f;
+	mAngleDelayX = mAngleX;
+	mAngleDelayY = mAngleY;
 	mDist = DEF_CAMERA_DIST;
 }
 
@@ -118,57 +130,35 @@ void CCamera::Update() {
 		mAngleY -= 0.01f;
 	}
 
-	//敵の方向へ回転するフラグがtrueのとき
-	if (mIsRot == true) {
-		//回転する方向判断
-		switch (mRotDir) {
-		case LEFT: //左
-			//回転させたい角度に回転した角度が満たないとき
-			if (mRotRad > mRotedRad) {
-				mAngleX -= mLerp(0.0f, mRotRad, ROTATION_FRAME);	//アングルXを減算
-				mRotedRad += mLerp(0.0f, mRotRad, ROTATION_FRAME);	//回転した角度へ回転させた角度分加算
-				//回転させたい角度を回転した角度が超えたとき
-				if (mRotRad <= mRotedRad) {
-					//超過分を調整する
-					float adjust = mRotedRad - mRotRad;
-					mAngleX += adjust;
-					//敵の方向へ回転するフラグをfalseにする
-					mIsRot = false;
-				}
-			}
-			break;
+	//カメラのモードを判断
+	switch (mCameraMode) {
+	case NORMAL: //通常モード
+		if (moveX != 0) mAngleDelayX += (moveX * CAMERA_SENSITIVITY);
+		if (moveY != 0) mAngleDelayY += (moveY * CAMERA_SENSITIVITY);
 
-		case RIGHT: //右
-			//回転させたい角度に回転した角度が満たないとき
-			if (mRotRad > mRotedRad) {
-				mAngleX += mLerp(0.0f, mRotRad, ROTATION_FRAME);	//アングルXを加算
-				mRotedRad += mLerp(0.0f, mRotRad, ROTATION_FRAME);	//回転した角度へ回転させた角度分加算
-				//回転させたい角度を回転した角度が超えたとき
-				if (mRotRad <= mRotedRad) {
-					//超過分を調整する
-					float adjust = mRotedRad - mRotRad;
-					mAngleX -= adjust;
-					//敵の方向へ回転するフラグをfalseにする
-					mIsRot = false;
-				}
-			}
-			break;
-		}
-	}
-	else {
-		if (moveX != 0) mAngleX += (moveX * 0.005f);
-		if (moveY != 0) mAngleY += (moveY * 0.005f);
+		mAngleX = mLerp(mAngleX, mAngleDelayX, DELAY_RATE);
+		mAngleY = mLerp(mAngleY, mAngleDelayY, DELAY_RATE);
 
-		//Eキーを押したとき、敵が存在していれば通る
-		if (CKey::Once('E') && CEnemyManager::GetInstance()->GetNearEnemy() != nullptr) {
-			//ターゲットになっている敵の方向へカメラを向かせる処理
-			mTargetLook();
+		//Eキーを押したとき
+		if (CKey::Once('E')) {
+			mCameraMode = TARGET_LOOK; //ターゲット状態の敵の方へ向くモードへ移行
 		}
+		break;
+
+	case TARGET_LOOK: //ターゲット状態の敵の方へ向くモード
+		mTargetLook(); //ターゲットになっている敵の方向へカメラを向かせる処理
+		//Eキーを押したとき
+		if (CKey::Once('E')) {
+			mCameraMode = NORMAL; //ターゲット状態の敵の方へ向くモードへ移行
+		}
+		break;
 	}
 
 	//Y軸制限 0～3.14が180度範囲
 	if (mAngleY < 0.05f) mAngleY = 0.05f;
 	if (mAngleY > 1.51f) mAngleY = 1.51f;
+	if (mAngleDelayY < 0.05f) mAngleDelayY = 0.05f;
+	if (mAngleDelayY > 1.51f) mAngleDelayY = 1.51f;
 
 	mPos.mX = mTarget.mX + (sinf(mAngleX)) * (mDist * sinf(mAngleY));
 	mPos.mY = mTarget.mY + cosf(mAngleY) * mDist;
@@ -250,9 +240,9 @@ void CCamera::TaskCollision()
 void CCamera::mTargetLook()
 {
 	//nullptrで無ければ通る
-	if (CEnemyManager::GetInstance()->GetNearEnemy() != nullptr) {
+	if (CEnemyManager::GetInstance()->GetTargetEnemy()) {
 		//プレイヤーに一番近い敵からプレイヤーに伸びるベクトルを求める
-		CVector pos = CXPlayer::GetInstance()->mPosition - CEnemyManager::GetInstance()->GetNearEnemy()->mPosition;
+		CVector pos = CXPlayer::GetInstance()->mPosition - CEnemyManager::GetInstance()->GetTargetEnemy()->mPosition;
 		//posのYは0.0にしておく
 		pos.mY = 0.0f;
 		//ベクトルを正規化
@@ -281,18 +271,19 @@ void CCamera::mTargetLook()
 		if (isnan(mRotRad)) {
 			mRotRad = 0.0f;
 		}
-		//回転させたい角度が0ではないとき
-		if (mRotRad != 0.0f) {
-			//回転フラグをtrueにする
-			mIsRot = true;
-		}
 		//外積で回転させる方向を判断
 		if (cross > 0.0f) {
-			mRotDir = LEFT; //左へ回転
+			//アングルXを減算、左方向へ回転
+			mAngleX -= mLerp(0.0f, mRotRad, ROTATION_RATE);
 		}
 		else if (cross < 0.0f) {
-			mRotDir = RIGHT; //右へ回転
+			//アングルXを加算、右方向へ回転
+			mAngleX += mLerp(0.0f, mRotRad, ROTATION_RATE);
 		}
-		mRotedRad = 0.0f;	//回転した角度を初期化
+		//アングルYを変更
+		mAngleY = mLerp(mAngleY, TARGETLOOK_Y, 0.1f);
 	}
+	//アングル遅延の値を合わせておく
+	mAngleDelayX = mAngleX;
+	mAngleDelayY = mAngleY;
 }

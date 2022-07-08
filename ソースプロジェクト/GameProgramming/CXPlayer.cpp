@@ -30,6 +30,7 @@
 
 #define PORTION_QUANTITY 5		//回復薬の所持数
 #define HEAL_AMOUNT HP_MAX*0.3f	//回復薬を使用したときの回復量、体力最大値の3割回復する
+#define TRAP_QUANTITY 2			//罠の所持数
 
 #define GAUGE_FRAME_TEX_WID 426	//ゲージ枠の画像の幅
 #define GAUGE_FRAME_TEX_HEI 62	//ゲージ枠の画像の高さ
@@ -63,7 +64,7 @@ CXPlayer::CXPlayer()
 	, mAvoidTime(0)
 	, mAvoidSpeed(0.0f)
 	, mSpeed(SPEED_DEFAULT)
-	, mMoveDirKeep(0.0f, 0.0f, 0.0f)
+	, mMoveDirKeep(0.0f, 0.0f, 1.0f)
 	, mInvincibleFlag(false)
 	, mInvincibleTime(0)
 	, mMoveDir(0.0f, 0.0f, 0.0f)
@@ -76,11 +77,12 @@ CXPlayer::CXPlayer()
 	, mAttack2Speed(0.0f)
 	, mAttackFlag_3(false)
 	, mGraceTime(0)
-	, mHit(false)
+	, mIsHit(false)
 	, mItemSelect(HEAD + 1)
 	, mAttackFlag_Once(false)
 	, mComboCount(0)
 	, mPortionQuantity(PORTION_QUANTITY)
+	, mTrapQuantity(TRAP_QUANTITY)
 	, mKnockBackDir(0.0f, 0.0f, 0.0f)
 	, mAttackDir(0.0f, 0.0f, 0.0f)
 	, mpTargetEnemy(nullptr)
@@ -260,7 +262,7 @@ void CXPlayer::Render2D()
 	switch (mItemSelect) {
 	case ETRAP: //罠
 		CRes::sImageTrap.Draw(640, 740, 40, 140, 0, 255, 255, 0); //罠画像を表示
-		sprintf(buf, "%d", CTrapManager::GetInstance()->mTrapQuantity); //罠の所持数
+		sprintf(buf, "%d", mTrapQuantity); //罠の所持数
 		break;
 	case EPORTION: //回復
 		CRes::sImagePortion.Draw(640, 740, 40, 140, 0, 255, 255, 0); //回復薬画像を表示
@@ -299,7 +301,7 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 				{
 					//キャスト変換
 					//敵の攻撃のヒット判定が有効なとき
-					if (((CXEnemy*)(o->mpParent))->mHit == true)
+					if (((CXEnemy*)(o->mpParent))->GetIsHit() == true)
 					{
 						//球コライダ同士の衝突判定
 						if (CCollider::Collision(m, o)) {
@@ -308,11 +310,11 @@ void CXPlayer::Collision(CCollider* m, CCollider* o)
 							case CCollider::EHEAD:	//頭
 							case CCollider::EBODY:	//体
 								mHp -= DAMAGE;		//ダメージを受ける
-								((CXEnemy*)(o->mpParent))->mHit = false; //敵の攻撃のヒット判定を終了させる
+								((CXEnemy*)(o->mpParent))->SetIsHit(false); //敵の攻撃のヒット判定を終了させる
 								mState = EKNOCKBACK;	//ノックバック状態へ移行
 								mKnockBackDir = ((CXEnemy*)(o->mpParent))->mPosition - mPosition; //ノックバックする方向を求める
 								mInvincibleFlag = true;	//無敵フラグを有効にする
-								mHit = false;			//自分の攻撃のヒット判定を無効にする
+								mIsHit = false;			//自分の攻撃のヒット判定を無効にする
 								mAttackFlag_1 = false;
 								mAttackFlag_2 = false;
 								mAttackFlag_3 = false;
@@ -388,10 +390,42 @@ CXPlayer* CXPlayer::GetInstance()
 	return mInstance; //インスタンスを返す
 }
 
+//攻撃の当たり判定を取得する
+bool CXPlayer::GetIsHit()
+{
+	return mIsHit; //攻撃の当たり判定を返す
+}
+
+//攻撃した瞬間だけtrueを返すフラグを取得する
+bool CXPlayer::GetAttackFlag()
+{
+	return mAttackFlag_Once; //攻撃した瞬間だけtrueを返すフラグを返す
+}
+
 //剣のコライダの座標を取得する
 CVector CXPlayer::GetSwordColPos()
 {
 	return mColSphereSword.mpMatrix->GetPos();	//剣のコライダの座標を返す
+}
+
+//罠の所持数を取得する
+int CXPlayer::GetTrapQuantity()
+{
+	return mTrapQuantity;
+}
+
+//罠の所持数を設定する
+void CXPlayer::SetTrapQuantity(int num, bool add)
+{
+	//加算フラグがtrueのとき
+	if (add == true) {
+		//罠の所持数を加算
+		mTrapQuantity += num;
+	}
+	else {
+		//罠の所持数に代入
+		mTrapQuantity = num;
+	}
 }
 
 //プレイヤーの状態を取得する
@@ -526,7 +560,7 @@ void CXPlayer::Attack_1()
 		mGraceTime = 0;
 		mAttackFlag_Once = true;
 		mComboCount++; //コンボ数加算
-		mpTargetEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
+		mpTargetEnemy = CEnemyManager::GetInstance()->GetTargetEnemy(); //プレイヤーに一番近い敵を取得する
 		if (mpTargetEnemy) {
 			mAttackDir = mpTargetEnemy->mPosition - mPosition; //攻撃時の向きを求める
 			mMoveDirKeep = mAttackDir.Normalize();
@@ -546,12 +580,12 @@ void CXPlayer::Attack_1()
 		mPosition += mAttackDir.Normalize() * 0.04f;
 		//ヒット判定発生
 		if (mAnimationFrame == 5) {
-			mHit = true;
+			mIsHit = true;
 		}
 		//アニメーション終了時
 		if (mIsAnimationEnd())
 		{
-			mHit = false; //ヒット判定終了
+			mIsHit = false; //ヒット判定終了
 			ChangeAnimation(4, false, 30);
 			mGraceTime = GRACETIME;	//受付時間を入れる
 		}
@@ -592,7 +626,7 @@ void CXPlayer::Attack_2()
 		mAttackFlag_2 = true;
 		mAttack2Speed = ATTACK2_FIRSTSPEED;
 		mAttackFlag_Once = true;
-		mpTargetEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
+		mpTargetEnemy = CEnemyManager::GetInstance()->GetTargetEnemy(); //プレイヤーに一番近い敵を取得する
 	}
 
 	if (mAnimationIndex == 7)
@@ -607,12 +641,12 @@ void CXPlayer::Attack_2()
 		}
 		//ヒット判定発生
 		if (mAnimationFrame == 8) {
-			mHit = true;
+			mIsHit = true;
 		}
 		//アニメーション終了時
 		if (mIsAnimationEnd())
 		{
-			mHit = false; //ヒット判定終了
+			mIsHit = false; //ヒット判定終了
 			ChangeAnimation(8, false, 30);
 		}
 	}
@@ -641,7 +675,7 @@ void CXPlayer::Attack_3()
 		mAttackFlag_3 = true;
 		mAttackFlag_Once = true;
 		mComboCount++; //コンボ数加算
-		mpTargetEnemy = CEnemyManager::GetInstance()->GetNearEnemy(); //プレイヤーに一番近い敵を取得する
+		mpTargetEnemy = CEnemyManager::GetInstance()->GetTargetEnemy(); //プレイヤーに一番近い敵を取得する
 		if (mpTargetEnemy) {
 			mAttackDir = mpTargetEnemy->mPosition - mPosition; //攻撃時の向きを求める
 			mMoveDirKeep = mAttackDir.Normalize();
@@ -657,12 +691,12 @@ void CXPlayer::Attack_3()
 		mPosition += mAttackDir.Normalize() * 0.03f;
 		//ヒット判定発生
 		if (mAnimationFrame == 0) {
-			mHit = true;
+			mIsHit = true;
 		}
 		//アニメーション終了時
 		if (mIsAnimationEnd())
 		{
-			mHit = false; //ヒット判定終了
+			mIsHit = false; //ヒット判定終了
 			ChangeAnimation(6, false, 30);
 		}
 	}
@@ -845,6 +879,8 @@ void CXPlayer::ItemUse()
 	//選択中のアイテム
 	switch (mItemSelect) {
 	case ETRAP:	//罠
+		//罠の所持数を減らす
+		mTrapQuantity--;
 		//罠生成
 		CTrapManager::GetInstance()->TrapGenerate(mPosition, mRotation);
 		//罠アイテム使用時の効果音を再生する

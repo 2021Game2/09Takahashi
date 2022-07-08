@@ -1,13 +1,11 @@
 #include "CTrapManager.h"
 #include "CTaskManager.h"
-
-#define TRAP_QUANTITY 2	//罠の所持数
+#include "CXPlayer.h"
 
 CTrapManager* CTrapManager::mInstance;
 
 CTrapManager::CTrapManager()
 	:mMapTrap(false)
-	, mTrapQuantity(TRAP_QUANTITY)
 {
 }
 
@@ -15,6 +13,11 @@ CTrapManager::~CTrapManager()
 {
 	for (size_t i = 0; i < mTrapList.size(); i++) {
 		delete mTrapList[i];
+	}
+	//マップ上に罠が残っていた時
+	if (mMapTrap == true) {
+		//罠の所持数を加算
+		CXPlayer::GetInstance()->SetTrapQuantity(1, true);
 	}
 }
 
@@ -47,21 +50,22 @@ void CTrapManager::Update()
 
 void CTrapManager::TrapGenerate(CVector pos, CVector rot)
 {
-	//マップ上に罠がないとき&&罠の所持数が0より多いとき
-	if (mMapTrap == false && mTrapQuantity > 0) {
-		//罠生成
-		CTrap* trap = new CTrap;
-		trap->SetPos(pos);
-		trap->SetRot(rot);
-		trap->Update();
-		mMapTrap = true;
-		mTrapQuantity--;	//罠の所持数を減らす
-		mTrapList.push_back(trap);
-	}
+	//罠生成
+	CTrap* trap = new CTrap;
+	trap->SetPos(pos);
+	trap->SetRot(rot);
+	trap->Update();
+	mMapTrap = true;
+	mTrapList.push_back(trap);
+}
+
+void CTrapManager::SetMapTrapFlag(bool flag)
+{
+	mMapTrap = flag;
 }
 
 bool CTrapManager::TrapAvailable()
 {
 	//罠の所持数が0を上回っているとき、マップ上にトラップが置かれていないときtrueを返す
-	return (mTrapQuantity > 0 && mMapTrap == false);
+	return (CXPlayer::GetInstance()->GetTrapQuantity() > 0 && mMapTrap == false);
 }

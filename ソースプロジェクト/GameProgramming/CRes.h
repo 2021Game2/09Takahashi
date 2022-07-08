@@ -63,8 +63,8 @@ public:
 	static CSound sSEPortionUse;	//回復アイテム使用時の効果音
 	static CSound sSETrapUse;		//罠アイテム使用時の効果音
 	static CSound sSETrapActive;	//罠アイテム作動時の効果音
-	static CSound sSETransitionTitle;	//シーンがタイトルに遷移する時の効果音
-	static CSound sSETransitionRecord;	//シーンがレコードに遷移する時の効果音
+	static CSound sSESelect;		//セレクト時の効果音
+	static CSound sSESelectBack;	//セレクト時の効果音(もどる)
 	//BGM
 	static CSound sBGMTitle;	//タイトル画面BGM
 	static CSound sBGMBattle;	//戦闘時BGM

@@ -8,24 +8,27 @@
 
 #define DEF_CAMERA_DIST 7.0f	//カメラの初期距離
 #define CAMERA_HEAD_ADJUST 3.0f	//注視点の高さ調整
-#define CAMERA_LOCK_HEIGHT 4.0f	//カメラのロック時の高さ
 /*
 カメラクラス
 */
 class CCamera :public CCharacter {
+public:
+	//カメラのモード
+	enum ECameraMode {
+		NORMAL = 0,	//通常モード
+		TARGET_LOOK	//ターゲット状態の敵の方へ向くモード
+	};
 private:
 	CColliderLine mColliderLine; //視点から注視点まで伸びる線コライダ
 
-	//カメラ回転方向
-	enum ERotDir {
-		LEFT = 0,	//左
-		RIGHT		//右
-	};
-	ERotDir mRotDir; //カメラの回転させる方向判断用
-
 	bool mIsRot;		//一番近い敵の方向へ回転するフラグ
 	float mRotRad;		//回転させたい角度
-	float mRotedRad;	//回転した角度
+
+	//アングル遅延用、通常モード時に使用
+	float mAngleDelayX;
+	float mAngleDelayY;
+
+	ECameraMode mCameraMode;	//カメラのモード判定用
 public:
 	CCamera();
 	//視点
@@ -79,6 +82,9 @@ public:
 
 	//線形補間
 	float mLerp(float start, float point, float rate);
+
+	//カメラモードを設定する
+	void SetCameraMode(ECameraMode cameramode);
 };
 
 //カメラの外部参照

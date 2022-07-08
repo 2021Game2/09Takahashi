@@ -13,7 +13,7 @@ private:
 public:
 	//コンストラクタ
 	CMap2(CModel* model, CVector position, CVector rotation, CVector scale);
-	~CMap2();
+	~CMap2();	//デストラクタ
 
 	static void Generate();	//生成
 	static void Release();	//解放

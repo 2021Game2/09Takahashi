@@ -29,7 +29,7 @@ void CSceneRecord::Update()
 			mIsButtonPush = true;	//ボタンを押した
 			mFade = EFADE_OUT;		//フェードアウト開始
 			mSceneTransitionKeep = ETITLE;	//シーンの遷移先を保存
-			CRes::sSETransitionTitle.Play();//効果音を再生する
+			CRes::sSESelectBack.Play();//効果音を再生する
 		}
 	}
 

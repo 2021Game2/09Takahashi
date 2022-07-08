@@ -65,9 +65,7 @@ void CSceneTitle::Update()
 				mIsButtonPush = true;	//ボタンを押した
 				mFade = EFADE_OUT;		//フェードアウト開始
 				mSceneTransitionKeep = EGAME; //シーンの遷移先を保存
-				/*
-				ゲームスタート時の効果音を追加する
-				*/
+				CRes::sSESelect.Play(); //効果音を再生する
 			}
 			break;
 
@@ -77,7 +75,7 @@ void CSceneTitle::Update()
 				mIsButtonPush = true;	//ボタンを押した
 				mFade = EFADE_OUT;		//フェードアウト開始
 				mSceneTransitionKeep = CScene::ERECORD; //シーンの遷移先を保存
-				CRes::sSETransitionRecord.Play(); //効果音を再生する
+				CRes::sSESelect.Play(); //効果音を再生する
 			}
 			break;
 

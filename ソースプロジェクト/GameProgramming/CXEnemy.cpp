@@ -9,6 +9,7 @@
 #include "CCollisionManager.h"
 #include "CRes.h"
 #include "CEnemyManager.h"
+#include "main.h"
 
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
@@ -33,11 +34,12 @@ CXEnemy::CXEnemy()
 	, mSpeed(0.0f)
 	, mDot(0.0f)
 	, mStunTime(0)
-	, mHit(false)
+	, mIsHit(false)
 	, mIsTarget(false)
 	, mIsInvincible(false)
 	, mChaseRestartCount(0)
 	, mEnemyType(ETYPE_1)
+	,mScore(0.0f)
 {
 	Init(&CRes::sModelXEnemy);
 
@@ -58,9 +60,11 @@ void CXEnemy::Init(CModelX* model)
 void CXEnemy::Update()
 {
 	//プレイヤーの攻撃判定が無効になると敵の無敵判定を解除する
-	if (CXPlayer::GetInstance()->mHit == false) {
+	if (CXPlayer::GetInstance()->GetIsHit() == false) {
 		mIsInvincible = false;
 	}
+
+	mScoreChange();
 
 	//プレイヤー方向のベクトルを求める
 	mPlayerPoint = CXPlayer::GetInstance()->mPosition - mPosition;
@@ -235,7 +239,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 			{
 				//キャスト変換
 				//プレイヤーの攻撃のヒット判定が有効なとき、無敵フラグが有効でないとき
-				if (((CXPlayer*)(o->mpParent))->mHit == true && mIsInvincible == false)
+				if (((CXPlayer*)(o->mpParent))->GetIsHit() == true && mIsInvincible == false)
 				{
 					//球コライダ同士の衝突判定
 					if (CCollider::Collision(m, o))
@@ -250,7 +254,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 							//ノックバックが可能なとき
 							if (mIsKnockBack()) {
 								mState = EKNOCKBACK; //ノックバック状態へ移行
-								mHit = false; //自分の攻撃のヒット判定を終了させる
+								mIsHit = false; //自分の攻撃のヒット判定を終了させる
 							}
 							break;
 
@@ -262,7 +266,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 							//ノックバックが可能なとき
 							if (mIsKnockBack()) {
 								mState = EKNOCKBACK; //ノックバック状態へ移行
-								mHit = false; //自分の攻撃のヒット判定を終了させる
+								mIsHit = false; //自分の攻撃のヒット判定を終了させる
 							}
 							break;
 
@@ -288,7 +292,7 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 					{
 						mState = ESTUN; //スタン状態へ移行
 						mStunTime = STUN_TIME; //スタン時間を入れる
-						mHit = false; //攻撃のヒット判定を無効化
+						mIsHit = false; //攻撃のヒット判定を無効化
 					}
 				}
 			}
@@ -346,7 +350,29 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 
 void CXEnemy::TaskCollision()
 {
+}
 
+//スコア変更処理
+void CXEnemy::mScoreChange()
+{
+	//スコアリセット
+	mScore = 0.0f;
+
+	//死亡状態のときスコアを大幅に下げる
+	if (mState == EDEATH) {
+		mScore += -10000.0f;
+		return;	//リターンする
+	}
+
+	//プレイヤーまでのベクトルを設定
+	CVector vec = mPosition - CXPlayer::GetInstance()->mPosition;
+	float dist = vec.Length(); //距離を取得
+	mScore += -dist;	//距離分スコアを下げる
+
+	//画面外はスコアを下げる
+	if (Camera.WorldToScreen(&vec, mPosition) == false) {
+		mScore += -1000.0f;
+	}
 }
 
 //待機処理
@@ -456,7 +482,7 @@ void CXEnemy::Attack_Idle()
 	//プレイヤーとの距離が回避可能な距離のとき
 	if (mPlayerDis <= AVOID_DIS) {
 		//プレイヤーが攻撃をしたとき
-		if (CXPlayer::GetInstance()->mAttackFlag_Once == true) {
+		if (CXPlayer::GetInstance()->GetAttackFlag() == true) {
 			//ランダムで回避を行うかどうか判定する
 			random = rand() % 6;
 			if (random == 0) {
@@ -514,11 +540,11 @@ void CXEnemy::Attack_1()
 	{
 		//ヒット判定発生
 		if (mAnimationFrame == 30) {
-			mHit = true;
+			mIsHit = true;
 		}
 		//ヒット判定終了
 		if (mAnimationFrame == 60) {
-			mHit = false;
+			mIsHit = false;
 		}
 		//アニメーション終了時
 		if (mIsAnimationEnd())
@@ -551,11 +577,11 @@ void CXEnemy::Attack_2()
 	{
 		//ヒット判定発生
 		if (mAnimationFrame == 30) {
-			mHit = true;
+			mIsHit = true;
 		}
 		//ヒット判定終了
 		if (mAnimationFrame == 65) {
-			mHit = false;
+			mIsHit = false;
 		}
 		//アニメーション終了時
 		if (mIsAnimationEnd())
@@ -655,6 +681,30 @@ CVector CXEnemy::GetPos()
 	return mPosition;
 }
 
+//攻撃対象のフラグを設定する
+void CXEnemy::SetIsTarget(bool targetflag)
+{
+	mIsTarget = targetflag;
+}
+
+//スコアを取得
+float CXEnemy::GetScore()
+{
+	return mScore;
+}
+
+//攻撃の当たり判定フラグを取得
+bool CXEnemy::GetIsHit()
+{
+	return mIsHit;
+}
+
+//攻撃の当たり判定フラグを設定
+void CXEnemy::SetIsHit(bool hitflag)
+{
+	mIsHit = hitflag;
+}
+
 //敵の状態を取得する
 CXEnemy::EEnemyState CXEnemy::GetState()
 {
@@ -666,6 +716,12 @@ void CXEnemy::SetHp(int hp)
 {
 	mHp = hp;		//体力の初期値を設定
 	mHpMax = mHp;	//体力の初期値を体力の最大値とする
+}
+
+//体力を取得する
+int CXEnemy::GetHp()
+{
+	return mHp;
 }
 
 //死亡状態のときtrueを返す

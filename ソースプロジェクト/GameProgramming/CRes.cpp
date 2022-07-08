@@ -55,8 +55,8 @@ bool CRes::sIsResLoad = false; //ファイル読み込み判断用
 #define SE_PORTION_USE "Resource\\SE_Portion_Use.wav"	//回復アイテム使用時の効果音
 #define SE_TRAP_USE "Resource\\SE_Trap_Use.wav"			//罠アイテム使用時の効果音
 #define SE_TRAP_ACTIVE "Resource\\SE_Trap_Active.wav"	//罠アイテム作動時の効果音
-#define SE_TRANSITION_TITLE "Resource\\SE_Transition_Title.wav" //シーンがタイトルに遷移する時の効果音
-#define SE_TRANSITION_RECORD "Resource\\SE_Transition_Record.wav" //シーンがレコードに遷移する時の効果音
+#define SE_SELECT "Resource\\SE_Select.wav"				//セレクト時の効果音
+#define SE_SELECT_BACK "Resource\\SE_Select_Back.wav"	//セレクト時の効果音(もどる)
 //BGM
 #define BGM_TITLE "Resource\\BGM_Title.wav"		//タイトル画面BGM
 #define BGM_BATTLE "Resource\\BGM_Battle.wav"	//戦闘時BGM
@@ -113,8 +113,8 @@ CSound CRes::sSEAttackHit2;		//攻撃ヒット時の効果音2
 CSound CRes::sSEPortionUse;		//回復アイテム使用時の効果音
 CSound CRes::sSETrapUse;		//罠アイテム使用時の効果音
 CSound CRes::sSETrapActive;		//罠アイテム作動時の効果音
-CSound CRes::sSETransitionTitle;	//シーンがタイトルに遷移する時の効果音
-CSound CRes::sSETransitionRecord;	//シーンがレコードに遷移する時の効果音
+CSound CRes::sSESelect;			//セレクト時の効果音
+CSound CRes::sSESelectBack;		//セレクト時の効果音(もどる)
 //BGM
 CSound CRes::sBGMTitle;		//タイトル画面BGM
 CSound CRes::sBGMBattle;	//戦闘時BGM
@@ -202,8 +202,8 @@ CRes::CRes()
 		CRes::sSEPortionUse.Load(SE_PORTION_USE);	//回復アイテム使用時の効果音
 		CRes::sSETrapUse.Load(SE_TRAP_USE);			//罠アイテム使用時の効果音
 		CRes::sSETrapActive.Load(SE_TRAP_ACTIVE);	//罠アイテム作動時の効果音
-		CRes::sSETransitionTitle.Load(SE_TRANSITION_TITLE);		//シーンがタイトルに遷移する時の効果音
-		CRes::sSETransitionRecord.Load(SE_TRANSITION_RECORD);	//シーンがレコードに遷移する時の効果音
+		CRes::sSESelect.Load(SE_SELECT);			//セレクト時の効果音
+		CRes::sSESelectBack.Load(SE_SELECT_BACK);	//セレクト時の効果音(もどる)
 		//BGM
 		CRes::sBGMTitle.Load(BGM_TITLE);	//タイトル画面BGM
 		CRes::sBGMBattle.Load(BGM_BATTLE);	//戦闘時BGM

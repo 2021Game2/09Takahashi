@@ -11,8 +11,9 @@ private:
 public:
 	CTrap();
 
-	void Update();
+	void Update(); //XV
 
+	//Õ“Ëˆ—
 	void CTrap::Collision(CCollider* m, CCollider* o);
 	void CTrap::TaskCollision();
 
