@@ -11,6 +11,7 @@ private:
 		ERECORD,		//レコード
 	};
 	ESelect mSelect; //選択している場所の判断用
+	ESelect mOldSelect; //1フレーム前に選択していた場所
 
 	//フェード
 	enum EFade {

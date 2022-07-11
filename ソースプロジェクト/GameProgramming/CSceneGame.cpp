@@ -33,9 +33,9 @@
 #define ENEMY_GENERATE_NUM_PHASE2 2 //フェーズ2
 #define ENEMY_GENERATE_NUM_FINALPHASE 3 //最終フェーズ
 //敵の体力
-#define ENEMY_HP_PHASE1 1
-#define ENEMY_HP_PHASE2 1000
-#define ENEMY_HP_FINALPHASE 1
+#define ENEMY_HP_PHASE1 200
+#define ENEMY_HP_PHASE2 150
+#define ENEMY_HP_FINALPHASE 150
 //敵の初期位置
 #define ENEMY_START_POS_PHASE1 CVector(0.0f,0.0f,-10.0f) //フェーズ1
 #define ENEMY_START_POS_PHASE2 CVector(20.0f,0.0f,0.0f),CVector(-20.0f,0.0f,0.0f) //フェーズ2
@@ -69,7 +69,7 @@ CSceneGame::~CSceneGame() {
 		CEnemyManager::Release();	//敵管理解放
 		CTrapManager::Release();	//罠管理解放
 		ShowCursor(true);			//カーソル表示
-		Camera.SetCameraMode(CCamera::NORMAL);	//カメラのモードを通常モードに設定
+		Camera.SetCameraMode(CCamera::TARGET_LOOK);	//カメラのモードを通常モードに設定
 	}
 	//次のステージへ進んだとき
 	else {
@@ -93,7 +93,7 @@ void CSceneGame::Init() {
 	CEnemyManager::Generate();
 	//敵を生成する
 	CVector pos[ENEMY_GENERATE_NUM_PHASE1] = { ENEMY_START_POS_PHASE1 }; //敵の初期位置
-	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM_PHASE1, CXEnemy::ETYPE_2, ENEMY_HP_PHASE1, pos);
+	CEnemyManager::GetInstance()->EnemyGenerate(ENEMY_GENERATE_NUM_PHASE1, CXEnemy::ETYPE_1, ENEMY_HP_PHASE1, pos);
 
 	//マップ生成
 	CMap::Generate();
@@ -105,6 +105,8 @@ void CSceneGame::Init() {
 
 	//カメラ初期化
 	Camera.Init();
+	//カメラモードを設定
+	Camera.SetCameraMode(CCamera::TARGET_LOOK);
 
 	ShowCursor(false); //カーソル非表示
 
@@ -248,9 +250,16 @@ void CSceneGame::Render() {
 	CRes::sImagePlayerRun.Draw(110, 190, 20, 100, 0, 255, 255, 0);		//プレイヤーの走り方
 	CRes::sImagePlayerAttack.Draw(20, 100, 20, 100, 0, 255, 255, 0);	//プレイヤーの攻撃方法
 	CRes::sImagePlayerAvoid.Draw(200, 280, 20, 100, 0, 255, 255, 0);	//プレイヤーの回避方法
-	CRes::sImageTargetLook.Draw(280, 360, 20, 100, 0, 255, 255, 0);		//一番近い敵の方向へカメラを向かせる
 	CRes::sImageMouse.Draw(590, 630, 70, 110, 0, 255, 255, 0);			//右クリック用
 	CRes::sImageMouse.Draw(750, 790, 70, 110, 0, 255, 511, 256);		//ホイール用
+	//一番近い敵の方向へカメラを向かせる方法
+	//カメラモードを判断、ターゲット状態の敵の方へ向くモードだった時
+	if (Camera.GetCameraMode() == CCamera::TARGET_LOOK) {
+		CRes::sImageTargetLook.Draw(280, 360, 20, 100, 0, 255, 255, 0);	//ON状態用
+	}
+	else {
+		CRes::sImageTargetLook.Draw(280, 360, 20, 100, 256, 511, 255, 0); //OFF状態用
+	}
 
 	//プレイヤーが死亡状態になるとGAMEOVERと表示する
 	if (CXPlayer::GetInstance()->GetState() == CXPlayer::EPlayerState::EDEATH) {

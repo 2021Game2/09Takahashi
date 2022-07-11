@@ -121,6 +121,8 @@ public:
 	int GetTrapQuantity();	//罠の所持数を取得する
 	void SetTrapQuantity(int num, bool add = false);	//罠の所持数を設定する、引数addをtrueにすると加算になる
 
+	int GetComboCount(); //コンボ数を取得する
+
 	CXPlayer::EPlayerState GetState();	//プレイヤーの状態を取得する
 };
 

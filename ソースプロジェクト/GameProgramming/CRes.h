@@ -60,11 +60,16 @@ public:
 	static CSound sSEPlayerAvoid;	//プレイヤーの回避時の効果音
 	static CSound sSEAttackHit1;	//攻撃ヒット時の効果音1
 	static CSound sSEAttackHit2;	//攻撃ヒット時の効果音2
+	static CSound sSEItemChange;	//アイテム変更時の効果音
+	static CSound sSEItemUseError;	//アイテムが使用不可の時に使用ボタンを押したときの効果音
 	static CSound sSEPortionUse;	//回復アイテム使用時の効果音
 	static CSound sSETrapUse;		//罠アイテム使用時の効果音
 	static CSound sSETrapActive;	//罠アイテム作動時の効果音
 	static CSound sSESelect;		//セレクト時の効果音
 	static CSound sSESelectBack;	//セレクト時の効果音(もどる)
+	static CSound sSEButtonCursor;	//ボタンにカーソルを合わせた時の効果音
+	static CSound sSETargetLookOn;	//カメラのモードTARGET_LOOKがONになったときの効果音
+	static CSound sSETargetLookOff;	//カメラのモードTARGET_LOOKがOFFになったときの効果音
 	//BGM
 	static CSound sBGMTitle;	//タイトル画面BGM
 	static CSound sBGMBattle;	//戦闘時BGM

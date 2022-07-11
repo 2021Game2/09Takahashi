@@ -85,6 +85,8 @@ public:
 
 	//カメラモードを設定する
 	void SetCameraMode(ECameraMode cameramode);
+	//カメラモードを取得する
+	CCamera::ECameraMode GetCameraMode();
 };
 
 //カメラの外部参照

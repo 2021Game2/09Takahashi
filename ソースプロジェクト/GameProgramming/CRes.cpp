@@ -52,11 +52,16 @@ bool CRes::sIsResLoad = false; //ファイル読み込み判断用
 #define SE_PLAYER_AVOID "Resource\\SE_Player_Avoid.wav"	//プレイヤーの回避時の効果音
 #define SE_ATTACK_HIT_1 "Resource\\SE_Attack_Hit_1.wav"	//攻撃ヒット時の効果音1
 #define SE_ATTACK_HIT_2 "Resource\\SE_Attack_Hit_2.wav"	//攻撃ヒット時の効果音2
+#define SE_ITEM_CHANGE "Resource\\SE_Item_Change.wav"	//アイテム変更時の効果音
+#define SE_ITEM_USE_ERROR "Resource\\SE_Item_Use_Error.wav" //アイテムが使用不可の時に使用ボタンを押したときの効果音
 #define SE_PORTION_USE "Resource\\SE_Portion_Use.wav"	//回復アイテム使用時の効果音
 #define SE_TRAP_USE "Resource\\SE_Trap_Use.wav"			//罠アイテム使用時の効果音
 #define SE_TRAP_ACTIVE "Resource\\SE_Trap_Active.wav"	//罠アイテム作動時の効果音
 #define SE_SELECT "Resource\\SE_Select.wav"				//セレクト時の効果音
 #define SE_SELECT_BACK "Resource\\SE_Select_Back.wav"	//セレクト時の効果音(もどる)
+#define SE_BUTTON_CURSOR "Resource\\SE_Button_CurSor.wav" //ボタンにカーソルを合わせた時の効果音
+#define SE_TARGET_LOOK_ON "Resource\\SE_Target_Look_On.wav"		//カメラのモードTARGET_LOOKがONになったときの効果音
+#define SE_TARGET_LOOK_OFF "Resource\\SE_Target_Look_Off.wav"	//カメラのモードTARGET_LOOKがOFFになったときの効果音
 //BGM
 #define BGM_TITLE "Resource\\BGM_Title.wav"		//タイトル画面BGM
 #define BGM_BATTLE "Resource\\BGM_Battle.wav"	//戦闘時BGM
@@ -110,11 +115,16 @@ CSound CRes::sSEPlayerRunSlow;	//プレイヤーの走行時(スタミナ切れ)の効果音
 CSound CRes::sSEPlayerAvoid;	//プレイヤーの回避時の効果音
 CSound CRes::sSEAttackHit1;		//攻撃ヒット時の効果音1
 CSound CRes::sSEAttackHit2;		//攻撃ヒット時の効果音2
+CSound CRes::sSEItemChange;		//アイテム変更時の効果音
+CSound CRes::sSEItemUseError;	//アイテムが使用不可の時に使用ボタンを押したときの効果音
 CSound CRes::sSEPortionUse;		//回復アイテム使用時の効果音
 CSound CRes::sSETrapUse;		//罠アイテム使用時の効果音
 CSound CRes::sSETrapActive;		//罠アイテム作動時の効果音
 CSound CRes::sSESelect;			//セレクト時の効果音
 CSound CRes::sSESelectBack;		//セレクト時の効果音(もどる)
+CSound CRes::sSEButtonCursor;	//ボタンにカーソルを合わせた時の効果音
+CSound CRes::sSETargetLookOn;	//カメラのモードTARGET_LOOKがONになったときの効果音
+CSound CRes::sSETargetLookOff;	//カメラのモードTARGET_LOOKがOFFになったときの効果音
 //BGM
 CSound CRes::sBGMTitle;		//タイトル画面BGM
 CSound CRes::sBGMBattle;	//戦闘時BGM
@@ -199,11 +209,16 @@ CRes::CRes()
 		CRes::sSEPlayerAvoid.Load(SE_PLAYER_AVOID);	//プレイヤーの回避時の効果音
 		CRes::sSEAttackHit1.Load(SE_ATTACK_HIT_1);	//攻撃ヒット時の効果音1
 		CRes::sSEAttackHit2.Load(SE_ATTACK_HIT_2);	//攻撃ヒット時の効果音2
+		CRes::sSEItemChange.Load(SE_ITEM_CHANGE);	//アイテム変更時の効果音
+		CRes::sSEItemUseError.Load(SE_ITEM_USE_ERROR); //アイテムが使用不可の時に使用ボタンを押したときの効果音
 		CRes::sSEPortionUse.Load(SE_PORTION_USE);	//回復アイテム使用時の効果音
 		CRes::sSETrapUse.Load(SE_TRAP_USE);			//罠アイテム使用時の効果音
 		CRes::sSETrapActive.Load(SE_TRAP_ACTIVE);	//罠アイテム作動時の効果音
 		CRes::sSESelect.Load(SE_SELECT);			//セレクト時の効果音
 		CRes::sSESelectBack.Load(SE_SELECT_BACK);	//セレクト時の効果音(もどる)
+		CRes::sSEButtonCursor.Load(SE_BUTTON_CURSOR);	//ボタンにカーソルを合わせた時の効果音
+		CRes::sSETargetLookOn.Load(SE_TARGET_LOOK_ON);	//カメラのモードTARGET_LOOKがONになったときの効果音
+		CRes::sSETargetLookOff.Load(SE_TARGET_LOOK_OFF);//カメラのモードTARGET_LOOKがOFFになったときの効果音
 		//BGM
 		CRes::sBGMTitle.Load(BGM_TITLE);	//タイトル画面BGM
 		CRes::sBGMBattle.Load(BGM_BATTLE);	//戦闘時BGM

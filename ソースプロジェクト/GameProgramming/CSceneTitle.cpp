@@ -21,9 +21,10 @@
 
 CSceneTitle::CSceneTitle()
 	:mSelect(EBACKGROUND)
-	,mFade(EFADE_STOP)
-	,mSceneTransitionKeep(ETITLE)
-	,mIsButtonPush(false)
+	, mOldSelect(EBACKGROUND)
+	, mFade(EFADE_STOP)
+	, mSceneTransitionKeep(ETITLE)
+	, mIsButtonPush(false)
 {
 }
 
@@ -36,24 +37,38 @@ void CSceneTitle::Init()
 
 void CSceneTitle::Update()
 {
-	int mouseX, mouseY;
-	CInput::GetMousePosW(&mouseX, &mouseY);
-	mouseY = 600 - mouseY;
+	int mouseX = 0;
+	int mouseY = 0;
+	//ボタンを押していないとき、フェードイン中ではないとき
+	if (mIsButtonPush == false && mFade != EFADE_IN) {
+		//マウスの座標を取得
+		CInput::GetMousePosW(&mouseX, &mouseY);
+		mouseY = 600 - mouseY;
+	}
 
 	//ゲームスタートボタン上にマウスポインタがあるとき
 	if ((mouseX >= STARTBUTTON_LEFT && mouseX <= STARTBUTTON_RIGHT) &&
 		(mouseY >= STARTBUTTON_DOWN && mouseY <= STARTBUTTON_UP)) {
 		mSelect = EGAMESTART;
+		if (mSelect != mOldSelect) {
+			CRes::sSEButtonCursor.Play(); //効果音を再生
+		}
 	}
 	//レコードボタン上にマウスポインタがあるとき
 	else if ((mouseX >= RESULTBUTTON_LEFT && mouseX <= RESULTBUTTON_RIGHT) &&
 		(mouseY >= RESULTBUTTON_DOWN && mouseY <= RESULTBUTTON_UP)) {
 		mSelect = CSceneTitle::ERECORD;
+		if (mSelect != mOldSelect) {
+			CRes::sSEButtonCursor.Play(); //効果音を再生
+		}
 	}
 	//上記以外は背景
 	else {
 		mSelect = EBACKGROUND;
 	}
+
+	//選択していた場所保存
+	mOldSelect = mSelect;
 
 	//左クリックしたとき
 	if (CKey::Once(VK_LBUTTON)) {

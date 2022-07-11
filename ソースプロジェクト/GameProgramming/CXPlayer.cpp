@@ -30,7 +30,7 @@
 
 #define PORTION_QUANTITY 5		//回復薬の所持数
 #define HEAL_AMOUNT HP_MAX*0.3f	//回復薬を使用したときの回復量、体力最大値の3割回復する
-#define TRAP_QUANTITY 2			//罠の所持数
+#define TRAP_QUANTITY 3			//罠の所持数
 
 #define GAUGE_FRAME_TEX_WID 426	//ゲージ枠の画像の幅
 #define GAUGE_FRAME_TEX_HEI 62	//ゲージ枠の画像の高さ
@@ -181,7 +181,15 @@ void CXPlayer::Update()
 
 	//普通に3次元ベクトル計算で算出したほうが正確だが計算量を懸念する場合は擬似計算で軽量化
 	//擬似ベクトル計算
-	Check tCheck = CUtil::GetCheck2D(mMoveDir.mX, mMoveDir.mZ, 0, 0, mRotation.mY * (M_PI / 180.0f));
+	CVector ChackVec; //チェック用ベクトル
+	//回避状態のとき
+	if (mState == EAVOID) {
+		ChackVec = mMoveDirKeep.Normalize(); //保存された移動時の方向ベクトルを代入
+	}
+	else {
+		ChackVec = mMoveDir.Normalize(); //移動時の方向ベクトルを代入
+	}
+	Check tCheck = CUtil::GetCheck2D(ChackVec.mX, ChackVec.mZ, 0, 0, mRotation.mY * (M_PI / 180.0f));
 
 	//回転速度　degreeに直す
 	mTurnspeed = (180.0f / M_PI) * 0.5f;
@@ -428,6 +436,12 @@ void CXPlayer::SetTrapQuantity(int num, bool add)
 	}
 }
 
+//コンボ数を取得する
+int CXPlayer::GetComboCount()
+{
+	return mComboCount;
+}
+
 //プレイヤーの状態を取得する
 CXPlayer::EPlayerState CXPlayer::GetState()
 {
@@ -449,9 +463,16 @@ void CXPlayer::Idle()
 		mState = EMOVE;
 		CRes::sSEPlayerWalk.Repeat(); //効果音を再生する
 	}
-	//右クリックでアイテム使用可能な時アイテムを使用する
-	else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
-		mState = EITEMUSE;
+	//右クリックを押したとき
+	else if (CKey::Once(VK_RBUTTON)) {
+		//アイテム使用可能な時アイテムを使用する
+		if (mIsItemUse()) {
+			mState = EITEMUSE;
+		}
+		//アイテムが使用不可のときはエラーの効果音を再生する
+		else {
+			CRes::sSEItemUseError.Play();
+		}
 	}
 }
 
@@ -469,11 +490,19 @@ void CXPlayer::Move()
 	//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
 	else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
 		mState = EAVOID;
+		MoveCamera(); //カメラを基準にした移動処理を呼ぶ
 		CRes::sSEPlayerAvoid.Play(); //効果音を再生
 	}
-	//右クリックでアイテム使用可能な時アイテムを使用する
-	else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
-		mState = EITEMUSE;
+	//右クリックを押したとき
+	else if (CKey::Once(VK_RBUTTON)) {
+		//アイテム使用可能な時アイテムを使用する
+		if (mIsItemUse()) {
+			mState = EITEMUSE;
+		}
+		//アイテムが使用不可のときはエラーの効果音を再生する
+		else {
+			CRes::sSEItemUseError.Play();
+		}
 	}
 	//WASDキーを押すと移動
 	else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
@@ -522,11 +551,19 @@ void CXPlayer::Dash()
 	//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
 	else if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
 		mState = EAVOID;
+		MoveCamera(); //カメラを基準にした移動処理を呼ぶ
 		CRes::sSEPlayerAvoid.Play(); //効果音を再生
 	}
-	//右クリックでアイテム使用可能な時アイテムを使用する
-	else if (CKey::Once(VK_RBUTTON) && mIsItemUse()) {
-		mState = EITEMUSE;
+	//右クリックを押したとき
+	else if (CKey::Once(VK_RBUTTON)) {
+		//アイテム使用可能な時アイテムを使用する
+		if (mIsItemUse()) {
+			mState = EITEMUSE;
+		}
+		//アイテムが使用不可のときはエラーの効果音を再生する
+		else {
+			CRes::sSEItemUseError.Play();
+		}
 	}
 	//WASDキーを押すと移動
 	else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
@@ -627,6 +664,9 @@ void CXPlayer::Attack_2()
 		mAttack2Speed = ATTACK2_FIRSTSPEED;
 		mAttackFlag_Once = true;
 		mpTargetEnemy = CEnemyManager::GetInstance()->GetTargetEnemy(); //プレイヤーに一番近い敵を取得する
+		if (mComboCount == COMBO_MAX) {
+			mComboCount++;
+		}
 	}
 
 	if (mAnimationIndex == 7)
@@ -732,6 +772,7 @@ void CXPlayer::Avoid()
 {
 	//回避時一度だけ通る
 	if (mAvoid == false) {
+		ChangeAnimation(1, true, 50);
 		mAvoid = true;							//回避中
 		mStamina -= AVOID_STAMINA;				//スタミナ減少	
 		mAvoidTime = AVOID_TIME;				//回避時間
@@ -914,10 +955,12 @@ void CXPlayer::ItemSelect()
 		//上方向
 		if (wheel > 0) {
 			mItemSelect++;
+			CRes::sSEItemChange.Play(); //効果音を再生
 		}
 		//下方向
 		else {
 			mItemSelect--;
+			CRes::sSEItemChange.Play(); //効果音を再生
 		}
 	}
 

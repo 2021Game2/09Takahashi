@@ -247,26 +247,38 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 						//攻撃を受けた箇所
 						switch (m->mTag) {
 						case CCollider::EBODY:	//体
-							mHp -= DAMAGE_BODY;	//ダメージを受ける(体)	
 							mIsInvincible = true; //無敵フラグを有効にする
 							new CEffect(((CXPlayer*)(o->mpParent))->GetSwordColPos(), 1.0f, 1.0f, "", 3, 5, 2); //エフェクトを生成する
 							CRes::sSEAttackHit1.Play(); //効果音を再生する
-							//ノックバックが可能なとき
-							if (mIsKnockBack()) {
-								mState = EKNOCKBACK; //ノックバック状態へ移行
-								mIsHit = false; //自分の攻撃のヒット判定を終了させる
+							//プレイヤーの攻撃が5コンボ目のとき
+							if (CXPlayer::GetInstance()->GetComboCount() == 5) {
+								mHp -= DAMAGE_BODY * 2;	//ダメージを受ける(体)、最終コンボなので受けるダメージを2倍
+								//ノックバックが可能なとき
+								if (mIsKnockBack()) {
+									mState = EKNOCKBACK; //ノックバック状態へ移行
+									mIsHit = false; //自分の攻撃のヒット判定を終了させる
+								}
+							}
+							else {
+								mHp -= DAMAGE_BODY;	//ダメージを受ける(体)
 							}
 							break;
 
 						case CCollider::EHEAD:	//頭
-							mHp -= DAMAGE_HEAD;	//ダメージを受ける(頭)
 							mIsInvincible = true; //無敵フラグを有効にする
 							new CEffect(((CXPlayer*)(o->mpParent))->GetSwordColPos(), 1.5f, 1.5f, "", 3, 5, 2); //エフェクトを生成する
 							CRes::sSEAttackHit1.Play(); //効果音を再生する
-							//ノックバックが可能なとき
-							if (mIsKnockBack()) {
-								mState = EKNOCKBACK; //ノックバック状態へ移行
-								mIsHit = false; //自分の攻撃のヒット判定を終了させる
+							//プレイヤーの攻撃が5コンボ目のとき
+							if (CXPlayer::GetInstance()->GetComboCount() == 5) {
+								mHp -= DAMAGE_HEAD * 2;	//ダメージを受ける(頭)、最終コンボなので受けるダメージを2倍
+								//ノックバックが可能なとき
+								if (mIsKnockBack()) {
+									mState = EKNOCKBACK; //ノックバック状態へ移行
+									mIsHit = false; //自分の攻撃のヒット判定を終了させる
+								}
+							}
+							else {
+								mHp -= DAMAGE_HEAD;	//ダメージを受ける(頭)
 							}
 							break;
 
@@ -372,6 +384,11 @@ void CXEnemy::mScoreChange()
 	//画面外はスコアを下げる
 	if (Camera.WorldToScreen(&vec, mPosition) == false) {
 		mScore += -1000.0f;
+	}
+
+	//ターゲット状態のときスコアを上げる
+	if (mIsTarget) {
+		mScore += 2.0f;
 	}
 }
 
@@ -734,7 +751,7 @@ bool CXEnemy::mIsDeath()
 bool CXEnemy::mIsKnockBack()
 {
 	//スタン状態もしくは攻撃状態でなければtrue
-	return (mState != ESTUN && mState != EATTACK_1 && mState != EATTACK_2);
+	return (mState != ESTUN && mIsAttack() != true);
 }
 
 //攻撃状態のときtrueを返す

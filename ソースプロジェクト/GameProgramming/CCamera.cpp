@@ -8,6 +8,7 @@
 #include "CCollisionManager.h"
 #include "CEnemyManager.h"
 #include "CXPlayer.h"
+#include "CRes.h"
 
 //カメラの外部変数
 CCamera Camera;
@@ -44,6 +45,11 @@ float CCamera::mLerp(float start, float point, float rate)
 void CCamera::SetCameraMode(ECameraMode cameramode)
 {
 	mCameraMode = cameramode;
+}
+
+CCamera::ECameraMode CCamera::GetCameraMode()
+{
+	return mCameraMode;
 }
 
 CCamera::CCamera()
@@ -141,7 +147,8 @@ void CCamera::Update() {
 
 		//Eキーを押したとき
 		if (CKey::Once('E')) {
-			mCameraMode = TARGET_LOOK; //ターゲット状態の敵の方へ向くモードへ移行
+			mCameraMode = TARGET_LOOK;		//ターゲット状態の敵の方へ向くモードへ移行
+			CRes::sSETargetLookOn.Play();	//効果音を再生
 		}
 		break;
 
@@ -149,7 +156,8 @@ void CCamera::Update() {
 		mTargetLook(); //ターゲットになっている敵の方向へカメラを向かせる処理
 		//Eキーを押したとき
 		if (CKey::Once('E')) {
-			mCameraMode = NORMAL; //ターゲット状態の敵の方へ向くモードへ移行
+			mCameraMode = NORMAL;			//ターゲット状態の敵の方へ向くモードへ移行
+			CRes::sSETargetLookOff.Play();	//効果音を再生
 		}
 		break;
 	}
