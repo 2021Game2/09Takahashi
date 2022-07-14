@@ -19,6 +19,27 @@ private:
 	EScene mSceneTransitionKeep; //シーンの遷移先を保存する
 
 	bool mIsButtonPush; //ボタンを押しているとtrue
+
+	//リザルト画面の状態
+	enum EResultState {
+		CLEARTIME_DISPLAY = 0,	//クリアタイム表示
+		RANKING_CHANGE			//ランキング表示入れ替え
+	};
+	EResultState mResultState;	//リザルト画面の状態を判断
+
+	void ClearTimeDisplay();	//クリアタイム表示状態の処理
+	void RankingChange();		//ランキング表示入れ替え状態の処理
+
+	float mClearTimeCountUp;	//クリアタイムをカウントアップする用
+
+	bool mIsRecordSort;			//レコードのソートが行われていたらtrue
+
+	float mRecordTmp[6];		//ランキング表示用、ソートを行う前のレコードを保持
+	float mClearTimePosX[6];	//クリアタイムを表示する位置X
+	float mClearTimePosY[6];	//クリアタイムを表示する位置Y
+	float mRankingPosY[6];		//順位ごとの表示する座標Y、表示入れ替えの際に移動の目標地点として使用
+	bool mIsRankingChange;		//ランキングの表示を入れ替えるか判断するフラグ、trueで入れ替え発生
+
 public:
 	CSceneResult();	//デフォルトコンストラクタ
 
@@ -28,5 +49,5 @@ public:
 
 	EScene GetNextScene(); //次のシーンを取得
 
-	static float record[6];	//クリア時間の記録用
+	static float sRecord[6];	//レコード、クリア時間の記録用
 };

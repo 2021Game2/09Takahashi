@@ -76,7 +76,7 @@ void CSceneRecord::Render()
 
 	for (int i = 0; i < 5; i++) {
 		//クリアタイムの上位5つを表示
-		sprintf(buf, "%02d:%05.2f", (int)CSceneResult::record[i] / 60, fmod(CSceneResult::record[i], 60));
+		sprintf(buf, "%02d:%05.2f", (int)CSceneResult::sRecord[i] / 60, fmod(CSceneResult::sRecord[i], 60));
 		CRes::sFont.DrawString(buf, 460, 380 - i * 70, 15, 20);
 
 		//1から5の数字を表示
