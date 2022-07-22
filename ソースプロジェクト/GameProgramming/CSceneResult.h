@@ -40,6 +40,7 @@ private:
 	float mRankingPosY[6];		//順位ごとの表示する座標Y、表示入れ替えの際に移動の目標地点として使用
 	bool mIsRankingChange;		//ランキングの表示を入れ替えるか判断するフラグ、trueで入れ替え発生
 
+	int mSceneStayCount;		//シーン移動を遅らせる用のカウント
 public:
 	CSceneResult();	//デフォルトコンストラクタ
 

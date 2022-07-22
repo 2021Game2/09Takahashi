@@ -20,7 +20,6 @@ public:
 		EATTACK_2,	//攻撃2
 		EATTACK_3,	//攻撃3(攻撃1から派生)
 		EDEATH,		//死亡
-		EITEMUSE,	//アイテム使用
 		EKNOCKBACK,	//ノックバック
 	};
 private:
@@ -74,6 +73,7 @@ private:
 	int mItemSelect;		//選択中のアイテム
 	int mPortionQuantity;	//回復薬の所持数
 	int mTrapQuantity;		//罠の所持数
+	int mItemQuantityDigit(int itemquantity);	//アイテムの所持数の桁を返す
 	bool mIsItemUse();		//アイテムが使用可能な時にtrueを返す
 
 	float mFollowGaugeWid;	//被ダメージ分後追いするゲージの幅

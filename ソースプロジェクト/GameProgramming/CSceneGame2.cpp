@@ -194,18 +194,18 @@ void CSceneGame2::Update() {
 	//フェードを判断
 	switch (mFade) {
 	case EFADE_IN: //フェードイン
-		if (CRes::sImageBlack.mAlpha > 0.0f) {
+		if (CRes::sImageBlack.GetAlpha() > 0.0f) {
 			//黒い画像のアルファ値を下げる
-			CRes::sImageBlack.mAlpha -= 0.02f;
+			CRes::sImageBlack.SetAlpha(-0.02f, true);
 		}
 		break;
 
 	case EFADE_OUT: //フェードアウト
-		if (CRes::sImageBlack.mAlpha < 1.0f) {
+		if (CRes::sImageBlack.GetAlpha() < 1.0f) {
 			//黒い画像のアルファ値を上げる
-			CRes::sImageBlack.mAlpha += 0.02f;
+			CRes::sImageBlack.SetAlpha(0.02f, true);
 		}
-		else if (CRes::sImageBlack.mAlpha == 1.0f) {
+		else if (CRes::sImageBlack.GetAlpha() == 1.0f) {
 			//保存された遷移先へシーンを移行する
 			mScene = mSceneTransitionKeep;
 			CRes::sBGMBattle.Stop(); //BGM停止

@@ -47,6 +47,8 @@ public:
 
 	static CTexture sImageTitleText;		//タイトルテキスト画像
 	static CTexture sImageTitleBack;		//タイトル背景画像
+	static CTexture sImageResultBack;		//リザルト背景画像
+	static CTexture sImageRecordBack;		//レコード背景画像
 
 	static CTexture sImageStageClearText;	//ステージクリアテキスト画像
 	static CTexture sImageGameClearText;	//ゲームクリアテキスト画像
@@ -70,8 +72,13 @@ public:
 	static CSound sSEButtonCursor;	//ボタンにカーソルを合わせた時の効果音
 	static CSound sSETargetLookOn;	//カメラのモードTARGET_LOOKがONになったときの効果音
 	static CSound sSETargetLookOff;	//カメラのモードTARGET_LOOKがOFFになったときの効果音
+	static CSound sSECountUp;		//カウントアップの効果音
+	static CSound sSENewRecord;		//新記録が出た時の効果音
+	static CSound sSEResultEnd;		//リザルト画面終了時の効果音
 	//BGM
 	static CSound sBGMTitle;	//タイトル画面BGM
+	static CSound sBGMResult;	//リザルト画面BGM
+	static CSound sBGMRecord;	//レコード画面BGM
 	static CSound sBGMBattle;	//戦闘時BGM
 
 };

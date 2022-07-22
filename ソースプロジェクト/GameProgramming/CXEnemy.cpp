@@ -39,7 +39,8 @@ CXEnemy::CXEnemy()
 	, mIsInvincible(false)
 	, mChaseRestartCount(0)
 	, mEnemyType(ETYPE_1)
-	,mScore(0.0f)
+	, mScore(0.0f)
+	, mFollowGaugeWid(GAUGE_WID_MAX)
 {
 	Init(&CRes::sModelXEnemy);
 
@@ -198,11 +199,23 @@ void CXEnemy::Render2D()
 
 	float HpRate = (float)mHp / (float)mHpMax; //体力最大値に対する、現在の体力の割合
 	float HpGaugeWid = GAUGE_WID_MAX * HpRate; //体力ゲージの幅
-	
+	//被ダメージ分後追いするゲージの幅が体力ゲージの幅より大きい時
+	if (mFollowGaugeWid > HpGaugeWid) {
+		//線形補間で被ダメージ分後追いするゲージの幅を設定する
+		mFollowGaugeWid = Camera.mLerp(mFollowGaugeWid, HpGaugeWid, 0.025f);
+	}
+	//被ダメージ分後追いするゲージの幅が体力ゲージの幅より小さいとき
+	else if (mFollowGaugeWid < HpGaugeWid) {
+		//被ダメージ分後追いするゲージの幅に体力ゲージの幅を設定する
+		mFollowGaugeWid = HpGaugeWid;
+	}
+
 	//画面外の時に表示しない
 	if (ret.mX > 0 && ret.mX < 800) {
 		//ゲージ背景
 		CRes::sImageGauge.Draw(ret.mX - GAUGE_WID_MAX, ret.mX + GAUGE_WID_MAX, ret.mY + 30.0f, ret.mY + 45.0f, 210, 290, 63, 0);
+		//被ダメージ分後追いするゲージを表示
+		CRes::sImageGauge.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX - GAUGE_WID_MAX) + mFollowGaugeWid * 2.0f, ret.mY + 30.0f, ret.mY + 45.0f, 443, 443, 36, 36);
 		//体力ゲージ
 		CRes::sImageGauge.Draw(ret.mX - GAUGE_WID_MAX, (ret.mX - GAUGE_WID_MAX) + HpGaugeWid * 2.0f, ret.mY + 30.0f, ret.mY + 45.0f, 0, 0, 0, 0);
 		//プレイヤーの攻撃対象になっているとき

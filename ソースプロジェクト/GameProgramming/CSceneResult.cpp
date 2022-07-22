@@ -7,6 +7,7 @@
 #include "CCamera.h"
 
 #define COUNT_UP_FRAME 1.0f/120.0f //カウントアップが完了するまでのフレーム数
+#define STAY_FRAME 240 //停止フレーム数
 #define DEF_TIME 600.00f //初期化用
 
 float CSceneResult::sRecord[6] = { DEF_TIME,DEF_TIME,DEF_TIME,DEF_TIME,DEF_TIME,DEF_TIME };	//クリア時間の記録用
@@ -21,6 +22,7 @@ CSceneResult::CSceneResult()
 	, mClearTimeCountUp(0.0f)
 	, mIsRecordSort(false)
 	, mIsRankingChange(false)
+	,mSceneStayCount(STAY_FRAME)
 {
 	sRecord[5] = CSceneGame::mClearTime; //クリア時間を入れる
 	float tmp = 0; //退避用
@@ -53,6 +55,8 @@ CSceneResult::CSceneResult()
 			mIsRecordSort = true;	//ソートを行ったか判断するフラグをtrueにする
 		}
 	}
+
+	CRes::sBGMResult.Repeat(); //BGMを再生する
 }
 
 void CSceneResult::Init()
@@ -64,8 +68,6 @@ void CSceneResult::Init()
 
 void CSceneResult::Update()
 {
-	count++;
-
 	//リザルト画面の状態を判断
 	switch (mResultState) {
 	case CLEARTIME_DISPLAY: //クリアタイム表示状態
@@ -77,28 +79,40 @@ void CSceneResult::Update()
 		break;
 	}
 
+	//ボタンが押されていたとき
+	if (mIsButtonPush == true) {
+		//シーン移動を遅らせるカウントが0以下のとき
+		if (mSceneStayCount-- <= 0) {
+			mFade = EFADE_OUT;				//フェードアウト開始
+			mSceneTransitionKeep = ETITLE;	//シーンの遷移先を保存する
+			CRes::sBGMResult.Stop(); //BGMを停止する
+		}
+	}
+
 	//フェードを判断
 	switch (mFade) {
 	case EFADE_STOP: //フェード停止
 		break;
 
 	case EFADE_IN: //フェードイン
-		if (CRes::sImageBlack.mAlpha > 0.0f) {
+		if (CRes::sImageBlack.GetAlpha() > 0.0f) {
 			//黒い画像のアルファ値を下げる
-			CRes::sImageBlack.mAlpha -= 0.02f;
+			CRes::sImageBlack.SetAlpha(-0.02f, true);
 		}
-		else if (CRes::sImageBlack.mAlpha == 0.0f) {
+		else if (CRes::sImageBlack.GetAlpha() == 0.0f) {
 			//フェードインを停止する
 			mFade = EFADE_STOP;
+			//効果音を再生する
+			CRes::sSECountUp.Repeat();
 		}
 		break;
 
 	case EFADE_OUT: //フェードアウト
-		if (CRes::sImageBlack.mAlpha < 1.0f) {
+		if (CRes::sImageBlack.GetAlpha() < 1.0f) {
 			//黒い画像のアルファ値を上げる
-			CRes::sImageBlack.mAlpha += 0.02f;
+			CRes::sImageBlack.SetAlpha(0.02f, true);
 		}
-		else if (CRes::sImageBlack.mAlpha == 1.0f) {
+		else if (CRes::sImageBlack.GetAlpha() == 1.0f) {
 			//保存された遷移先へシーンを移行する
 			mScene = mSceneTransitionKeep;
 		}
@@ -110,24 +124,15 @@ void CSceneResult::Render()
 {
 	CUtil::Start2D(0, 800, 0, 600);
 	char buf[64];
-	CRes::sImageBackGround.Draw(0, 800, 0, 600, 0, 599, 319, 0); //背景画像を表示
+
+	//背景画像を表示
+	CRes::sImageResultBack.Draw(0, 800, 0, 600, 0, 799, 599, 0);
 
 	CRes::sFont.DrawString("RESULT", 20, 570, 15, 15);
 
-	CRes::sFont.DrawString("CLEARTIME", 270, 550, 15, 15);
 	//クリアタイムをカウントアップで表示
 	sprintf(buf, "%02d:%05.2f", (int)mClearTimeCountUp / 60, fmod(mClearTimeCountUp, 60));
 	CRes::sFont.DrawString(buf, 290, 490, 15, 20);
-
-	CRes::sFont.DrawString("RANKING", 120, 420, 15, 15);
-
-	CRes::sFont.DrawString("RECORD", 490, 420, 15, 15);
-
-	for (int i = 0; i < 5; i++) {
-		//1から5の数字を表示
-		sprintf(buf, "%d", i + 1);
-		CRes::sFont.DrawString(buf, 210, 350 - i * 70, 15, 20);
-	}
 
 	for (int i = 0; i < 6; i++) {
 		//クリアタイムの上位5つを表示する
@@ -156,7 +161,7 @@ void CSceneResult::Render()
 			if (mNewRecord == i) {
 				//点滅させる
 				if (count % 30 < 15) {
-					CRes::sFont.DrawString("NEW", 310, mRankingPosY[mNewRecord], 15, 15);
+					CRes::sFont.DrawString("NEW", 320, mRankingPosY[mNewRecord], 15, 15);
 				}
 			}
 		}
@@ -183,30 +188,33 @@ void CSceneResult::ClearTimeDisplay()
 			if (mClearTimeCountUp > CSceneGame::mClearTime) {
 				//カウントアップにクリアタイムを代入する
 				mClearTimeCountUp = CSceneGame::mClearTime;
+				//効果音を停止する
+				CRes::sSECountUp.Stop();
 			}
 		}
-	}
-
-	//左クリックorEnterキーを押したとき
-	if (CKey::Once(VK_LBUTTON) || CKey::Once(VK_RETURN)) {
-		//カウントアップがクリアタイムより低い時
-		if (mClearTimeCountUp < CSceneGame::mClearTime) {
-			//カウントアップにクリアタイムを代入する
-			mClearTimeCountUp = CSceneGame::mClearTime;
-		}
-		//レコードのソートが行われていたとき
-		else if (mIsRecordSort == true) {
-			//ランキング表示入れ替え状態へ移行
-			mResultState = RANKING_CHANGE;
-		}
-		//上記以外はタイトルへ移行
-		else {
-			//ボタンを押していないとき、フェードイン中ではないとき
-			if (mIsButtonPush == false && mFade != EFADE_IN) {
-				mIsButtonPush = true;			//ボタンを押した
-				mFade = EFADE_OUT;				//フェードアウト開始
-				mSceneTransitionKeep = ETITLE;	//シーンの遷移先を保存する
-				CRes::sSESelectBack.Play();		//効果音を再生する
+		//左クリックorEnterキーを押したとき
+		if (CKey::Once(VK_LBUTTON) || CKey::Once(VK_RETURN)) {
+			//カウントアップがクリアタイムより低い時
+			if (mClearTimeCountUp < CSceneGame::mClearTime) {
+				//カウントアップにクリアタイムを代入する
+				mClearTimeCountUp = CSceneGame::mClearTime;
+				//効果音を停止する
+				CRes::sSECountUp.Stop();
+			}
+			//レコードのソートが行われていたとき
+			else if (mIsRecordSort == true) {
+				//ランキング表示入れ替え状態へ移行
+				mResultState = RANKING_CHANGE;
+				//効果音再生
+				CRes::sSENewRecord.Play();
+			}
+			//上記以外はタイトルへ移行
+			else {
+				//ボタンを押していないとき、フェードイン中ではないとき
+				if (mIsButtonPush == false && mFade != EFADE_IN) {
+					mIsButtonPush = true;			//ボタンを押した
+					CRes::sSEResultEnd.Play();		//効果音を再生する
+				}
 			}
 		}
 	}
@@ -218,14 +226,15 @@ void CSceneResult::RankingChange()
 	//ランキング表示変更フラグをtrueにする
 	mIsRankingChange = true;
 
+	//カウント加算
+	count++;
+
 	//左クリックorEnterキーを押したとき
 	if (CKey::Once(VK_LBUTTON) || CKey::Once(VK_RETURN)) {
 		//ボタンを押していないとき、フェードイン中ではないとき
 		if (mIsButtonPush == false && mFade != EFADE_IN) {
 			mIsButtonPush = true;			//ボタンを押した
-			mFade = EFADE_OUT;				//フェードアウト開始
-			mSceneTransitionKeep = ETITLE;	//シーンの遷移先を保存する
-			CRes::sSESelectBack.Play();		//効果音を再生する
+			CRes::sSEResultEnd.Play();		//効果音を再生する
 		}
 	}
 }

@@ -14,8 +14,8 @@
 #define STARTBUTTON_UP 240		//スタートボタン上座標
 
 //リザルトボタン座標
-#define RESULTBUTTON_LEFT 290	//リザルトボタン左座標
-#define RESULTBUTTON_RIGHT 510	//リザルトボタン右座標
+#define RESULTBUTTON_LEFT 270	//リザルトボタン左座標
+#define RESULTBUTTON_RIGHT 530	//リザルトボタン右座標
 #define RESULTBUTTON_DOWN 80	//リザルトボタン下座標
 #define RESULTBUTTON_UP 140		//リザルトボタン上座標
 
@@ -81,6 +81,7 @@ void CSceneTitle::Update()
 				mFade = EFADE_OUT;		//フェードアウト開始
 				mSceneTransitionKeep = EGAME; //シーンの遷移先を保存
 				CRes::sSESelect.Play(); //効果音を再生する
+				CRes::sBGMTitle.Stop(); //BGM停止
 			}
 			break;
 
@@ -91,6 +92,7 @@ void CSceneTitle::Update()
 				mFade = EFADE_OUT;		//フェードアウト開始
 				mSceneTransitionKeep = CScene::ERECORD; //シーンの遷移先を保存
 				CRes::sSESelect.Play(); //効果音を再生する
+				CRes::sBGMTitle.Stop(); //BGM停止
 			}
 			break;
 
@@ -105,25 +107,24 @@ void CSceneTitle::Update()
 		break;
 
 	case EFADE_IN: //フェードイン
-		if (CRes::sImageBlack.mAlpha > 0.0f) {
+		if (CRes::sImageBlack.GetAlpha() > 0.0f) {
 			//黒い画像のアルファ値を下げる
-			CRes::sImageBlack.mAlpha -= 0.02f;
+			CRes::sImageBlack.SetAlpha(-0.02f, true);
 		}
-		else if(CRes::sImageBlack.mAlpha == 0.0f){
+		else if (CRes::sImageBlack.GetAlpha() == 0.0f) {
 			//フェードインを停止する
 			mFade = EFADE_STOP;
 		}
 		break;
 
 	case EFADE_OUT: //フェードアウト
-		if (CRes::sImageBlack.mAlpha < 1.0f) {
+		if (CRes::sImageBlack.GetAlpha() < 1.0f) {
 			//黒い画像のアルファ値を上げる
-			CRes::sImageBlack.mAlpha += 0.02f;
+			CRes::sImageBlack.SetAlpha(0.02f, true);
 		}
-		else if (CRes::sImageBlack.mAlpha == 1.0f) {
+		else if (CRes::sImageBlack.GetAlpha() == 1.0f) {
 			//保存された遷移先へシーンを移行する
 			mScene = mSceneTransitionKeep;
-			CRes::sBGMTitle.Stop(); //BGM停止
 		}
 		break;
 	}

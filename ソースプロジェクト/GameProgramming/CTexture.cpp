@@ -221,6 +221,23 @@ void CTexture::Draw(float left, float right, float bottom, float top, int tleft,
 	DrawImage(left, right, bottom, top, tleft, tright, tbottom, ttop);
 }
 
+void CTexture::SetAlpha(float alpha, bool add)
+{
+	//加算フラグがtrueのとき
+	if (add) {
+		mAlpha += alpha; //アルファ値を加算
+	}
+	else {
+		mAlpha = alpha;	//アルファ値を代入
+	}
+}
+
+//アルファ値を取得する
+float CTexture::GetAlpha()
+{
+	return mAlpha; //アルファ値を返す
+}
+
 void CTexture::DrawImage(float left, float right, float bottom, float top, int tleft, int tright, int tbottom, int ttop) {
 	DrawImage(left, right, bottom, top,
 		(float)tleft / mHeader.width,

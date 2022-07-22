@@ -55,6 +55,8 @@ protected:
 	float mScore;			//プレイヤーのターゲット選別用スコア
 	void mScoreChange();	//スコア変更処理
 
+	float mFollowGaugeWid;	//被ダメージ分後追いするゲージの幅
+
 	virtual void Idle();		//待機処理
 	virtual void AutoMove();	//移動処理
 	virtual void Chase();		//追跡処理

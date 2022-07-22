@@ -17,9 +17,12 @@ struct STgamHeader {
 //#include <map>
 
 class CTexture {
+private:
 //	static std::map<std::string, CTexture>mTexFile;
 	//ファイル名
 	char* mpName;
+
+	float mAlpha;	//アルファ値
 public:
 	//TGAファイルのヘッダ情報
 	STgamHeader mHeader;
@@ -64,8 +67,8 @@ public:
 	void Draw(float left, float right, float bottom, float top, float tleft, float tright, float tbottom, float ttop);
 	void Draw(float left, float right, float bottom, float top, int tleft, int tright, int tbottom, int ttop);
 
-	float mAlpha;	//アルファ値
-
+	void SetAlpha(float alpha, bool add = false); //アルファ値を設定する、第二引数をtrueにすると加算
+	float GetAlpha(); //アルファ値を取得する
 };
 
 #endif

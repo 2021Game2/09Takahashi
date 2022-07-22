@@ -39,6 +39,8 @@ bool CRes::sIsResLoad = false; //ファイル読み込み判断用
 
 #define IMAGE_TITLE_TEXT "Resource\\Image_Title_Text.png"	//タイトルテキスト画像
 #define IMAGE_TITLE_BACK "Resource\\Image_Title_Back.png"	//タイトル背景画像
+#define IMAGE_RESULT_BACK "Resource\\Image_Result_Back.png"	//リザルト背景画像
+#define IMAGE_RECORD_BACK "Resource\\Image_Record_Back.png"	//レコード背景画像
 
 #define IMAGE_STAGECLEAR_TEXT "Resource\\Image_StageClear_Text.png"	//ステージクリアテキスト画像
 #define IMAGE_GAMECLEAR_TEXT "Resource\\Image_GameClear_Text.png"	//ゲームクリアテキスト画像
@@ -46,24 +48,29 @@ bool CRes::sIsResLoad = false; //ファイル読み込み判断用
 
 //サウンド系
 //SE
-#define SE_PLAYER_WALK "Resource\\SE_Player_Walk.wav"	//プレイヤーの歩行時の効果音
-#define SE_PLAYER_RUN "Resource\\SE_Player_Run.wav"		//プレイヤーの走行時の効果音
+#define SE_PLAYER_WALK "Resource\\SE_Player_Walk.wav"		//プレイヤーの歩行時の効果音
+#define SE_PLAYER_RUN "Resource\\SE_Player_Run.wav"			//プレイヤーの走行時の効果音
 #define SE_PLAYER_RUN_SLOW "Resource\\SE_Player_Run_Slow.wav" //プレイヤーの走行時(スタミナ切れ)の効果音
-#define SE_PLAYER_AVOID "Resource\\SE_Player_Avoid.wav"	//プレイヤーの回避時の効果音
-#define SE_ATTACK_HIT_1 "Resource\\SE_Attack_Hit_1.wav"	//攻撃ヒット時の効果音1
-#define SE_ATTACK_HIT_2 "Resource\\SE_Attack_Hit_2.wav"	//攻撃ヒット時の効果音2
-#define SE_ITEM_CHANGE "Resource\\SE_Item_Change.wav"	//アイテム変更時の効果音
-#define SE_ITEM_USE_ERROR "Resource\\SE_Item_Use_Error.wav" //アイテムが使用不可の時に使用ボタンを押したときの効果音
-#define SE_PORTION_USE "Resource\\SE_Portion_Use.wav"	//回復アイテム使用時の効果音
-#define SE_TRAP_USE "Resource\\SE_Trap_Use.wav"			//罠アイテム使用時の効果音
-#define SE_TRAP_ACTIVE "Resource\\SE_Trap_Active.wav"	//罠アイテム作動時の効果音
-#define SE_SELECT "Resource\\SE_Select.wav"				//セレクト時の効果音
-#define SE_SELECT_BACK "Resource\\SE_Select_Back.wav"	//セレクト時の効果音(もどる)
-#define SE_BUTTON_CURSOR "Resource\\SE_Button_CurSor.wav" //ボタンにカーソルを合わせた時の効果音
-#define SE_TARGET_LOOK_ON "Resource\\SE_Target_Look_On.wav"		//カメラのモードTARGET_LOOKがONになったときの効果音
-#define SE_TARGET_LOOK_OFF "Resource\\SE_Target_Look_Off.wav"	//カメラのモードTARGET_LOOKがOFFになったときの効果音
+#define SE_PLAYER_AVOID "Resource\\SE_Player_Avoid.wav"		//プレイヤーの回避時の効果音
+#define SE_ATTACK_HIT_1 "Resource\\SE_Attack_Hit_1.wav"		//攻撃ヒット時の効果音1
+#define SE_ATTACK_HIT_2 "Resource\\SE_Attack_Hit_2.wav"		//攻撃ヒット時の効果音2
+#define SE_ITEM_CHANGE "Resource\\SE_Item_Change.wav"		//アイテム変更時の効果音
+#define SE_ITEM_USE_ERROR "Resource\\SE_Item_Use_Error.wav"	//アイテムが使用不可の時に使用ボタンを押したときの効果音
+#define SE_PORTION_USE "Resource\\SE_Portion_Use.wav"		//回復アイテム使用時の効果音
+#define SE_TRAP_USE "Resource\\SE_Trap_Use.wav"				//罠アイテム使用時の効果音
+#define SE_TRAP_ACTIVE "Resource\\SE_Trap_Active.wav"		//罠アイテム作動時の効果音
+#define SE_SELECT "Resource\\SE_Select.wav"					//セレクト時の効果音
+#define SE_SELECT_BACK "Resource\\SE_Select_Back.wav"		//セレクト時の効果音(もどる)
+#define SE_BUTTON_CURSOR "Resource\\SE_Button_CurSor.wav"	//ボタンにカーソルを合わせた時の効果音
+#define SE_TARGET_LOOK_ON "Resource\\SE_Target_Look_On.wav"	//カメラのモードTARGET_LOOKがONになったときの効果音
+#define SE_TARGET_LOOK_OFF "Resource\\SE_Target_Look_Off.wav" //カメラのモードTARGET_LOOKがOFFになったときの効果音
+#define SE_COUNT_UP "Resource\\SE_Count_Up.wav"				//カウントアップの効果音
+#define SE_NEWRECORD "Resource\\SE_NewRecord.wav"			//新記録が出た時の効果音
+#define SE_RESULT_END "Resource\\SE_Result_End.wav"			//リザルト画面終了時の効果音
 //BGM
 #define BGM_TITLE "Resource\\BGM_Title.wav"		//タイトル画面BGM
+#define BGM_RESULT "Resource\\BGM_Result.wav"	//リザルト画面BGM
+#define BGM_RECORD "Resource\\BGM_Record.wav"	//レコード画面BGM
 #define BGM_BATTLE "Resource\\BGM_Battle.wav"	//戦闘時BGM
 
 
@@ -102,6 +109,8 @@ CTexture CRes::sImageBlack;			//黒画像
 
 CTexture CRes::sImageTitleText;		//タイトルテキスト画像
 CTexture CRes::sImageTitleBack;		//タイトル背景画像
+CTexture CRes::sImageResultBack;	//リザルト背景画像
+CTexture CRes::sImageRecordBack;	//レコード背景画像
 
 CTexture CRes::sImageStageClearText;	//ステージクリアテキスト画像
 CTexture CRes::sImageGameClearText;		//ゲームクリアテキスト画像
@@ -125,8 +134,13 @@ CSound CRes::sSESelectBack;		//セレクト時の効果音(もどる)
 CSound CRes::sSEButtonCursor;	//ボタンにカーソルを合わせた時の効果音
 CSound CRes::sSETargetLookOn;	//カメラのモードTARGET_LOOKがONになったときの効果音
 CSound CRes::sSETargetLookOff;	//カメラのモードTARGET_LOOKがOFFになったときの効果音
+CSound CRes::sSECountUp;		//カウントアップの効果音
+CSound CRes::sSENewRecord;		//新記録が出た時の効果音
+CSound CRes::sSEResultEnd;		//リザルト画面終了時の効果音
 //BGM
 CSound CRes::sBGMTitle;		//タイトル画面BGM
+CSound CRes::sBGMResult;	//リザルト画面BGM
+CSound CRes::sBGMRecord;	//レコード画面BGM
 CSound CRes::sBGMBattle;	//戦闘時BGM
 
 CRes::CRes()
@@ -192,10 +206,12 @@ CRes::CRes()
 		CRes::sImageBackGround.Load(IMAGE_BACKGROUND);	//背景画像
 
 		CRes::sImageBlack.Load(IMAGE_BLACK);			//黒画像
-		CRes::sImageBlack.mAlpha = 0.0f;				//黒画像のアルファ値を設定
+		CRes::sImageBlack.SetAlpha(0.0f);				//黒画像のアルファ値を設定
 
 		CRes::sImageTitleText.Load(IMAGE_TITLE_TEXT);	//タイトルテキスト画像
 		CRes::sImageTitleBack.Load(IMAGE_TITLE_BACK);	//タイトル背景画像
+		CRes::sImageResultBack.Load(IMAGE_RESULT_BACK);	//リザルト背景画像
+		CRes::sImageRecordBack.Load(IMAGE_RECORD_BACK);	//レコード背景画像
 
 		CRes::sImageStageClearText.Load(IMAGE_STAGECLEAR_TEXT);	//ステージクリアテキスト画像
 		CRes::sImageGameClearText.Load(IMAGE_GAMECLEAR_TEXT);	//ゲームクリアテキスト画像
@@ -219,8 +235,13 @@ CRes::CRes()
 		CRes::sSEButtonCursor.Load(SE_BUTTON_CURSOR);	//ボタンにカーソルを合わせた時の効果音
 		CRes::sSETargetLookOn.Load(SE_TARGET_LOOK_ON);	//カメラのモードTARGET_LOOKがONになったときの効果音
 		CRes::sSETargetLookOff.Load(SE_TARGET_LOOK_OFF);//カメラのモードTARGET_LOOKがOFFになったときの効果音
+		CRes::sSECountUp.Load(SE_COUNT_UP);			//カウントアップの効果音
+		CRes::sSENewRecord.Load(SE_NEWRECORD);		//新記録が出た時の効果音
+		CRes::sSEResultEnd.Load(SE_RESULT_END);		//リザルト画面終了時の効果音
 		//BGM
 		CRes::sBGMTitle.Load(BGM_TITLE);	//タイトル画面BGM
+		CRes::sBGMResult.Load(BGM_RESULT);	//リザルト画面BGM
+		CRes::sBGMRecord.Load(BGM_RECORD);	//レコード画面BGM
 		CRes::sBGMBattle.Load(BGM_BATTLE);	//戦闘時BGM
 	}
 }

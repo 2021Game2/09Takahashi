@@ -3,10 +3,11 @@
 #include "CColliderLine.h"
 
 CCollider::CCollider()
-: mpParent(0)
-, mpMatrix(&mMatrix)
-, mType(ESPHERE)
-, mTag(EBODY)
+	: mpParent(0)
+	, mpMatrix(&mMatrix)
+	, mType(ESPHERE)
+	, mTag(EBODY)
+	, mRadius(0.0f)
 {
 	//コリジョンマネージャyに追加
 	CCollisionManager::Get()->Add(this);

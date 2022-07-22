@@ -17,6 +17,7 @@
 #define AVOID_STAMINA STAMINA_MAX*0.3f //回避時のスタミナの減少量、スタミナ最大値の3割消費する
 #define AVOID_TIME 30			//回避時間
 #define AVOID_FIRSTSPEED 0.5f	//回避時の初速
+#define AVOID_DERIVEFRAME 10	//回避状態へ派生可能になるフレーム数
 #define SPEED_DEFAULT 0.15f		//スピード(通常時)
 #define SPEED_DASH_HIGH 0.2f	//スピード(ダッシュ時)
 #define SPEED_DASH_LOW 0.05f	//スピード(ダッシュ時、スタミナ切れ)
@@ -28,9 +29,9 @@
 #define GRACETIME 15			//派生攻撃の受付時間
 #define COMBO_MAX 4				//攻撃を連続で派生させられる上限
 
-#define PORTION_QUANTITY 5		//回復薬の所持数
+#define PORTION_QUANTITY 20		//回復薬の所持数
 #define HEAL_AMOUNT HP_MAX*0.3f	//回復薬を使用したときの回復量、体力最大値の3割回復する
-#define TRAP_QUANTITY 3			//罠の所持数
+#define TRAP_QUANTITY 10		//罠の所持数
 
 #define GAUGE_FRAME_TEX_WID 426	//ゲージ枠の画像の幅
 #define GAUGE_FRAME_TEX_HEI 62	//ゲージ枠の画像の高さ
@@ -159,13 +160,21 @@ void CXPlayer::Update()
 		Death(); //死亡処理を呼ぶ
 		break;
 
-	case EITEMUSE: //アイテム使用中
-		ItemUse(); //アイテム使用処理を呼ぶ
-		break;
-
 	case EKNOCKBACK: //ノックバック状態
 		KnockBack(); //ノックバック処理を呼ぶ
 		break;
+	}
+
+	//右クリックを押したとき
+	if (CKey::Once(VK_RBUTTON)) {
+		//アイテムが使用可能か判断
+		if (mIsItemUse()) {
+			ItemUse(); //アイテム使用処理を呼ぶ
+		}
+		//アイテムが使用不可だったとき
+		else {
+			CRes::sSEItemUseError.Play(); //効果音を再生する
+		}
 	}
 
 	//ダッシュ、回避をしていない状態の時スタミナを回復させる
@@ -232,9 +241,9 @@ void CXPlayer::Render2D()
 	//ノックバック状態のとき
 	if (mState == EKNOCKBACK) {
 		//赤い画像を表示する
-		CRes::sImageGauge.mAlpha = 0.3f;	//アルファ値を変更
+		CRes::sImageGauge.SetAlpha(0.3f);	//アルファ値を変更
 		CRes::sImageGauge.Draw(0, 800, 0, 600, 410, 410, 410, 410);	//描画
-		CRes::sImageGauge.mAlpha = 1.0f;	//アルファ値を戻す
+		CRes::sImageGauge.SetAlpha(1.0f);	//アルファ値を戻す
 		//ゲージを揺らす値を設定
 		shakeX = -5 + rand() % 10;
 		shakeY = -5 + rand() % 10;
@@ -270,19 +279,24 @@ void CXPlayer::Render2D()
 	switch (mItemSelect) {
 	case ETRAP: //罠
 		CRes::sImageTrap.Draw(640, 740, 40, 140, 0, 255, 255, 0); //罠画像を表示
+		//アイテムが使用不可能な時
+		if (mIsItemUse() == false) {
+			CRes::sImageNixsign.Draw(640, 740, 40, 140, 255, 0, 255, 0); //禁止マーク画像を表示
+		}
 		sprintf(buf, "%d", mTrapQuantity); //罠の所持数
+		CRes::sFont.DrawString(buf, 760 - mItemQuantityDigit(mTrapQuantity) * 30, 50, 15, 15); //アイテムの所持数を表示
 		break;
+
 	case EPORTION: //回復
 		CRes::sImagePortion.Draw(640, 740, 40, 140, 0, 255, 255, 0); //回復薬画像を表示
+		//アイテムが使用不可能な時
+		if (mIsItemUse() == false) {
+			CRes::sImageNixsign.Draw(640, 740, 40, 140, 255, 0, 255, 0); //禁止マーク画像を表示
+		}
 		sprintf(buf, "%d", mPortionQuantity); //回復の所持数
+		CRes::sFont.DrawString(buf, 760 - mItemQuantityDigit(mPortionQuantity) * 30, 50, 15, 15); //アイテムの所持数を表示
 		break;
 	}
-	//アイテムが使用不可能な時
-	if (mIsItemUse() == false) {
-		CRes::sImageNixsign.Draw(640, 740, 40, 140, 255, 0, 255, 0); //禁止マーク画像を表示
-	}
-
-	CRes::sFont.DrawString(buf, 730, 50, 15, 15); //アイテムの所持数を表示
 
 	//2Dの描画終了
 	CUtil::End2D();
@@ -463,17 +477,6 @@ void CXPlayer::Idle()
 		mState = EMOVE;
 		CRes::sSEPlayerWalk.Repeat(); //効果音を再生する
 	}
-	//右クリックを押したとき
-	else if (CKey::Once(VK_RBUTTON)) {
-		//アイテム使用可能な時アイテムを使用する
-		if (mIsItemUse()) {
-			mState = EITEMUSE;
-		}
-		//アイテムが使用不可のときはエラーの効果音を再生する
-		else {
-			CRes::sSEItemUseError.Play();
-		}
-	}
 }
 
 //移動処理
@@ -492,17 +495,6 @@ void CXPlayer::Move()
 		mState = EAVOID;
 		MoveCamera(); //カメラを基準にした移動処理を呼ぶ
 		CRes::sSEPlayerAvoid.Play(); //効果音を再生
-	}
-	//右クリックを押したとき
-	else if (CKey::Once(VK_RBUTTON)) {
-		//アイテム使用可能な時アイテムを使用する
-		if (mIsItemUse()) {
-			mState = EITEMUSE;
-		}
-		//アイテムが使用不可のときはエラーの効果音を再生する
-		else {
-			CRes::sSEItemUseError.Play();
-		}
 	}
 	//WASDキーを押すと移動
 	else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
@@ -553,17 +545,6 @@ void CXPlayer::Dash()
 		mState = EAVOID;
 		MoveCamera(); //カメラを基準にした移動処理を呼ぶ
 		CRes::sSEPlayerAvoid.Play(); //効果音を再生
-	}
-	//右クリックを押したとき
-	else if (CKey::Once(VK_RBUTTON)) {
-		//アイテム使用可能な時アイテムを使用する
-		if (mIsItemUse()) {
-			mState = EITEMUSE;
-		}
-		//アイテムが使用不可のときはエラーの効果音を再生する
-		else {
-			CRes::sSEItemUseError.Play();
-		}
 	}
 	//WASDキーを押すと移動
 	else if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
@@ -643,6 +624,19 @@ void CXPlayer::Attack_1()
 				mAttackFlag_1 = false;
 			}
 		}
+		//アニメーションの再生フレームが回避状態へ派生可能なフレーム数のとき
+		if (mAnimationFrame > AVOID_DERIVEFRAME) {
+			//移動キーを押しているとき
+			if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
+				//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
+				if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
+					mState = EAVOID;
+					MoveCamera(); //カメラを基準にした移動処理を呼ぶ
+					CRes::sSEPlayerAvoid.Play(); //効果音を再生
+					mAttackFlag_1 = false;
+				}
+			}
+		}
 		//アニメーション終了時
 		if (mIsAnimationEnd())
 		{
@@ -692,6 +686,19 @@ void CXPlayer::Attack_2()
 	}
 	else if (mAnimationIndex == 8)
 	{
+		//アニメーションの再生フレームが回避状態へ派生可能なフレーム数のとき
+		if (mAnimationFrame > AVOID_DERIVEFRAME) {
+			//移動キーを押しているとき
+			if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
+				//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
+				if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
+					mState = EAVOID;
+					MoveCamera(); //カメラを基準にした移動処理を呼ぶ
+					CRes::sSEPlayerAvoid.Play(); //効果音を再生
+					mAttackFlag_2 = false;
+				}
+			}
+		}
 		//アニメーション終了時
 		if (mIsAnimationEnd())
 		{
@@ -754,6 +761,19 @@ void CXPlayer::Attack_3()
 					mState = EATTACK_2; //攻撃2状態へ移行
 				}
 				mAttackFlag_3 = false;
+			}
+		}
+		//アニメーションの再生フレームが回避状態へ派生可能なフレーム数のとき
+		if (mAnimationFrame > AVOID_DERIVEFRAME) {
+			//移動キーを押しているとき
+			if (CKey::Push('W') || CKey::Push('A') || CKey::Push('S') || CKey::Push('D')) {
+				//SPACEキーを押す＆回避に必要な量のスタミナがあるとき回避へ移行
+				if (CKey::Once(VK_SPACE) && mStamina >= AVOID_STAMINA) {
+					mState = EAVOID;
+					MoveCamera(); //カメラを基準にした移動処理を呼ぶ
+					CRes::sSEPlayerAvoid.Play(); //効果音を再生
+					mAttackFlag_3 = false;
+				}
 			}
 		}
 		//アニメーション終了時
@@ -892,9 +912,28 @@ void CXPlayer::MoveCamera()
 	mMove = mMoveDir * mSpeed;	//移動量を設定
 }
 
+//アイテムの所持数の桁を計算
+int CXPlayer::mItemQuantityDigit(int itemquantity)
+{
+	//所持数の桁
+	int digit = 1;
+
+	//桁数計算(引数が1桁のとき条件式==0になるので通らない)
+	while (itemquantity /= 10) {
+		digit++; //所持数の桁を加算
+	}
+
+	//所持数の桁を返す
+	return digit;
+}
+
 //アイテムが使用可能か判断する
 bool CXPlayer::mIsItemUse()
 {
+	//待機、移動、ダッシュ以外の状態の時はfalseを返す
+	if (mState != EIDLE && mState != EMOVE && mState != EDASH) {
+		return false;
+	}
 	//選択中のアイテム
 	switch (mItemSelect) {
 	case ETRAP:	//罠
@@ -941,8 +980,6 @@ void CXPlayer::ItemUse()
 		CRes::sSEPortionUse.Play();
 		break;
 	}
-	//待機状態へ移行
-	mState = EIDLE;
 }
 
 //アイテム選択処理
