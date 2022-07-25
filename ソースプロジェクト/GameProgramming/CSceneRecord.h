@@ -15,6 +15,8 @@ private:
 	EScene mSceneTransitionKeep; //シーンの遷移先を保存する
 
 	bool mIsButtonPush; //ボタンを押すとtrue
+
+	float mRecord[6];	//ファイルから読み取った記録を入れる
 public:
 	CSceneRecord();	//デフォルトコンストラクタ
 

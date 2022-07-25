@@ -6,11 +6,13 @@
 #include "CRes.h"
 #include "CCamera.h"
 
+#include <fstream>
+#include <string>
+using namespace std;
+#define FILE_RECORD_SAVE "Resource\\Record_Save.txt" //レコードが保存されているテキストファイル
+
 #define COUNT_UP_FRAME 1.0f/120.0f //カウントアップが完了するまでのフレーム数
 #define STAY_FRAME 240 //停止フレーム数
-#define DEF_TIME 600.00f //初期化用
-
-float CSceneResult::sRecord[6] = { DEF_TIME,DEF_TIME,DEF_TIME,DEF_TIME,DEF_TIME,DEF_TIME };	//クリア時間の記録用
 
 CSceneResult::CSceneResult()
 	:mNewRecord(6)
@@ -22,21 +24,34 @@ CSceneResult::CSceneResult()
 	, mClearTimeCountUp(0.0f)
 	, mIsRecordSort(false)
 	, mIsRankingChange(false)
-	,mSceneStayCount(STAY_FRAME)
+	, mSceneStayCount(STAY_FRAME)
 {
-	sRecord[5] = CSceneGame::mClearTime; //クリア時間を入れる
+	//初期化
+	for (int i = 0; i < 6; i++) {
+		mRecord[i] = 0.0f;
+	}
+
+	//レコードが保存されているテキストファイルを読み込む
+	std::ifstream inputfile(FILE_RECORD_SAVE);  //読み込むファイルのパスを指定
+	std::string line;
+	for (int i = 0; i < 6; i++) {
+		std::getline(inputfile, line);
+		mRecord[i] = std::stod(line);	//読み込んだレコードを代入する
+	}
+
+	mRecord[5] = CSceneGame::mClearTime; //クリア時間を入れる
 	float tmp = 0; //退避用
 
 	for (int i = 0; i < 6; i++) {
 		//最後尾のみ
 		if (i == 5) {
-			mRecordTmp[i] = sRecord[i];			//ゲームプレイで出た記録を設定
+			mRecordTmp[i] = mRecord[i];			//ゲームプレイで出た記録を設定
 			mClearTimePosX[i] = 460;			//クリアタイムの表示位置Xを設定
 			mClearTimePosY[i] = -100;			//クリアタイムの表示位置Yを設定(画面外)
 			mRankingPosY[i] = mClearTimePosY[i];//順位ごとの表示位置を設定(クリアタイムの表示位置Yと同一)
 		}
 		else {
-			mRecordTmp[i] = sRecord[i];			//ソートを行う前のレコードを記録
+			mRecordTmp[i] = mRecord[i];			//ソートを行う前のレコードを記録
 			mClearTimePosX[i] = 460;			//クリアタイムの表示位置Xを設定
 			mClearTimePosY[i] = 350 - i * 70;	//クリアタイムの表示位置Yを設定
 			mRankingPosY[i] = mClearTimePosY[i];//順位ごとの表示位置を設定(クリアタイムの表示位置Yと同一)
@@ -46,15 +61,22 @@ CSceneResult::CSceneResult()
 	//クリアタイムが早い順になるように入れ替える
 	for (int i = 5; i > 0; i--) {
 		//一つ上の順位の記録より小さい時
-		if (sRecord[i - 1] > sRecord[i]) {
+		if (mRecord[i - 1] > mRecord[i]) {
 			//記録されている値を入れ替える
-			tmp = sRecord[i];
-			sRecord[i] = sRecord[i - 1];
-			sRecord[i - 1] = tmp;
+			tmp = mRecord[i];
+			mRecord[i] = mRecord[i - 1];
+			mRecord[i - 1] = tmp;
 			mNewRecord = i - 1;		//新記録の順位を設定
 			mIsRecordSort = true;	//ソートを行ったか判断するフラグをtrueにする
 		}
 	}
+
+	//レコードが保存されているテキストファイルへ書き込み
+	ofstream outputfile(FILE_RECORD_SAVE);	//書き込むファイルのパスを指定
+	for (int i = 0; i < 6; i++) {
+		outputfile << mRecord[i] << "\n"; //ファイルへ書き込む
+	}
+	outputfile.close(); //ファイルを閉じる
 
 	CRes::sBGMResult.Repeat(); //BGMを再生する
 }

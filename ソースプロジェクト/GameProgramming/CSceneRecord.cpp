@@ -6,11 +6,28 @@
 #include "CSceneResult.h"
 #include "CRes.h"
 
+#include <fstream>
+#include <string>
+
+#define FILE_RECORD_SAVE "Resource\\Record_Save.txt" //レコードが保存されているテキストファイル
+
 CSceneRecord::CSceneRecord()
 	:mFade(EFADE_STOP)
-	,mSceneTransitionKeep(ERECORD)
-	,mIsButtonPush(false)
+	, mSceneTransitionKeep(ERECORD)
+	, mIsButtonPush(false)
 {
+	//初期化
+	for (int i = 0; i < 6; i++) {
+		mRecord[i] = 0.0f;
+	}
+
+	//レコードが保存されているテキストファイルを読み込む
+	std::ifstream inputfile(FILE_RECORD_SAVE);  // 読み込むファイルのパスを指定
+	std::string line;
+	for (int i = 0; i < 6; i++) {
+		std::getline(inputfile, line);
+		mRecord[i] = std::stod(line);	//読み込んだレコードを代入する
+	}
 }
 
 void CSceneRecord::Init()
@@ -75,7 +92,7 @@ void CSceneRecord::Render()
 
 	for (int i = 0; i < 5; i++) {
 		//クリアタイムの上位5つを表示
-		sprintf(buf, "%02d:%05.2f", (int)CSceneResult::sRecord[i] / 60, fmod(CSceneResult::sRecord[i], 60));
+		sprintf(buf, "%02d:%05.2f", (int)mRecord[i] / 60, fmod(mRecord[i], 60));
 		CRes::sFont.DrawString(buf, 460, 380 - i * 70, 15, 20);
 	}
 

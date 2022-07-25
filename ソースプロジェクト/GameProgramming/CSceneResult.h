@@ -41,6 +41,8 @@ private:
 	bool mIsRankingChange;		//ランキングの表示を入れ替えるか判断するフラグ、trueで入れ替え発生
 
 	int mSceneStayCount;		//シーン移動を遅らせる用のカウント
+
+	float mRecord[6];			//ファイルから読み取った記録を入れる
 public:
 	CSceneResult();	//デフォルトコンストラクタ
 
@@ -49,6 +51,4 @@ public:
 	void Render();	//描画処理
 
 	EScene GetNextScene(); //次のシーンを取得
-
-	static float sRecord[6];	//レコード、クリア時間の記録用
 };
