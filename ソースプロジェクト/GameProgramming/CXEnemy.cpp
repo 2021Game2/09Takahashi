@@ -10,6 +10,7 @@
 #include "CRes.h"
 #include "CEnemyManager.h"
 #include "main.h"
+#include "CTrap.h"
 
 #define DAMAGE_BODY 10		//ダメージ(体)
 #define DAMAGE_HEAD 20		//ダメージ(頭)
@@ -306,6 +307,8 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 		//相手の親のタグが罠
 		if (o->mpParent->mTag == ETRAP)
 		{
+			//罠が既に敵と衝突済みのときリターンする
+			if (((CTrap*)(o->mpParent))->GetIsEnemyCol() == true)return;
 			//自分のコライダのタグが本体
 			if (m->mTag == CCollider::EBODY)
 			{
@@ -315,9 +318,11 @@ void CXEnemy::Collision(CCollider* m, CCollider* o)
 					//球コライダ同士の衝突判定
 					if (CCollider::Collision(m, o))
 					{
-						mState = ESTUN; //スタン状態へ移行
-						mStunTime = STUN_TIME; //スタン時間を入れる
-						mIsHit = false; //攻撃のヒット判定を無効化
+						mState = ESTUN;			//スタン状態へ移行
+						mStunTime = STUN_TIME;	//スタン時間を入れる
+						mIsHit = false;			//攻撃のヒット判定を無効化
+						((CTrap*)(o->mpParent))->SetIsEnemyCol(true); //罠が敵と衝突したか判断するフラグをtrueにする
+						CRes::sSETrapActive.Play();	//罠アイテム作動時の効果音を再生する
 					}
 				}
 			}

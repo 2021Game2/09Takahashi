@@ -47,7 +47,7 @@
 #define TEXWIDTH  8192	//テクスチャ幅
 #define TEXHEIGHT  6144	//テクスチャ高さ
 
-float CSceneGame::mClearTime = 0.0f; //クリアまでにかかった時間
+float CSceneGame::sClearTime = 0.0f; //クリアまでにかかった時間
 
 CSceneGame::CSceneGame()
 	:mStartTime(0)
@@ -82,7 +82,7 @@ void CSceneGame::Init() {
 	mScene = EGAME; //シーンゲーム
 
 	mCountStart = false;
-	mClearTime = 0.0f;
+	sClearTime = 0.0f;
 
 	//プレイヤー生成
 	CXPlayer::Generate();
@@ -134,6 +134,7 @@ void CSceneGame::Init() {
 void CSceneGame::Update() {
 	//更新
 	CEnemyManager::GetInstance()->Update(); //敵管理更新
+	CTrapManager::GetInstance()->Update();	//罠管理更新
 	CTaskManager::Get()->Update(); //タスク更新
 
 	//衝突処理
@@ -178,7 +179,7 @@ void CSceneGame::Update() {
 			//Enterキーを押したとき
 			if (CKey::Once(VK_RETURN)) {
 				//クリア時間を記録
-				mClearTime = (float)(mEndTime - mStartTime) / 1000;
+				sClearTime = (float)(mEndTime - mStartTime) / 1000;
 				mSceneTransitionKeep = EGAME2; //シーンの遷移先を保存
 				mFade = EFADE_OUT; //フェードアウト開始
 			}

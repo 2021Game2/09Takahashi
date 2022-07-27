@@ -126,6 +126,7 @@ void CSceneGame2::Init() {
 void CSceneGame2::Update() {
 	//更新
 	CEnemyManager::GetInstance()->Update(); //敵管理更新
+	CTrapManager::GetInstance()->Update();	//罠管理更新
 	CTaskManager::Get()->Update(); //タスク更新
 
 	//衝突処理
@@ -170,7 +171,7 @@ void CSceneGame2::Update() {
 			//Enterキーを押したとき
 			if (CKey::Once(VK_RETURN)) {
 				//クリア時間を記録
-				CSceneGame::mClearTime += (float)(mEndTime - mStartTime) / 1000;
+				CSceneGame::sClearTime += (float)(mEndTime - mStartTime) / 1000;
 				mSceneTransitionKeep = ERESULT; //シーンの遷移先を保存
 				mFade = EFADE_OUT; //フェードアウト開始
 			}

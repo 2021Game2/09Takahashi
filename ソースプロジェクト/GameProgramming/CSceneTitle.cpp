@@ -19,12 +19,17 @@
 #define RESULTBUTTON_DOWN 80	//リザルトボタン下座標
 #define RESULTBUTTON_UP 140		//リザルトボタン上座標
 
+#define BUTTONBACK_ALPHA_UP 0.2f	//ボタン背景のアルファ値を上げる際の値
+#define BUTTONBACK_ALPHA_DOWN 0.1f	//ボタン背景のアルファ値を上げる際の値
+
 CSceneTitle::CSceneTitle()
 	:mSelect(EBACKGROUND)
 	, mOldSelect(EBACKGROUND)
 	, mFade(EFADE_STOP)
 	, mSceneTransitionKeep(ETITLE)
 	, mIsButtonPush(false)
+	,mButtonBackAlpha1(0.0f)
+	,mButtonBackAlpha2(0.0f)
 {
 }
 
@@ -49,22 +54,39 @@ void CSceneTitle::Update()
 	//ゲームスタートボタン上にマウスポインタがあるとき
 	if ((mouseX >= STARTBUTTON_LEFT && mouseX <= STARTBUTTON_RIGHT) &&
 		(mouseY >= STARTBUTTON_DOWN && mouseY <= STARTBUTTON_UP)) {
+		//選択している場所をゲームスタートに設定
 		mSelect = EGAMESTART;
+		//現在選択している場所と1フレーム前に選択していた場所が違うとき
 		if (mSelect != mOldSelect) {
 			CRes::sSEButtonCursor.Play(); //効果音を再生
 		}
+		//ゲームスタートボタン背景のアルファ値を上げる
+		if (mButtonBackAlpha1 < 1.0f)mButtonBackAlpha1 += BUTTONBACK_ALPHA_UP;
+		//レコードボタン背景のアルファ値を下げる
+		if (mButtonBackAlpha2 > 0.0f)mButtonBackAlpha2 -= BUTTONBACK_ALPHA_DOWN;
 	}
 	//レコードボタン上にマウスポインタがあるとき
 	else if ((mouseX >= RESULTBUTTON_LEFT && mouseX <= RESULTBUTTON_RIGHT) &&
 		(mouseY >= RESULTBUTTON_DOWN && mouseY <= RESULTBUTTON_UP)) {
+		//選択している場所をレコードに設定
 		mSelect = CSceneTitle::ERECORD;
+		//現在選択している場所と1フレーム前に選択していた場所が違うとき
 		if (mSelect != mOldSelect) {
 			CRes::sSEButtonCursor.Play(); //効果音を再生
 		}
+		//レコードボタン背景のアルファ値を上げる
+		if (mButtonBackAlpha2 < 1.0f)mButtonBackAlpha2 += BUTTONBACK_ALPHA_UP;
+		//ゲームスタートボタン背景のアルファ値を下げる
+		if (mButtonBackAlpha1 > 0.0f)mButtonBackAlpha1 -= BUTTONBACK_ALPHA_DOWN;
 	}
 	//上記以外は背景
 	else {
+		//選択している場所を背景に設定
 		mSelect = EBACKGROUND;
+		//ゲームスタートボタン背景のアルファ値を下げる
+		if (mButtonBackAlpha1 > 0.0f)mButtonBackAlpha1 -= BUTTONBACK_ALPHA_DOWN;
+		//レコードボタン背景のアルファ値を下げる
+		if (mButtonBackAlpha2 > 0.0f)mButtonBackAlpha2 -= BUTTONBACK_ALPHA_DOWN;
 	}
 
 	//選択していた場所保存
@@ -72,10 +94,10 @@ void CSceneTitle::Update()
 
 	//左クリックしたとき
 	if (CKey::Once(VK_LBUTTON)) {
-		//選んだボタンを判断する
+		//選択している場所を判断する
 		switch (mSelect) {
 		case EGAMESTART: //ゲームスタート
-			//ボタンを押していないとき、フェードイン中ではないとき
+				//ボタンを押していないとき、フェードイン中ではないとき
 			if (mIsButtonPush == false && mFade != EFADE_IN) {
 				mIsButtonPush = true;	//ボタンを押した
 				mFade = EFADE_OUT;		//フェードアウト開始
@@ -86,7 +108,7 @@ void CSceneTitle::Update()
 			break;
 
 		case CSceneTitle::ERECORD: //レコード画面
-			//ボタンを押していないとき、フェードイン中ではないとき
+				//ボタンを押していないとき、フェードイン中ではないとき
 			if (mIsButtonPush == false && mFade != EFADE_IN) {
 				mIsButtonPush = true;	//ボタンを押した
 				mFade = EFADE_OUT;		//フェードアウト開始
@@ -136,20 +158,19 @@ void CSceneTitle::Render()
 	CUtil::Start2D(0, 800, 0, 600);
 
 	CRes::sImageTitleBack.Draw(0, 800, 0, 600, 0, 800, 600, 0);	//タイトル背景画像
-	
-	//選択中の場所
-	switch (mSelect) {
-	case EGAMESTART: //ゲームスタートボタン
-		CRes::sImageButtonBack.Draw(STARTBUTTON_LEFT, STARTBUTTON_RIGHT, STARTBUTTON_DOWN, STARTBUTTON_UP, 510, 510, 510, 510); //ボタン背景描画
-		break;
 
-	case CSceneTitle::ERECORD: //レコードボタン
-		CRes::sImageButtonBack.Draw(RESULTBUTTON_LEFT, RESULTBUTTON_RIGHT, RESULTBUTTON_DOWN, RESULTBUTTON_UP, 510, 510, 510, 510); //ボタン背景描画
-		break;
+	//ゲームスタートボタン背景のアルファ値を設定
+	CRes::sImageButtonBack.SetAlpha(mButtonBackAlpha1);
+	//ゲームスタートボタン背景描画
+	CRes::sImageButtonBack.Draw(STARTBUTTON_LEFT, STARTBUTTON_RIGHT, STARTBUTTON_DOWN, STARTBUTTON_UP, 510, 510, 510, 510);
 
-	default:
-		break;
-	}
+	//レコードボタン背景のアルファ値を設定
+	CRes::sImageButtonBack.SetAlpha(mButtonBackAlpha2);
+	//レコードボタン背景描画
+	CRes::sImageButtonBack.Draw(RESULTBUTTON_LEFT, RESULTBUTTON_RIGHT, RESULTBUTTON_DOWN, RESULTBUTTON_UP, 510, 510, 510, 510);
+
+	//ボタン背景画像のアルファ値を戻す
+	CRes::sImageButtonBack.SetAlpha(1.0f);
 
 	CRes::sImageTitleText.Draw(0, 800, 0, 600, 0, 800, 600, 0);	//タイトルテキスト画像
 

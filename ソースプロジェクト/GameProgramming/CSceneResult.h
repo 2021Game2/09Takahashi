@@ -42,7 +42,9 @@ private:
 
 	int mSceneStayCount;		//シーン移動を遅らせる用のカウント
 
-	float mRecord[6];			//ファイルから読み取った記録を入れる
+	float mRecord[6];			//ファイルから読み取ったレコードを保持する
+	bool mIsNoData;				//レコードが保存されたファイルを読み込んだ際、データが存在しなければtrue
+
 public:
 	CSceneResult();	//デフォルトコンストラクタ
 

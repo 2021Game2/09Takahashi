@@ -7,16 +7,15 @@ class CTrap :public CCharacter {
 private:
 	CCollider mCollider; //コライダ
 
-	bool mEnemyCol; //敵と当たるとtrue
+	bool mIsEnemyCol; //敵と衝突したか判断するフラグ、敵と衝突しているとtrue
 public:
 	CTrap();
 
 	void Update(); //更新
 
-	//衝突処理
-	void CTrap::Collision(CCollider* m, CCollider* o);
-	void CTrap::TaskCollision();
-
 	void SetPos(CVector hpos);	//位置を設定
 	void SetRot(CVector hrot);	//回転を設定
+
+	void SetIsEnemyCol(bool enemycol);	//敵と衝突したか判断するフラグを設定
+	bool GetIsEnemyCol();				//敵と衝突したか判断するフラグを取得
 };

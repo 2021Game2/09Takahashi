@@ -43,7 +43,7 @@ public:
 
 	EScene GetNextScene(); //次のシーンを取得
 
-	static float mClearTime;	//クリアまでにかかった時間
+	static float sClearTime;	//クリアまでにかかった時間
 };
 
 //描画用外部関数

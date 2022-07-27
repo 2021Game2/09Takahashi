@@ -8,13 +8,16 @@
 
 #include <fstream>
 #include <string>
+using namespace std;
 
 #define FILE_RECORD_SAVE "Resource\\Record_Save.txt" //レコードが保存されているテキストファイル
+#define DEF_RECORD 600.0f //データが存在しなかった時に設定する値
 
 CSceneRecord::CSceneRecord()
 	:mFade(EFADE_STOP)
 	, mSceneTransitionKeep(ERECORD)
 	, mIsButtonPush(false)
+	, mIsNoData(false)
 {
 	//初期化
 	for (int i = 0; i < 6; i++) {
@@ -25,8 +28,26 @@ CSceneRecord::CSceneRecord()
 	std::ifstream inputfile(FILE_RECORD_SAVE);  // 読み込むファイルのパスを指定
 	std::string line;
 	for (int i = 0; i < 6; i++) {
-		std::getline(inputfile, line);
-		mRecord[i] = std::stod(line);	//読み込んだレコードを代入する
+		//読み込み
+		if (std::getline(inputfile, line)) {
+			mRecord[i] = std::stod(line);	//読み込んだレコードを代入する
+		}
+		//読み込めなかったとき
+		else {
+			mIsNoData = true;	//データが存在しないのでtrue
+			break;				//for文を抜ける
+		}
+	}
+
+	//読み込んだファイルにデータが存在しなかった場合
+	if (mIsNoData == true) {
+		//レコードが保存されているテキストファイルへ書き込み
+		ofstream outputfile(FILE_RECORD_SAVE);	//書き込むファイルのパスを指定
+		for (int i = 0; i < 6; i++) {
+			mRecord[i] = DEF_RECORD;			//値を設定する
+			outputfile << mRecord[i] << "\n";	//ファイルへ書き込む
+		}
+		outputfile.close(); //ファイルを閉じる
 	}
 }
 

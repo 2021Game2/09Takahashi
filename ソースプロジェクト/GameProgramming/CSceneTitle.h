@@ -25,6 +25,8 @@ private:
 
 	bool mIsButtonPush; //ボタンを押すとtrue
 
+	float mButtonBackAlpha1;	//ボタン背景画像のアルファ値変更に使用する、ゲームスタートボタン用
+	float mButtonBackAlpha2;	//ボタン背景画像のアルファ値変更に使用する、レコードボタン用
 public:
 	CSceneTitle();	//デフォルトコンストラクタ
 

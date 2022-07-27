@@ -16,7 +16,9 @@ private:
 
 	bool mIsButtonPush; //ボタンを押すとtrue
 
-	float mRecord[6];	//ファイルから読み取った記録を入れる
+	float mRecord[6];	//ファイルから読み取ったレコードを保持する
+	bool mIsNoData;		//レコードが保存されたファイルを読み込んだ際、データが存在しなければtrue
+
 public:
 	CSceneRecord();	//デフォルトコンストラクタ
 

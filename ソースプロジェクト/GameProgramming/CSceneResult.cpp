@@ -10,6 +10,7 @@
 #include <string>
 using namespace std;
 #define FILE_RECORD_SAVE "Resource\\Record_Save.txt" //レコードが保存されているテキストファイル
+#define DEF_RECORD 600.0f //データが存在しなかった時に設定する値
 
 #define COUNT_UP_FRAME 1.0f/120.0f //カウントアップが完了するまでのフレーム数
 #define STAY_FRAME 240 //停止フレーム数
@@ -25,6 +26,7 @@ CSceneResult::CSceneResult()
 	, mIsRecordSort(false)
 	, mIsRankingChange(false)
 	, mSceneStayCount(STAY_FRAME)
+	, mIsNoData(false)
 {
 	//初期化
 	for (int i = 0; i < 6; i++) {
@@ -32,14 +34,32 @@ CSceneResult::CSceneResult()
 	}
 
 	//レコードが保存されているテキストファイルを読み込む
-	std::ifstream inputfile(FILE_RECORD_SAVE);  //読み込むファイルのパスを指定
+	std::ifstream inputfile(FILE_RECORD_SAVE);  // 読み込むファイルのパスを指定
 	std::string line;
 	for (int i = 0; i < 6; i++) {
-		std::getline(inputfile, line);
-		mRecord[i] = std::stod(line);	//読み込んだレコードを代入する
+		//読み込み
+		if (std::getline(inputfile, line)) {
+			mRecord[i] = std::stod(line);	//読み込んだレコードを代入する
+		}
+		//読み込めなかったとき
+		else {
+			mIsNoData = true;	//データが存在しないのでtrue
+			break;				//for文を抜ける
+		}
 	}
 
-	mRecord[5] = CSceneGame::mClearTime; //クリア時間を入れる
+	//読み込んだファイルにデータが存在しなかった場合
+	if (mIsNoData == true) {
+		//レコードが保存されているテキストファイルへ書き込み
+		ofstream outputfile(FILE_RECORD_SAVE);	//書き込むファイルのパスを指定
+		for (int i = 0; i < 6; i++) {
+			mRecord[i] = DEF_RECORD;			//値を設定する
+			outputfile << mRecord[i] << "\n";	//ファイルへ書き込む
+		}
+		outputfile.close(); //ファイルを閉じる
+	}
+
+	mRecord[5] = CSceneGame::sClearTime; //クリア時間を入れる
 	float tmp = 0; //退避用
 
 	for (int i = 0; i < 6; i++) {
@@ -77,8 +97,6 @@ CSceneResult::CSceneResult()
 		outputfile << mRecord[i] << "\n"; //ファイルへ書き込む
 	}
 	outputfile.close(); //ファイルを閉じる
-
-	CRes::sBGMResult.Repeat(); //BGMを再生する
 }
 
 void CSceneResult::Init()
@@ -86,6 +104,8 @@ void CSceneResult::Init()
 	mScene = ERESULT; //リザルト
 
 	mFade = EFADE_IN; //フェードイン
+
+	CRes::sBGMResult.Repeat(); //BGMを再生する
 }
 
 void CSceneResult::Update()
@@ -203,13 +223,13 @@ void CSceneResult::ClearTimeDisplay()
 	//フェードイン中ではないとき
 	if (mFade != EFADE_IN) {
 		//カウントアップがクリアタイムより低い時
-		if (mClearTimeCountUp < CSceneGame::mClearTime) {
+		if (mClearTimeCountUp < CSceneGame::sClearTime) {
 			//カウントアップする
-			mClearTimeCountUp += Camera.mLerp(0.0f, CSceneGame::mClearTime, COUNT_UP_FRAME);
+			mClearTimeCountUp += Camera.mLerp(0.0f, CSceneGame::sClearTime, COUNT_UP_FRAME);
 			//カウントアップがクリアタイムを超えた時
-			if (mClearTimeCountUp > CSceneGame::mClearTime) {
+			if (mClearTimeCountUp > CSceneGame::sClearTime) {
 				//カウントアップにクリアタイムを代入する
-				mClearTimeCountUp = CSceneGame::mClearTime;
+				mClearTimeCountUp = CSceneGame::sClearTime;
 				//効果音を停止する
 				CRes::sSECountUp.Stop();
 			}
@@ -217,9 +237,9 @@ void CSceneResult::ClearTimeDisplay()
 		//左クリックorEnterキーを押したとき
 		if (CKey::Once(VK_LBUTTON) || CKey::Once(VK_RETURN)) {
 			//カウントアップがクリアタイムより低い時
-			if (mClearTimeCountUp < CSceneGame::mClearTime) {
+			if (mClearTimeCountUp < CSceneGame::sClearTime) {
 				//カウントアップにクリアタイムを代入する
-				mClearTimeCountUp = CSceneGame::mClearTime;
+				mClearTimeCountUp = CSceneGame::sClearTime;
 				//効果音を停止する
 				CRes::sSECountUp.Stop();
 			}
